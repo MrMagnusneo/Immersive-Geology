@@ -18,7 +18,7 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.neoforged.neoforge.common.loot.IGlobalLootModifier;
 import net.neoforged.neoforge.common.loot.LootModifier;
-import net.neoforged.neoforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -26,7 +26,7 @@ import java.util.List;
 public class IGLootModifier extends LootModifier
 {
 	public static final Codec<IGLootModifier> CODEC = RecordCodecBuilder.create(inst -> codecStart(inst).and(
-			ForgeRegistries.ITEMS.getCodec().listOf().fieldOf("items").forGetter(m -> m.item_pool)
+			BuiltInRegistries.ITEM.byNameCodec().listOf().fieldOf("items").forGetter(m -> m.item_pool)
 	).apply(inst, IGLootModifier::new));
 
 	private final List<Item> item_pool;

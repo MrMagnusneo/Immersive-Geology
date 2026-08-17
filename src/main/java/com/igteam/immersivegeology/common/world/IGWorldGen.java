@@ -38,7 +38,7 @@ import net.neoforged.neoforge.common.world.ForgeBiomeModifiers;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.neoforged.neoforge.registries.DeferredRegister;
-import net.neoforged.neoforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import net.neoforged.neoforge.registries.DeferredHolder;
 
 public class IGWorldGen
@@ -84,8 +84,8 @@ public class IGWorldGen
 
 	static
 	{
-		FEATURE_REGISTER = DeferredRegister.create(ForgeRegistries.FEATURES, IGLib.MODID);
-		TFC_FEATURE_REGISTER = DeferredRegister.create(ForgeRegistries.FEATURES, "tfc");
+		FEATURE_REGISTER = DeferredRegister.create(Registries.FEATURE, IGLib.MODID);
+		TFC_FEATURE_REGISTER = DeferredRegister.create(Registries.FEATURE, "tfc");
 		IG_CONFIG_ORE = FEATURE_REGISTER.register("ig_ore", IGOreFeature::new);
 
 		if(!ModFlags.TFC.isLoaded())
@@ -94,7 +94,7 @@ public class IGWorldGen
 			TFC_FEATURE_REGISTER.register("soil_disc", IGPlaceholderFeature::new);
 		}
 
-		BIOME_MODIFIER_SERIALIZERS = DeferredRegister.create(ForgeRegistries.Keys.BIOME_MODIFIER_SERIALIZERS, IGLib.MODID);
+		BIOME_MODIFIER_SERIALIZERS = DeferredRegister.create(NeoForgeRegistries.Keys.BIOME_MODIFIER_SERIALIZERS, IGLib.MODID);
 
 		ORE_MODIFIER_CODEC = BIOME_MODIFIER_SERIALIZERS.register("ore_removal", () -> Codec.unit(IGOreRemovalModifier::new));
 

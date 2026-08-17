@@ -10,7 +10,6 @@ import blusunrize.immersiveengineering.api.multiblocks.blocks.logic.IMultiblockS
 import blusunrize.immersiveengineering.api.multiblocks.blocks.registry.MultiblockBlockEntityDummy;
 import blusunrize.immersiveengineering.api.multiblocks.blocks.util.CapabilityPosition;
 import blusunrize.immersiveengineering.api.multiblocks.blocks.util.RelativeBlockFace;
-import blusunrize.immersiveengineering.api.utils.CapabilityReference;
 import blusunrize.immersiveengineering.api.utils.DirectionUtils;
 import blusunrize.immersiveengineering.api.utils.SafeChunkUtils;
 import blusunrize.immersiveengineering.api.utils.shapes.CachedVoxelShapes;
@@ -20,7 +19,6 @@ import blusunrize.immersiveengineering.common.blocks.IEBaseBlockEntity;
 import blusunrize.immersiveengineering.common.blocks.IEBlockInterfaces;
 import blusunrize.immersiveengineering.common.register.IEBlocks.WoodenDecoration;
 import blusunrize.immersiveengineering.common.register.IEItems.Tools;
-import blusunrize.immersiveengineering.common.util.ResettableCapability;
 import blusunrize.immersiveengineering.common.util.Utils;
 import blusunrize.immersiveengineering.common.util.WorldMap;
 import com.google.common.collect.ImmutableSet;
@@ -57,15 +55,13 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.neoforge.common.capabilities.Capability;
-import net.neoforged.neoforge.common.capabilities.ForgeCapabilities;
-import net.neoforged.neoforge.common.util.LazyOptional;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.event.level.LevelEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.EventBusSubscriber.Bus;
-import net.neoforged.neoforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -86,7 +82,7 @@ public class IGEnergyPipeEntity extends IEBaseBlockEntity implements IEnergyPipe
 	private byte connections;
 	@Nullable
 	private DyeColor color;
-	private final Map<Direction, ResettableCapability<IEnergyStorage>> sidedHandlers;
+	private final Map<Direction, IEnergyStorage> sidedHandlers;
 	private final Map<Direction, MultiblockCapabilityReference<IEnergyStorage>> neighbors;
 	private static final CachedVoxelShapes<IGEnergyPipeEntity.BoundingBoxKey> SHAPES = new CachedVoxelShapes<>(IGEnergyPipeEntity::getBoxes);
 
@@ -105,11 +101,11 @@ public class IGEnergyPipeEntity extends IEBaseBlockEntity implements IEnergyPipe
 		this.connections = 0;
 		this.color = null;
 		this.sidedHandlers = new EnumMap<>(Direction.class);
-		this.neighbors = MultiblockCapabilityReference.forAllNeighbors(this, ForgeCapabilities.ENERGY);
+		this.neighbors = MultiblockCapabilityReference.forAllNeighbors(this, Capabilities.EnergyStorage.BLOCK);
 
 		for(var5 = 0; var5 < var4; ++var5) {
 			f = var3[var5];
-			this.sidedHandlers.put(f, this.registerCapability(new PipeEnergyHandler(this, f)));
+			this.sidedHandlers.put(f, new PipeEnergyHandler(this, f));
 		}
 	}
 
@@ -180,13 +176,13 @@ public class IGEnergyPipeEntity extends IEBaseBlockEntity implements IEnergyPipe
 										openList.add(nextPos);
 									} else {
 										// Check if the adjacent tile has energy capability
-										LazyOptional<IEnergyStorage> handlerOptional = adjacentTile.getCapability(
-												ForgeCapabilities.ENERGY, fd.getOpposite());
+										IEnergyStorage handler = world.getCapability(
+												Capabilities.EnergyStorage.BLOCK, nextPos, fd.getOpposite());
 
-										handlerOptional.ifPresent(handler -> {
+										if(handler!=null) {
 											// Add to energy handlers list
 											energyHandlers.add(new DirectionalEnergyOutput(handler, fd, adjacentTile));
-										});
+										}
 									}
 								}
 							}
@@ -278,7 +274,7 @@ public class IGEnergyPipeEntity extends IEBaseBlockEntity implements IEnergyPipe
 		}
 
 		Block oldCover = this.cover;
-		this.cover = (Block)ForgeRegistries.BLOCKS.getValue(new ResourceLocation(nbt.getString("cover")));
+		this.cover = BuiltInRegistries.BLOCK.get(ResourceLocation.parse(nbt.getString("cover")));
 		DyeColor oldColor = this.color;
 		if (nbt.contains("color", 3)) {
 			this.color = DyeColor.byId(nbt.getInt("color"));
@@ -306,7 +302,7 @@ public class IGEnergyPipeEntity extends IEBaseBlockEntity implements IEnergyPipe
 
 		nbt.putIntArray("sideConfig", config);
 		if (this.hasCover()) {
-			nbt.putString("cover", ForgeRegistries.BLOCKS.getKey(this.cover).toString());
+			nbt.putString("cover", BuiltInRegistries.BLOCK.getKey(this.cover).toString());
 		}
 
 		nbt.putByte("connections", this.connections);
@@ -317,24 +313,22 @@ public class IGEnergyPipeEntity extends IEBaseBlockEntity implements IEnergyPipe
 	}
 
 	private void invalidateHandler(Direction side) {
-		ResettableCapability<IEnergyStorage> handler = this.sidedHandlers.get(side);
+		IEnergyStorage handler = this.sidedHandlers.get(side);
 		if (handler != null) {
 			this.sidedHandlers.put(side, null);
-			handler.reset();
 		}
 
 	}
 
 	private void setValidHandler(Direction side) {
-		ResettableCapability<IEnergyStorage> handler = this.sidedHandlers.get(side);
+		IEnergyStorage handler = this.sidedHandlers.get(side);
 		if (handler == null) {
-			this.sidedHandlers.put(side, this.registerCapability(new PipeEnergyHandler(this, side)));
+			this.sidedHandlers.put(side, new PipeEnergyHandler(this, side));
 		}
 	}
 
-	@Nonnull
-	public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> capability, @Nullable Direction facing) {
-		return capability == ForgeCapabilities.ENERGY && facing != null && this.sideConfig.getBoolean(facing) ? ((ResettableCapability)this.sidedHandlers.get(facing)).cast() : super.getCapability(capability, facing);
+	public @Nullable IEnergyStorage getEnergyHandler(@Nullable Direction facing) {
+		return facing!=null&&this.sideConfig.getBoolean(facing)?this.sidedHandlers.get(facing): null;
 	}
 
 	protected boolean hasCover() {

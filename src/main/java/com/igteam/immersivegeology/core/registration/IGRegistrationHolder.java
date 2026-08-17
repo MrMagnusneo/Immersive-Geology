@@ -79,13 +79,14 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
 import net.neoforged.neoforge.common.loot.IGlobalLootModifier;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.data.loading.DatagenModLoader;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.registries.DeferredRegister;
-import net.neoforged.neoforge.registries.ForgeRegistries;
-import net.neoforged.neoforge.registries.ForgeRegistries.Keys;
 import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
@@ -98,12 +99,12 @@ import java.util.stream.Collectors;
 public class IGRegistrationHolder {
     private static final DeferredRegister<Block> BLOCK_REGISTER = DeferredRegister.create(Registries.BLOCK, IGLib.MODID);
     private static final DeferredRegister<Item> ITEM_REGISTER = DeferredRegister.create(Registries.ITEM, IGLib.MODID);
-    private static final DeferredRegister<Fluid> FLUID_REGISTER = DeferredRegister.create(ForgeRegistries.FLUIDS, IGLib.MODID);
-    private static final DeferredRegister<FluidType> FLUIDTYPE_REGISTER = DeferredRegister.create(ForgeRegistries.Keys.FLUID_TYPES, IGLib.MODID);
+    private static final DeferredRegister<Fluid> FLUID_REGISTER = DeferredRegister.create(BuiltInRegistries.FLUID, IGLib.MODID);
+    private static final DeferredRegister<FluidType> FLUIDTYPE_REGISTER = DeferredRegister.create(NeoForgeRegistries.Keys.FLUID_TYPES, IGLib.MODID);
 
     private static final DeferredRegister<BlockEntityType<?>> TE_REGISTER = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, IGLib.MODID);
     public static final DeferredRegister<CreativeModeTab> TAB_REGISTER = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, IGLib.MODID);
-    public static final DeferredRegister<Codec<? extends IGlobalLootModifier>> LOOT_SERIALIZER_REGISTER = DeferredRegister.create(Keys.GLOBAL_LOOT_MODIFIER_SERIALIZERS, IGLib.MODID);
+    public static final DeferredRegister<Codec<? extends IGlobalLootModifier>> LOOT_SERIALIZER_REGISTER = DeferredRegister.create(NeoForgeRegistries.Keys.GLOBAL_LOOT_MODIFIER_SERIALIZERS, IGLib.MODID);
 
     private static final LinkedHashMap<String, DeferredHolder<?, Block>> BLOCK_REGISTRY_MAP = new LinkedHashMap<>();
     private static final LinkedHashMap<String, DeferredHolder<?, BlockEntityType<?>>> TE_REGISTRY_MAP = new LinkedHashMap<>();
@@ -623,6 +624,25 @@ public class IGRegistrationHolder {
 
     public static HashMap<String, DeferredHolder<?, Block>> getBlockRegistryMap() {
         return BLOCK_REGISTRY_MAP;
+    }
+
+    public static void registerCapabilities(RegisterCapabilitiesEvent event)
+    {
+        for(DeferredHolder<?, BlockEntityType<?>> holder : TE_REGISTRY_MAP.values())
+        {
+            @SuppressWarnings("unchecked")
+            BlockEntityType<BlockEntity> type = (BlockEntityType<BlockEntity>)(Object)holder.get();
+            event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, type,
+                    (be, side) -> be instanceof IGCrateEntity crate?crate.getInventoryHandler(): null);
+            event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, type,
+                    (be, side) -> be instanceof IGHydroVentEntity vent?vent.getFluidHandler(side): null);
+        }
+        event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, ENERGY_PIPE.get(),
+                IGEnergyPipeEntity::getEnergyHandler);
+        for(DeferredHolder<?, Item> holder : ITEM_REGISTRY_MAP.values())
+            if(holder.get() instanceof IGGenericBucketItem bucket)
+                event.registerItem(Capabilities.FluidHandler.ITEM,
+                        (stack, ignored) -> new IGGenericBucketItem.FluidHandler(stack), bucket);
     }
 
     public static void buildMaterialRecipes()

@@ -9,7 +9,6 @@
 package com.igteam.immersivegeology.common.block.entity.crate;
 
 import blusunrize.immersiveengineering.api.IEApi;
-import blusunrize.immersiveengineering.api.utils.CapabilityUtils;
 import blusunrize.immersiveengineering.common.blocks.IEBlockInterfaces;
 import blusunrize.immersiveengineering.common.util.Utils;
 import blusunrize.immersiveengineering.common.util.inventory.IEInventoryHandler;
@@ -40,9 +39,6 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.neoforged.neoforge.common.capabilities.Capability;
-import net.neoforged.neoforge.common.capabilities.ForgeCapabilities;
-import net.neoforged.neoforge.common.util.LazyOptional;
 import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.NotNull;
 
@@ -55,12 +51,12 @@ public class IGCrateEntity extends RandomizableContainerBlockEntity implements I
 	public static final int CONTAINER_SIZE = 36;
 	private NonNullList<ItemStack> inventory;
 	private ListTag enchantments;
-	private final LazyOptional<IItemHandler> inventoryCap;
+	private final IItemHandler inventoryCap;
 
 	public IGCrateEntity(BlockPos pos, BlockState state) {
 		super(resolveEntityType(state), pos, state);
 		this.inventory = NonNullList.withSize(CONTAINER_SIZE, ItemStack.EMPTY);
-		this.inventoryCap = CapabilityUtils.constantOptional(new IEInventoryHandler(CONTAINER_SIZE, this));
+		this.inventoryCap = new IEInventoryHandler(CONTAINER_SIZE, this);
 	}
 
 	private static BlockEntityType<?> resolveEntityType(BlockState state) {
@@ -187,14 +183,8 @@ public class IGCrateEntity extends RandomizableContainerBlockEntity implements I
 
 	}
 
-	@Nonnull
-	public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
-		return cap == ForgeCapabilities.ITEM_HANDLER ? this.inventoryCap.cast() : super.getCapability(cap, side);
-	}
-
-	public void invalidateCaps() {
-		super.invalidateCaps();
-		this.inventoryCap.invalidate();
+	public IItemHandler getInventoryHandler() {
+		return inventoryCap;
 	}
 
 	public boolean canPlaceItem(int index, ItemStack stack) {

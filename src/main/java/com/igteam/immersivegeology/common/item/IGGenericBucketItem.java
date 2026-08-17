@@ -8,7 +8,6 @@
 
 package com.igteam.immersivegeology.common.item;
 
-import blusunrize.immersiveengineering.api.utils.CapabilityUtils;
 import com.igteam.immersivegeology.client.menu.ItemSubGroup;
 import com.igteam.immersivegeology.common.item.helper.IGFlagItem;
 import com.igteam.immersivegeology.core.lib.IGLib;
@@ -32,10 +31,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.phys.BlockHitResult;
-import net.neoforged.neoforge.common.capabilities.Capability;
-import net.neoforged.neoforge.common.capabilities.ForgeCapabilities;
-import net.neoforged.neoforge.common.capabilities.ICapabilityProvider;
-import net.neoforged.neoforge.common.util.LazyOptional;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
@@ -151,13 +146,6 @@ public class IGGenericBucketItem extends BucketItem implements IGFlagItem, Dispe
         return materialMap.get(t);
     }
 
-    @Nullable
-    @Override
-    public ICapabilityProvider initCapabilities(ItemStack stack, @Nullable CompoundTag nbt)
-    {
-        return new FluidHandler(stack);
-    }
-
     public IFlagType<?> getBucketType()
     {
         return bucket_type;
@@ -169,12 +157,12 @@ public class IGGenericBucketItem extends BucketItem implements IGFlagItem, Dispe
         return super.emptyContents(p_150716_, p_150717_, p_150718_, p_150719_, container);
     }
 
-    private static class FluidHandler implements IFluidHandlerItem, ICapabilityProvider
+    public static class FluidHandler implements IFluidHandlerItem
     {
         private final ItemStack stack;
         private boolean empty = false;
 
-        private FluidHandler(ItemStack stack)
+        public FluidHandler(ItemStack stack)
         {
             this.stack = stack;
         }
@@ -234,7 +222,7 @@ public class IGGenericBucketItem extends BucketItem implements IGFlagItem, Dispe
         public FluidStack drain(FluidStack resource, FluidAction action)
         {
             FluidStack fluid = getFluid();
-            if(!fluid.isFluidEqual(resource)||!Objects.equals(fluid.getTag(), resource.getTag()))
+            if(!FluidStack.isSameFluidSameComponents(fluid, resource))
                 return FluidStack.EMPTY;
             return drain(resource.getAmount(), action);
         }
@@ -252,16 +240,5 @@ public class IGGenericBucketItem extends BucketItem implements IGFlagItem, Dispe
             return potion;
         }
 
-        private final LazyOptional<IFluidHandlerItem> lazyOpt = CapabilityUtils.constantOptional(this);
-
-        @Nonnull
-        @Override
-        public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side)
-        {
-            if(cap==ForgeCapabilities.FLUID_HANDLER_ITEM)
-                return lazyOpt.cast();
-            else
-                return LazyOptional.empty();
-        }
     }
 }

@@ -32,6 +32,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.repository.BuiltInPackSource;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.InterModComms;
 import net.neoforged.fml.ModLoadingContext;
@@ -63,6 +64,7 @@ public class ImmersiveGeology {
         modEventBus.addListener(this::setup);
         modEventBus.addListener(this::clientSetup);
         modEventBus.addListener(this::enqueueIMC);
+        modEventBus.addListener(RegisterCapabilitiesEvent.class, IGRegistrationHolder::registerCapabilities);
 
         IGLib.IG_LOGGER.info("- Initializing IG Multiblocks");
         IGRegistrationHolder.initializeMultiblocks();
