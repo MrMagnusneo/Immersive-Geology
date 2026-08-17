@@ -8,6 +8,8 @@
 
 package com.igteam.immersivegeology.common.block.multiblocks.logic;
 
+import blusunrize.immersiveengineering.api.multiblocks.blocks.component.IMultiblockComponent;
+
 import blusunrize.immersiveengineering.api.energy.AveragingEnergyStorage;
 import blusunrize.immersiveengineering.api.multiblocks.blocks.component.IClientTickableComponent;
 import blusunrize.immersiveengineering.api.multiblocks.blocks.component.IServerTickableComponent;
@@ -16,7 +18,6 @@ import blusunrize.immersiveengineering.api.multiblocks.blocks.env.IInitialMultib
 import blusunrize.immersiveengineering.api.multiblocks.blocks.env.IMultiblockContext;
 import blusunrize.immersiveengineering.api.multiblocks.blocks.logic.IMultiblockState;
 import blusunrize.immersiveengineering.api.multiblocks.blocks.util.*;
-import blusunrize.immersiveengineering.api.utils.CapabilityReference;
 import blusunrize.immersiveengineering.common.blocks.multiblocks.process.MultiblockProcess;
 import blusunrize.immersiveengineering.common.blocks.multiblocks.process.MultiblockProcessor;
 import blusunrize.immersiveengineering.common.blocks.multiblocks.process.MultiblockProcessor.InMachineProcessor;
@@ -40,9 +41,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.neoforge.common.capabilities.Capability;
-import net.neoforged.neoforge.common.capabilities.ForgeCapabilities;
-import net.neoforged.neoforge.common.util.LazyOptional;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.NotNull;
@@ -252,24 +251,16 @@ public class RotaryKilnLogic implements ISkinnableMultiblockLogic<State>, IServe
     }
 
     @Override
-    public <T> LazyOptional<T> getCapability(IMultiblockContext<State> ctx, CapabilityPosition position, Capability<T> cap)
+    public void registerCapabilities(IMultiblockComponent.CapabilityRegistrar<State> register)
     {
-        final RotaryKilnLogic.State state = ctx.getState();
-        if(cap == ForgeCapabilities.ENERGY)
-        {
-            if(ENERGY_LEFT.equals(position) || ENERGY_MID.equals(position) || ENERGY_RIGHT.equals(position))
-            {
-                return state.energyCap.cast(ctx);
-            }
-        }
-
-        if(cap == ForgeCapabilities.ITEM_HANDLER)
-        {
-            if(ITEM_INPUT_CAP.equals(position)) return state.itemInputCap.cast(ctx);
-            if(ITEM_OUTPUT_CAP.equals(position)) return state.outputHandler.cast(ctx);
-        }
-
-        return LazyOptional.empty();
+        register.register(Capabilities.EnergyStorage.BLOCK, (state, position) ->
+                ENERGY_LEFT.equals(position) || ENERGY_MID.equals(position) || ENERGY_RIGHT.equals(position)
+                        ? state.energyCap : null);
+        register.register(Capabilities.ItemHandler.BLOCK, (state, position) -> {
+            if(ITEM_INPUT_CAP.equals(position)) return state.itemInputCap;
+            if(ITEM_OUTPUT_CAP.equals(position)) return state.outputHandler;
+            return null;
+        });
     }
 
     @Override
@@ -286,12 +277,12 @@ public class RotaryKilnLogic implements ISkinnableMultiblockLogic<State>, IServe
         public final DoubleList lastEnergyPackets = new DoubleArrayList(20);
         public final RedstoneControl.RSState rsState = RedstoneControl.RSState.enabledByDefault();
         public final SlotwiseItemHandler inventory;
-        private final CapabilityReference<IItemHandler> output;
-        private final StoredCapability<IItemHandler> outputHandler;
-        private final StoredCapability<IItemHandler> itemInputCap;
+        private final Supplier<IItemHandler> output;
+        private final IItemHandler outputHandler;
+        private final IItemHandler itemInputCap;
         private float tube_rotation;
         private boolean isActive;
-        private final StoredCapability<IEnergyStorage> energyCap;
+        private final IEnergyStorage energyCap;
         private float heatLevel = 0;
         private float targetHeat = 0;
         private RotaryKilnHeatState heatState;
@@ -299,7 +290,7 @@ public class RotaryKilnLogic implements ISkinnableMultiblockLogic<State>, IServe
         private final MultiblockProcessor.InMachineProcessor<RotaryKilnRecipe> processor;
         Runnable markDirty;
         public State(IInitialMultiblockContext<State> ctx) {
-            this.energyCap = new StoredCapability<>(this.total_energy);
+            this.energyCap = this.total_energy;
             this.processor = new InMachineProcessor<>(7, 0, 7, ctx.getMarkDirtyRunnable(), RotaryKilnRecipe.RECIPES::getById);
             this.tube_rotation = 0.0f;
             this.isActive = false;
@@ -330,11 +321,11 @@ public class RotaryKilnLogic implements ISkinnableMultiblockLogic<State>, IServe
                     IOConstraint.OUTPUT
             ), markDirty);
 
-            this.output = ctx.getCapabilityAt(ForgeCapabilities.ITEM_HANDLER, OUTPUT_POS);
-            this.outputHandler = new StoredCapability<>(new WrappingItemHandler(
+            this.output = ctx.getCapabilityAt(Capabilities.ItemHandler.BLOCK, OUTPUT_POS);
+            this.outputHandler = new WrappingItemHandler(
                     inventory, false, true, new IntRange(8,14)
-            ));
-            this.itemInputCap = new StoredCapability<>(new WrappingItemHandler(inventory, true, false, new IntRange(0,1)));
+            );
+            this.itemInputCap = new WrappingItemHandler(inventory, true, false, new IntRange(0,1));
         }
 
         @Override

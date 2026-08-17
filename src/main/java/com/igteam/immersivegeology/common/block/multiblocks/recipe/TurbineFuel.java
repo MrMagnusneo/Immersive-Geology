@@ -23,7 +23,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.Fluid;
-import net.neoforged.neoforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
@@ -33,7 +33,7 @@ import java.util.function.Function;
 
 public class TurbineFuel extends IESerializableRecipe
 {
-	public static RegistryObject<IERecipeSerializer<TurbineFuel>> SERIALIZER;
+	public static DeferredHolder<?, IERecipeSerializer<TurbineFuel>> SERIALIZER;
 	public static final CachedRecipeList<TurbineFuel> RECIPES;
 	private final FastEither<TagKey<Fluid>, List<Fluid>> fluids;
 	private final int burnTime;

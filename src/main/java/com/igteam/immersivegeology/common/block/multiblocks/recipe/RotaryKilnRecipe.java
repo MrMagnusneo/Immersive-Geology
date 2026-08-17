@@ -23,12 +23,12 @@ import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.common.util.Lazy;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import org.jetbrains.annotations.NotNull;
 
 public class RotaryKilnRecipe extends MultiblockRecipe
 {
-	public static RegistryObject<IERecipeSerializer<RotaryKilnRecipe>> SERIALIZER;
+	public static DeferredHolder<?, IERecipeSerializer<RotaryKilnRecipe>> SERIALIZER;
 	public static final CachedRecipeList<RotaryKilnRecipe> RECIPES = new CachedRecipeList<>(IGRecipeTypes.ROTARYKILN);
 	public final Lazy<ItemStack> itemOutput;
 	public final IngredientWithSize itemIn;

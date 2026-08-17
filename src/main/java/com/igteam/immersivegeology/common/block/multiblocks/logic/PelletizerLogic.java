@@ -8,6 +8,8 @@
 
 package com.igteam.immersivegeology.common.block.multiblocks.logic;
 
+import blusunrize.immersiveengineering.api.multiblocks.blocks.component.IMultiblockComponent;
+
 import blusunrize.immersiveengineering.api.energy.AveragingEnergyStorage;
 import blusunrize.immersiveengineering.api.multiblocks.blocks.component.IClientTickableComponent;
 import blusunrize.immersiveengineering.api.multiblocks.blocks.component.IServerTickableComponent;
@@ -52,9 +54,7 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.neoforge.common.capabilities.Capability;
-import net.neoforged.neoforge.common.capabilities.ForgeCapabilities;
-import net.neoforged.neoforge.common.util.LazyOptional;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
@@ -221,24 +221,12 @@ public class PelletizerLogic implements ISkinnableMultiblockLogic<State>, IServe
     }
 
     @Override
-    public <T> LazyOptional<T> getCapability(IMultiblockContext<State> ctx, CapabilityPosition position, Capability<T> cap)
+    public void registerCapabilities(IMultiblockComponent.CapabilityRegistrar<State> register)
     {
-        final PelletizerLogic.State state = ctx.getState();
-        if(cap == ForgeCapabilities.ENERGY)
-        {
-            if((position.side()==null || ENERGY_INPUTS.contains(position))) return state.energyCap.cast(ctx);
-        }
-        if(cap == ForgeCapabilities.FLUID_HANDLER)
-        {
-            if(FLUID_INPUT_CAP.equals(position))
-            {
-                return state.fInputCap.cast(ctx);
-            }
-        }
-//        if (cap == ForgeCapabilities.ITEM_HANDLER) {
-//            return state.insertionHandler.cast(ctx);
-//        }
-        return LazyOptional.empty();
+        register.register(Capabilities.EnergyStorage.BLOCK, (state, position) ->
+                position.side()==null || ENERGY_INPUTS.contains(position) ? state.energyCap : null);
+        register.register(Capabilities.FluidHandler.BLOCK, (state, position) ->
+                FLUID_INPUT_CAP.equals(position) ? state.fInputCap : null);
     }
 
     @Nullable
@@ -263,10 +251,10 @@ public class PelletizerLogic implements ISkinnableMultiblockLogic<State>, IServe
         public final RedstoneControl.RSState rsState = RedstoneControl.RSState.enabledByDefault();
 
         public final FluidTank tank = new FluidTank(TANK_VOLUME);
-        private final StoredCapability<IFluidHandler> fInputCap;
+        private final IFluidHandler fInputCap;
 
-        private final StoredCapability<IEnergyStorage> energyCap;
-        private final StoredCapability<IItemHandler> insertionHandler;
+        private final IEnergyStorage energyCap;
+        private final IItemHandler insertionHandler;
         public final SlotwiseItemHandler inventory;
         private final DroppingMultiblockOutput output;
         private final MultiblockProcessor<PelletizerRecipe, ProcessContextInWorld<PelletizerRecipe>> processor;
@@ -285,13 +273,13 @@ public class PelletizerLogic implements ISkinnableMultiblockLogic<State>, IServe
                     IOConstraint.OUTPUT
             ), markDirty);
 
-            this.energyCap = new StoredCapability<>(this.energy);
+            this.energyCap = this.energy;
             this.output = new DroppingMultiblockOutput(OUTPUT_POS, ctx);
             this.processor = new MultiblockProcessor<>(64, 0, 8, ctx.getMarkDirtyRunnable(), PelletizerRecipe.RECIPES::getById);
 
-            this.insertionHandler = new StoredCapability<>(inventory);
+            this.insertionHandler = inventory;
             this.rotation = 0;
-            this.fInputCap = new StoredCapability<>(new ArrayFluidHandler(tank, true, true, changedAndSync));
+            this.fInputCap = new ArrayFluidHandler(tank, true, true, changedAndSync);
         }
 
         @Override

@@ -8,6 +8,8 @@
 
 package com.igteam.immersivegeology.common.block.multiblocks.logic;
 
+import blusunrize.immersiveengineering.api.multiblocks.blocks.component.IMultiblockComponent;
+
 import blusunrize.immersiveengineering.api.energy.AveragingEnergyStorage;
 import blusunrize.immersiveengineering.api.multiblocks.blocks.component.IClientTickableComponent;
 import blusunrize.immersiveengineering.api.multiblocks.blocks.component.IServerTickableComponent;
@@ -17,7 +19,6 @@ import blusunrize.immersiveengineering.api.multiblocks.blocks.env.IMultiblockCon
 import blusunrize.immersiveengineering.api.multiblocks.blocks.logic.IMultiblockLogic;
 import blusunrize.immersiveengineering.api.multiblocks.blocks.logic.IMultiblockState;
 import blusunrize.immersiveengineering.api.multiblocks.blocks.util.*;
-import blusunrize.immersiveengineering.api.utils.CapabilityReference;
 import blusunrize.immersiveengineering.client.utils.TextUtils;
 import blusunrize.immersiveengineering.common.blocks.multiblocks.logic.interfaces.MBOverlayText;
 import blusunrize.immersiveengineering.common.blocks.multiblocks.process.MultiblockProcessInMachine;
@@ -42,9 +43,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.neoforge.common.capabilities.Capability;
-import net.neoforged.neoforge.common.capabilities.ForgeCapabilities;
-import net.neoforged.neoforge.common.util.LazyOptional;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidType;
@@ -116,29 +115,14 @@ public class FoundryLogic implements IMultiblockLogic<FoundryLogic.State>, IServ
     }
 
     @Override
-    public <T> LazyOptional<T> getCapability(IMultiblockContext<State> ctx, CapabilityPosition position, Capability<T> cap)
+    public void registerCapabilities(IMultiblockComponent.CapabilityRegistrar<State> register)
     {
-        final State state = ctx.getState();
-        if(cap == ForgeCapabilities.ENERGY && (position.side()==null || ENERGY_INPUT.equals(position)))
-        {
-            return state.energyCap.cast(ctx);
-        }
-
-        if(cap == ForgeCapabilities.FLUID_HANDLER)
-        {
-            if(FLUID_INPUT_CAP.equals(position))
-            {
-                return state.fInputCap.cast(ctx);
-            }
-        }
-
-        if(cap==ForgeCapabilities.ITEM_HANDLER)
-        {
-            if(ITEM_OUTPUT_CAP.equals(position))
-                return state.itemOutputCap.cast(ctx);
-        }
-
-        return LazyOptional.empty();
+        register.register(Capabilities.EnergyStorage.BLOCK, (state, position) ->
+                position.side()==null || ENERGY_INPUT.equals(position) ? state.energyCap : null);
+        register.register(Capabilities.FluidHandler.BLOCK, (state, position) ->
+                FLUID_INPUT_CAP.equals(position) ? state.fInputCap : null);
+        register.register(Capabilities.ItemHandler.BLOCK, (state, position) ->
+                ITEM_OUTPUT_CAP.equals(position) ? state.itemOutputCap : null);
     }
 
     @Nullable
@@ -161,15 +145,15 @@ public class FoundryLogic implements IMultiblockLogic<FoundryLogic.State>, IServ
         public final AveragingEnergyStorage energy = new AveragingEnergyStorage(ENERGY_CAPACITY);
         private final MultiblockProcessor<FoundryRecipe, ProcessContextInMachine<FoundryRecipe>> processor;
         public final SlotwiseItemHandler inventory;
-        private final StoredCapability<IFluidHandler> fInputCap;
-        private final StoredCapability<IItemHandler> itemOutputCap;
-        private final StoredCapability<IEnergyStorage> energyCap;
-        private final CapabilityReference<IItemHandler> output;
+        private final IFluidHandler fInputCap;
+        private final IItemHandler itemOutputCap;
+        private final IEnergyStorage energyCap;
+        private final Supplier<IItemHandler> output;
         public final FluidTank tank = new FluidTank(TANK_VOLUME);
 
         public State(IInitialMultiblockContext<State> ctx){
-            this.energyCap = new StoredCapability<>(this.energy);
-            this.output = ctx.getCapabilityAt(ForgeCapabilities.ITEM_HANDLER, OUTPUT_POS);
+            this.energyCap = this.energy;
+            this.output = ctx.getCapabilityAt(Capabilities.ItemHandler.BLOCK, OUTPUT_POS);
             this.processor = new MultiblockProcessor<>(
                     1, 0, 1, ctx.getMarkDirtyRunnable(), FoundryRecipe.RECIPES::getById
             );
@@ -180,10 +164,10 @@ public class FoundryLogic implements IMultiblockLogic<FoundryLogic.State>, IServ
                 ctx.getSyncRunnable().run();
                 ctx.getMarkDirtyRunnable().run();
             };
-            this.itemOutputCap = new StoredCapability<>(new WrappingItemHandler(
+            this.itemOutputCap = new WrappingItemHandler(
                     inventory, false, true, new IntRange(0, 1)
-            ));
-            this.fInputCap = new StoredCapability<>(new ArrayFluidHandler(tank, true, true, changedAndSync));
+            );
+            this.fInputCap = new ArrayFluidHandler(tank, true, true, changedAndSync);
         }
 
         @Override

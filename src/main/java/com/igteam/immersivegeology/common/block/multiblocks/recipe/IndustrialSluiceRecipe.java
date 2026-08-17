@@ -21,14 +21,14 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.common.util.Lazy;
-import net.neoforged.neoforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class IndustrialSluiceRecipe extends MultiblockRecipe
 {
-	public static RegistryObject<IERecipeSerializer<IndustrialSluiceRecipe>> SERIALIZER;
+	public static DeferredHolder<?, IERecipeSerializer<IndustrialSluiceRecipe>> SERIALIZER;
 	public static final CachedRecipeList<IndustrialSluiceRecipe> RECIPES = new CachedRecipeList<>(IGRecipeTypes.SLUICE);
 	public final Lazy<ItemStack> itemOutput;
 	public final Ingredient itemIn;

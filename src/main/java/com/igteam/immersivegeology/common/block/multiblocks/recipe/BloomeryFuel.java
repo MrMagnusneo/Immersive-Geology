@@ -17,13 +17,13 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 import java.util.Iterator;
 
 public class BloomeryFuel extends IESerializableRecipe
 {
-	public static RegistryObject<IERecipeSerializer<BloomeryFuel>> SERIALIZER;
+	public static DeferredHolder<?, IERecipeSerializer<BloomeryFuel>> SERIALIZER;
 	public static final CachedRecipeList<BloomeryFuel> RECIPES;
 	public final Ingredient input;
 	public final int burnTime;

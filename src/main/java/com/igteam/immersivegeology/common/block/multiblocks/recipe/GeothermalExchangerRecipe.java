@@ -20,7 +20,7 @@ import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.common.util.Lazy;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -28,7 +28,7 @@ import java.util.List;
 
 public class GeothermalExchangerRecipe extends MultiblockRecipe
 {
-	public static RegistryObject<IERecipeSerializer<GeothermalExchangerRecipe>> SERIALIZER;
+	public static DeferredHolder<?, IERecipeSerializer<GeothermalExchangerRecipe>> SERIALIZER;
 	public static final CachedRecipeList<GeothermalExchangerRecipe> RECIPES = new CachedRecipeList<>(IGRecipeTypes.GEOTHERMAL_EXCHANGER);
 	public final Lazy<FluidStack> fluidOutput;
 	public final FluidTagInput fluidIn;

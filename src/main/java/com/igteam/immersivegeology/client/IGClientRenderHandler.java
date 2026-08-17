@@ -44,7 +44,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
-import net.neoforged.neoforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -70,7 +70,7 @@ public class IGClientRenderHandler implements ItemColor, BlockColor {
             }
         }
 
-        for(RegistryObject<Block> holder : IGRegistrationHolder.getBlockRegistryMap().values()){
+        for(DeferredHolder<?, Block> holder : IGRegistrationHolder.getBlockRegistryMap().values()){
             Block b = holder.get();
             if(b instanceof IGBlockType igBlock){
                 Minecraft.getInstance().getBlockColors().register(INSTANCE, b);

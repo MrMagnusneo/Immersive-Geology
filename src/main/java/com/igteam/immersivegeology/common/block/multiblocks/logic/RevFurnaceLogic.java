@@ -8,6 +8,8 @@
 
 package com.igteam.immersivegeology.common.block.multiblocks.logic;
 
+import blusunrize.immersiveengineering.api.multiblocks.blocks.component.IMultiblockComponent;
+
 import blusunrize.immersiveengineering.api.ApiUtils;
 import blusunrize.immersiveengineering.api.IEProperties;
 import blusunrize.immersiveengineering.api.crafting.BlastFurnaceFuel;
@@ -19,7 +21,6 @@ import blusunrize.immersiveengineering.api.multiblocks.blocks.env.IMultiblockLev
 import blusunrize.immersiveengineering.api.multiblocks.blocks.logic.IMultiblockLogic;
 import blusunrize.immersiveengineering.api.multiblocks.blocks.logic.IMultiblockState;
 import blusunrize.immersiveengineering.api.multiblocks.blocks.util.*;
-import blusunrize.immersiveengineering.api.utils.CapabilityReference;
 import blusunrize.immersiveengineering.client.utils.TextUtils;
 import blusunrize.immersiveengineering.common.blocks.metal.BlastFurnacePreheaterBlockEntity;
 import blusunrize.immersiveengineering.common.blocks.multiblocks.logic.AdvBlastFurnaceLogic;
@@ -76,9 +77,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.neoforge.common.capabilities.Capability;
-import net.neoforged.neoforge.common.capabilities.ForgeCapabilities;
-import net.neoforged.neoforge.common.util.LazyOptional;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.fluids.IFluidTank;
@@ -147,7 +146,7 @@ public class RevFurnaceLogic implements IMultiblockLogic<RevFurnaceLogic.State>,
 
     private void outputItems(RevFurnaceLogic.State state)
     {
-        IItemHandler outputHandlerLeft = state.outputLeft.getNullable();
+        IItemHandler outputHandlerLeft = state.outputLeft.get();
         if(outputHandlerLeft!=null)
             for(int j : OUTPUT_SLOTS_LEFT)
             {
@@ -160,7 +159,7 @@ public class RevFurnaceLogic implements IMultiblockLogic<RevFurnaceLogic.State>,
                     nextStack.shrink(1);
             }
 
-        IItemHandler outputHandlerRight = state.outputRight.getNullable();
+        IItemHandler outputHandlerRight = state.outputRight.get();
         if(outputHandlerRight!=null)
             for(int j : OUTPUT_SLOTS_RIGHT)
             {
@@ -174,11 +173,11 @@ public class RevFurnaceLogic implements IMultiblockLogic<RevFurnaceLogic.State>,
             }
     }
 
-    private void drainOutputTank(RevFurnaceLogic.State state, IMultiblockContext<RevFurnaceLogic.State> context, CapabilityReference<IFluidHandler> outputRef)
+    private void drainOutputTank(RevFurnaceLogic.State state, IMultiblockContext<RevFurnaceLogic.State> context, Supplier<IFluidHandler> outputRef)
     {
         int outSize = Math.min(FluidType.BUCKET_VOLUME, state.tank.getFluidAmount());
         FluidStack out = Utils.copyFluidStackWithAmount(state.tank.getFluid(), outSize, false);
-        IFluidHandler output = outputRef.getNullable();
+        IFluidHandler output = outputRef.get();
 
         if(output==null)
             return;
@@ -195,28 +194,18 @@ public class RevFurnaceLogic implements IMultiblockLogic<RevFurnaceLogic.State>,
 
 
     @Override
-    public <T> LazyOptional<T> getCapability(IMultiblockContext<State> ctx, CapabilityPosition position, Capability<T> cap)
+    public void registerCapabilities(IMultiblockComponent.CapabilityRegistrar<State> register)
     {
-        final State state = ctx.getState();
-        final boolean isMirrored = ctx.getLevel().getOrientation().mirrored();
-        if(cap==ForgeCapabilities.ITEM_HANDLER)
-        {
-            if(SLOT_1_INPUT_POSITION.equals(position)) return (isMirrored ? state.invCapRight.cast(ctx) : state.invCapLeft.cast(ctx));
-            if(SLOT_2_INPUT_POSITION.equals(position)) return (isMirrored ? state.invCapLeft.cast(ctx) : state.invCapRight.cast(ctx) );
-            if(SLOT_1_OUTPUT_POSITION.posInMultiblock().equals(position.posInMultiblock()))
-            {
-                return isMirrored ? state.outputHandlerRight.cast(ctx) : state.outputHandlerLeft.cast(ctx);
-            }
-            if(SLOT_2_OUTPUT_POSITION.posInMultiblock().equals(position.posInMultiblock()))
-            {
-                return isMirrored ? state.outputHandlerLeft.cast(ctx) : state.outputHandlerRight.cast(ctx);
-            }
-        }
-        else if(cap==ForgeCapabilities.FLUID_HANDLER)
-        {
-            if(SLOT_1_OUTPUT_FLUID.equals(position) || SLOT_2_OUTPUT_FLUID.equals(position)) return state.fluidCap.cast(ctx);
-        }
-        return LazyOptional.empty();
+        register.register(Capabilities.ItemHandler.BLOCK, (state, position) -> {
+            // Mirroring is represented by the transformed capability position in the 1.21.1 API.
+            if(SLOT_1_INPUT_POSITION.equals(position)) return state.invCapLeft;
+            if(SLOT_2_INPUT_POSITION.equals(position)) return state.invCapRight;
+            if(SLOT_1_OUTPUT_POSITION.posInMultiblock().equals(position.posInMultiblock())) return state.outputHandlerLeft;
+            if(SLOT_2_OUTPUT_POSITION.posInMultiblock().equals(position.posInMultiblock())) return state.outputHandlerRight;
+            return null;
+        });
+        register.register(Capabilities.FluidHandler.BLOCK, (state, position) ->
+                SLOT_1_OUTPUT_FLUID.equals(position) || SLOT_2_OUTPUT_FLUID.equals(position) ? state.fluidCap : null);
     }
 
     @Override
@@ -288,17 +277,17 @@ public class RevFurnaceLogic implements IMultiblockLogic<RevFurnaceLogic.State>,
         private final Supplier<RevFurnaceRecipe> cachedRecipeRight;
 
         private final FluidTank tank = new FluidTank(TANK_CAPACITY);
-        private final StoredCapability<IItemHandler> invCapLeft;
-        private final StoredCapability<IItemHandler> invCapRight;
-        private final StoredCapability<IItemHandler> outputHandlerLeft;
-        private final StoredCapability<IItemHandler> outputHandlerRight;
+        private final IItemHandler invCapLeft;
+        private final IItemHandler invCapRight;
+        private final IItemHandler outputHandlerLeft;
+        private final IItemHandler outputHandlerRight;
 
-        private final CapabilityReference<IItemHandler> outputLeft;
-        private final CapabilityReference<IItemHandler> outputRight;
+        private final Supplier<IItemHandler> outputLeft;
+        private final Supplier<IItemHandler> outputRight;
 
-        private final CapabilityReference<IFluidHandler> fluidOutput1;
-        private final CapabilityReference<IFluidHandler> fluidOutput2;
-        private final StoredCapability<IFluidHandler> fluidCap;
+        private final Supplier<IFluidHandler> fluidOutput1;
+        private final Supplier<IFluidHandler> fluidOutput2;
+        private final IFluidHandler fluidCap;
 
         public State(IInitialMultiblockContext<?> ctx)
         {
@@ -314,19 +303,19 @@ public class RevFurnaceLogic implements IMultiblockLogic<RevFurnaceLogic.State>,
                     IOConstraint.OUTPUT
             ), ctx.getMarkDirtyRunnable());
 
-            this.outputLeft = ctx.getCapabilityAt(ForgeCapabilities.ITEM_HANDLER, SLOT_1_OUTPUT_POSITION);
-            this.outputRight = ctx.getCapabilityAt(ForgeCapabilities.ITEM_HANDLER, SLOT_2_OUTPUT_POSITION);
+            this.outputLeft = ctx.getCapabilityAt(Capabilities.ItemHandler.BLOCK, SLOT_1_OUTPUT_POSITION);
+            this.outputRight = ctx.getCapabilityAt(Capabilities.ItemHandler.BLOCK, SLOT_2_OUTPUT_POSITION);
 
-            this.fluidOutput1 = ctx.getCapabilityAt(ForgeCapabilities.FLUID_HANDLER, new MultiblockFace(SLOT_1_OUTPUT_FLUID.side(), SLOT_1_OUTPUT_FLUID.posInMultiblock().above()));
-            this.fluidOutput2 = ctx.getCapabilityAt(ForgeCapabilities.FLUID_HANDLER, new MultiblockFace(SLOT_2_OUTPUT_FLUID.side(), SLOT_2_OUTPUT_FLUID.posInMultiblock().above()));
+            this.fluidOutput1 = ctx.getCapabilityAt(Capabilities.FluidHandler.BLOCK, new MultiblockFace(SLOT_1_OUTPUT_FLUID.side(), SLOT_1_OUTPUT_FLUID.posInMultiblock().above()));
+            this.fluidOutput2 = ctx.getCapabilityAt(Capabilities.FluidHandler.BLOCK, new MultiblockFace(SLOT_2_OUTPUT_FLUID.side(), SLOT_2_OUTPUT_FLUID.posInMultiblock().above()));
 
-            this.outputHandlerLeft = new StoredCapability<>(new WrappingItemHandler(
+            this.outputHandlerLeft = new WrappingItemHandler(
                     inventory, false, true, new IntRange(2,3)
-            ));
+            );
 
-            this.outputHandlerRight = new StoredCapability<>(new WrappingItemHandler(
+            this.outputHandlerRight = new WrappingItemHandler(
                     inventory, false, true, new IntRange(5,6)
-            ));
+            );
 
             cachedRecipeLeft = CachedRecipe.cached(
                     RevFurnaceRecipe::findRecipe, getLevel, () -> inventory.getStackInSlot(0)
@@ -348,16 +337,16 @@ public class RevFurnaceLogic implements IMultiblockLogic<RevFurnaceLogic.State>,
                     ctx.getMarkDirtyRunnable()
             );
 
-            this.invCapLeft = new StoredCapability<>(new WrappingItemHandler(
+            this.invCapLeft = new WrappingItemHandler(
                     inventory, true, true, new IntRange(0,2)
-            ));
-
-            this.invCapRight = new StoredCapability<>(new WrappingItemHandler(
-                    inventory, true, true, new IntRange(3,5)
-            ));
-            this.fluidCap = new StoredCapability<>(
-                    new ArrayFluidHandler(new IFluidTank[]{tank}, true, false, ctx.getMarkDirtyRunnable())
             );
+
+            this.invCapRight = new WrappingItemHandler(
+                    inventory, true, true, new IntRange(3,5)
+            );
+            this.fluidCap =
+                    new ArrayFluidHandler(new IFluidTank[]{tank}, true, false, ctx.getMarkDirtyRunnable())
+            ;
         }
 
         public void addToTank(int amount)

@@ -20,13 +20,13 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.common.util.Lazy;
-import net.neoforged.neoforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 import java.util.List;
 
 public class PelletizerRecipe extends MultiblockRecipe
 {
-	public static RegistryObject<IERecipeSerializer<PelletizerRecipe>> SERIALIZER;
+	public static DeferredHolder<?, IERecipeSerializer<PelletizerRecipe>> SERIALIZER;
 	public static final CachedRecipeList<PelletizerRecipe> RECIPES = new CachedRecipeList<>(IGRecipeTypes.PELLETIZER);
 	public final Lazy<ItemStack> itemOutput;
 	public final IngredientWithSize itemIn;

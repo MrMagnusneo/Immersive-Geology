@@ -21,7 +21,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.neoforged.neoforge.registries.ForgeRegistries;
-import net.neoforged.neoforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 
 public class GeothermalBiomeRecipe extends IESerializableRecipe
 {
-	public static RegistryObject<IERecipeSerializer<GeothermalBiomeRecipe>> SERIALIZER;
+	public static DeferredHolder<?, IERecipeSerializer<GeothermalBiomeRecipe>> SERIALIZER;
 	public static final CachedRecipeList<GeothermalBiomeRecipe> RECIPES;
 	public final FastEither<Biome, List<TagKey<Biome>>> biomes;
 	private final int min_heat;

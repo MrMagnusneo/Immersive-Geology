@@ -24,7 +24,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.common.util.Lazy;
-import net.neoforged.neoforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,7 +33,7 @@ import java.util.List;
 
 public class GeothermalConversionRecipe extends IESerializableRecipe implements IJEIRecipe
 {
-	public static RegistryObject<IERecipeSerializer<GeothermalConversionRecipe>> SERIALIZER;
+	public static DeferredHolder<?, IERecipeSerializer<GeothermalConversionRecipe>> SERIALIZER;
 	public static final CachedRecipeList<GeothermalConversionRecipe> RECIPES = new CachedRecipeList<>(IGRecipeTypes.GEOTHERMAL_EXCHANGER_CONVERTION);
 
 	private static HashSet<Block> usedBlocks = new HashSet<>();

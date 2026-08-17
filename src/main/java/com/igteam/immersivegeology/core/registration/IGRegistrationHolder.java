@@ -85,7 +85,7 @@ import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.ForgeRegistries;
 import net.neoforged.neoforge.registries.ForgeRegistries.Keys;
-import net.neoforged.neoforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
@@ -105,11 +105,11 @@ public class IGRegistrationHolder {
     public static final DeferredRegister<CreativeModeTab> TAB_REGISTER = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, IGLib.MODID);
     public static final DeferredRegister<Codec<? extends IGlobalLootModifier>> LOOT_SERIALIZER_REGISTER = DeferredRegister.create(Keys.GLOBAL_LOOT_MODIFIER_SERIALIZERS, IGLib.MODID);
 
-    private static final LinkedHashMap<String, RegistryObject<Block>> BLOCK_REGISTRY_MAP = new LinkedHashMap<>();
-    private static final LinkedHashMap<String, RegistryObject<BlockEntityType<?>>> TE_REGISTRY_MAP = new LinkedHashMap<>();
-    private static final LinkedHashMap<String, RegistryObject<Item>> ITEM_REGISTRY_MAP = new LinkedHashMap<>();
-    private static final LinkedHashMap<String, RegistryObject<Fluid>> FLUID_REGISTRY_MAP = new LinkedHashMap<>();
-    private static final LinkedHashMap<String, RegistryObject<FluidType>> FLUID_TYPE_REGISTRY_MAP = new LinkedHashMap<>();
+    private static final LinkedHashMap<String, DeferredHolder<?, Block>> BLOCK_REGISTRY_MAP = new LinkedHashMap<>();
+    private static final LinkedHashMap<String, DeferredHolder<?, BlockEntityType<?>>> TE_REGISTRY_MAP = new LinkedHashMap<>();
+    private static final LinkedHashMap<String, DeferredHolder<?, Item>> ITEM_REGISTRY_MAP = new LinkedHashMap<>();
+    private static final LinkedHashMap<String, DeferredHolder<?, Fluid>> FLUID_REGISTRY_MAP = new LinkedHashMap<>();
+    private static final LinkedHashMap<String, DeferredHolder<?, FluidType>> FLUID_TYPE_REGISTRY_MAP = new LinkedHashMap<>();
 
     public static LinkedHashMap<String, MultiblockRegistration<?>> MB_REGISTRY_MAP = new LinkedHashMap<>();
     public static final LinkedHashMap<String, TemplateMultiblock> MB_TEMPLATE_MAP = new LinkedHashMap<>();
@@ -142,7 +142,7 @@ public class IGRegistrationHolder {
     public static Function<String, TemplateMultiblock> getMBTemplate = MB_TEMPLATE_MAP::get;
     public static Function<String, Fluid> getFluid = (key) -> FLUID_REGISTRY_MAP.get(key).get();
 
-    public static final RegistryObject<CreativeModeTab> IG_BASE_TAB = TAB_REGISTER.register("main", () -> new CreativeModeTab.Builder(CreativeModeTab.Row.TOP, 0)
+    public static final DeferredHolder<?, CreativeModeTab> IG_BASE_TAB = TAB_REGISTER.register("main", () -> new CreativeModeTab.Builder(CreativeModeTab.Row.TOP, 0)
             .icon(() -> IGRegistrationHolder.getItem.apply("prospector_kit").getDefaultInstance())
             .title(Component.translatable("itemGroup.immersivegeology"))
             .displayItems(IGRegistrationHolder::fillIGTab)
@@ -249,8 +249,8 @@ public class IGRegistrationHolder {
         );
     }
 
-    public static RegistryObject<BlockEntityType<IGEnergyPipeEntity>> ENERGY_PIPE;
-    public static RegistryObject<BlockEntityType<IGHydroVentEntity>> IG_HYDROVENT;
+    public static DeferredHolder<?, BlockEntityType<IGEnergyPipeEntity>> ENERGY_PIPE;
+    public static DeferredHolder<?, BlockEntityType<IGHydroVentEntity>> IG_HYDROVENT;
     public static void initialize()
     {
 
@@ -302,10 +302,10 @@ public class IGRegistrationHolder {
                         case HYDROVENT ->
                         {
                             String registryKey = blockCategory.getRegistryKey(material);
-                            RegistryObject<BlockEntityType<IGHydroVentEntity>> TYPE = TE_REGISTER.register(material.getName() + "_vent_entity_type", makeType(IGHydroVentEntity::new, ()-> getBlock.apply(registryKey)));
+                            DeferredHolder<?, BlockEntityType<IGHydroVentEntity>> TYPE = TE_REGISTER.register(material.getName() + "_vent_entity_type", makeType(IGHydroVentEntity::new, ()-> getBlock.apply(registryKey)));
 
                             @SuppressWarnings("unchecked")
-                            RegistryObject<BlockEntityType<?>> typeCast = (RegistryObject<BlockEntityType<?>>)(Object) TYPE;
+                            DeferredHolder<?, BlockEntityType<?>> typeCast = (DeferredHolder<?, BlockEntityType<?>>)(Object) TYPE;
                             TE_REGISTRY_MAP.put(registryKey, typeCast);
 
                             registerBlock(registryKey, () -> new IGHydroVent(blockCategory, material, TYPE));
@@ -315,11 +315,11 @@ public class IGRegistrationHolder {
                         {
                             String registryKey = blockCategory.getRegistryKey(material);
 
-                            RegistryObject<BlockEntityType<IGCrateEntity>> TYPE = TE_REGISTER.register(material.getName() + "_crate_entity_type", makeType(IGCrateEntity::new, ()-> getBlock.apply(registryKey)));
+                            DeferredHolder<?, BlockEntityType<IGCrateEntity>> TYPE = TE_REGISTER.register(material.getName() + "_crate_entity_type", makeType(IGCrateEntity::new, ()-> getBlock.apply(registryKey)));
                             // Because RegistryObject is invariant in its type parameter we need to do this hack
                             // basically we just need to explicitly tell the compiler that yes this is what you're looking for.
                             @SuppressWarnings("unchecked")
-                            RegistryObject<BlockEntityType<?>> typeCast = (RegistryObject<BlockEntityType<?>>)(Object) TYPE;
+                            DeferredHolder<?, BlockEntityType<?>> typeCast = (DeferredHolder<?, BlockEntityType<?>>)(Object) TYPE;
                             TE_REGISTRY_MAP.put(registryKey, typeCast);
 
                             registerBlock(registryKey, () -> new IGCrateEntityType(blockCategory, material, TYPE));
@@ -520,15 +520,15 @@ public class IGRegistrationHolder {
     }
 
     public static Supplier<List<? extends Item>> supplyDeferredItems(){
-        return () -> ITEM_REGISTER.getEntries().stream().map(RegistryObject::get).toList();
+        return () -> ITEM_REGISTER.getEntries().stream().map(DeferredHolder::get).toList();
     }
 
     public static Supplier<List<? extends Block>> supplyDeferredBlocks(){
-        return () -> BLOCK_REGISTER.getEntries().stream().map(RegistryObject::get).toList();
+        return () -> BLOCK_REGISTER.getEntries().stream().map(DeferredHolder::get).toList();
     }
 
     public static Supplier<List<? extends Fluid>> supplyDeferredFluids(){
-        return () -> FLUID_REGISTER.getEntries().stream().map(RegistryObject::get).toList();
+        return () -> FLUID_REGISTER.getEntries().stream().map(DeferredHolder::get).toList();
     }
 
     public static void registerMultiblockTemplate(String registry_name, TemplateMultiblock template)
@@ -580,7 +580,7 @@ public class IGRegistrationHolder {
 
     public static List<Item> getIGItems()
     {
-        return ITEM_REGISTER.getEntries().stream().map(RegistryObject::get).collect(Collectors.toList());
+        return ITEM_REGISTER.getEntries().stream().map(DeferredHolder::get).collect(Collectors.toList());
     }
 
     public static <S extends IMultiblockState> MultiblockRegistration<S> registerMetalMultiblock(String name, IMultiblockLogic<S> logic, Supplier<TemplateMultiblock> structure){
@@ -612,16 +612,16 @@ public class IGRegistrationHolder {
         return builder.build();
     }
 
-    public static LinkedHashMap<String, RegistryObject<Item>> getItemRegistryMap() {
+    public static LinkedHashMap<String, DeferredHolder<?, Item>> getItemRegistryMap() {
         return ITEM_REGISTRY_MAP;
     }
 
-    public static LinkedHashMap<String, RegistryObject<Fluid>> getFluidRegistryMap()
+    public static LinkedHashMap<String, DeferredHolder<?, Fluid>> getFluidRegistryMap()
     {
         return FLUID_REGISTRY_MAP;
     }
 
-    public static HashMap<String, RegistryObject<Block>> getBlockRegistryMap() {
+    public static HashMap<String, DeferredHolder<?, Block>> getBlockRegistryMap() {
         return BLOCK_REGISTRY_MAP;
     }
 
@@ -633,7 +633,7 @@ public class IGRegistrationHolder {
         IGLib.IG_LOGGER.info("- Complete");
     }
 
-    public static RegistryObject<Codec<? extends IGlobalLootModifier>> IG_LOOT_MODIFICATION;
+    public static DeferredHolder<?, Codec<? extends IGlobalLootModifier>> IG_LOOT_MODIFICATION;
 
     public static void initializeLootModifications()
     {

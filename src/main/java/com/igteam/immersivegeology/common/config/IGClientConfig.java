@@ -14,8 +14,8 @@ import net.neoforged.neoforge.common.ForgeConfigSpec;
 import net.neoforged.neoforge.common.ForgeConfigSpec.BooleanValue;
 import net.neoforged.neoforge.common.ForgeConfigSpec.Builder;
 import net.neoforged.neoforge.common.ForgeConfigSpec.DoubleValue;
-import net.neoforged.fml.common.Mod.EventBusSubscriber;
-import net.neoforged.fml.common.Mod.EventBusSubscriber.Bus;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.EventBusSubscriber.Bus;
 
 @EventBusSubscriber(value = Dist.CLIENT, modid = IGLib.MODID, bus = Bus.MOD)
 public class IGClientConfig

@@ -8,6 +8,8 @@
 
 package com.igteam.immersivegeology.common.block.multiblocks.logic;
 
+import blusunrize.immersiveengineering.api.multiblocks.blocks.component.IMultiblockComponent;
+
 import blusunrize.immersiveengineering.api.multiblocks.blocks.component.IClientTickableComponent;
 import blusunrize.immersiveengineering.api.multiblocks.blocks.component.IServerTickableComponent;
 import blusunrize.immersiveengineering.api.multiblocks.blocks.component.RedstoneControl;
@@ -42,9 +44,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.neoforge.common.capabilities.Capability;
-import net.neoforged.neoforge.common.capabilities.ForgeCapabilities;
-import net.neoforged.neoforge.common.util.LazyOptional;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
@@ -177,21 +177,11 @@ public class GravitySeparatorLogic implements ISkinnableMultiblockLogic<GravityS
     }
 
     @Override
-    public <T> LazyOptional<T> getCapability(IMultiblockContext<State> ctx, CapabilityPosition position, Capability<T> cap)
+    public void registerCapabilities(IMultiblockComponent.CapabilityRegistrar<State> register)
     {
-        final State state = ctx.getState();
-        if(cap == ForgeCapabilities.ITEM_HANDLER)
-        {
-            return state.insertionHandler.cast(ctx);
-        }
-        if(cap == ForgeCapabilities.FLUID_HANDLER)
-        {
-            if(FLUID_INPUT_CAP.equals(position))
-            {
-                return state.fInputCap.cast(ctx);
-            }
-        }
-        return LazyOptional.empty();
+        register.register(Capabilities.ItemHandler.BLOCK, (state, position) -> state.insertionHandler);
+        register.register(Capabilities.FluidHandler.BLOCK, (state, position) ->
+                FLUID_INPUT_CAP.equals(position) ? state.fInputCap : null);
     }
 
     @Nullable
@@ -213,10 +203,10 @@ public class GravitySeparatorLogic implements ISkinnableMultiblockLogic<GravityS
         public final RedstoneControl.RSState rsState = RedstoneControl.RSState.disabledByDefault();
         public final ArrayList<SeparatorProcess> separatorProcessesQueue = new ArrayList<>();
         private int insert_cooldown = 10;
-        private final StoredCapability<IItemHandler> insertionHandler;
+        private final IItemHandler insertionHandler;
         private final DroppingMultiblockOutput output;
         private final DroppingMultiblockOutput secondary;
-        private final StoredCapability<IFluidHandler> fInputCap;
+        private final IFluidHandler fInputCap;
         public final FluidTank tank = new FluidTank(TANK_VOLUME);
         private boolean renderAsActive;
 
@@ -230,9 +220,9 @@ public class GravitySeparatorLogic implements ISkinnableMultiblockLogic<GravityS
             };
             this.output = new DroppingMultiblockOutput(OUTPUT_POS, ctx);
             this.secondary = new DroppingMultiblockOutput(SECONDARY_OUTPUT_POS, ctx);
-            this.fInputCap = new StoredCapability<>(new ArrayFluidHandler(tank, true, true, changedAndSync));
+            this.fInputCap = new ArrayFluidHandler(tank, true, true, changedAndSync);
 
-            this.insertionHandler = new StoredCapability<>(new InsertOnlyInventory()
+            this.insertionHandler = new InsertOnlyInventory()
             {
                 @Override
                 protected ItemStack insert(ItemStack toInsert, boolean simulate)
@@ -244,7 +234,7 @@ public class GravitySeparatorLogic implements ISkinnableMultiblockLogic<GravityS
                     }
                     return toInsert;
                 }
-            });
+            };
         }
 
         public boolean shouldRenderActive()

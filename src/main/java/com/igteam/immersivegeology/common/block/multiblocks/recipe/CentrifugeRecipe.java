@@ -21,11 +21,11 @@ import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.common.util.Lazy;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 public class CentrifugeRecipe extends MultiblockRecipe
 {
-	public static RegistryObject<IERecipeSerializer<CentrifugeRecipe>> SERIALIZER;
+	public static DeferredHolder<?, IERecipeSerializer<CentrifugeRecipe>> SERIALIZER;
 	public static final CachedRecipeList<CentrifugeRecipe> RECIPES = new CachedRecipeList<>(IGRecipeTypes.CENTRIFUGE);
 	public final Lazy<ItemStack> itemOutput;
 	public final FluidTagInput fluidIn;

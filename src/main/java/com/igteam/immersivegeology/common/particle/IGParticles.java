@@ -14,13 +14,13 @@ import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.Registries;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
-import net.neoforged.neoforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 public class IGParticles
 {
 	public static final DeferredRegister<ParticleType<?>> PARTICLES = DeferredRegister.create(Registries.PARTICLE_TYPE, IGLib.MODID);
 
-	public static final RegistryObject<SimpleParticleType> FLOWING_WATER = PARTICLES.register("flowing_water",
+	public static final DeferredHolder<?, SimpleParticleType> FLOWING_WATER = PARTICLES.register("flowing_water",
 			() -> new SimpleParticleType(true));
 
 	public static void register(IEventBus eventBus) {

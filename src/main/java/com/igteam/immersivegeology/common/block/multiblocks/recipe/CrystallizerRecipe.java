@@ -21,11 +21,11 @@ import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.common.util.Lazy;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 public class CrystallizerRecipe extends MultiblockRecipe
 {
-	public static RegistryObject<IERecipeSerializer<CrystallizerRecipe>> SERIALIZER;
+	public static DeferredHolder<?, IERecipeSerializer<CrystallizerRecipe>> SERIALIZER;
 	public static final CachedRecipeList<CrystallizerRecipe> RECIPES = new CachedRecipeList<>(IGRecipeTypes.CRYSTALLIZER);
 	public final Lazy<ItemStack> itemOutput;
 	public final Lazy<FluidStack> fluidOutput;

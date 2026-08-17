@@ -21,14 +21,14 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.common.util.Lazy;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Set;
 
 public class CoreDrillRecipe extends MultiblockRecipe
 {
-	public static RegistryObject<IERecipeSerializer<CoreDrillRecipe>> SERIALIZER;
+	public static DeferredHolder<?, IERecipeSerializer<CoreDrillRecipe>> SERIALIZER;
 	public static final CachedRecipeList<CoreDrillRecipe> RECIPES = new CachedRecipeList<>(IGRecipeTypes.COREDRILL);
 
 	FluidTagInput input;

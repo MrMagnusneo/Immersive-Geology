@@ -39,21 +39,21 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.ForgeRegistries;
-import net.neoforged.neoforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 public class IGWorldGen
 {
-	public static final RegistryObject<IGOreFeature> IG_CONFIG_ORE;
+	public static final DeferredHolder<?, IGOreFeature> IG_CONFIG_ORE;
 	private static final DeferredRegister<Feature<?>> FEATURE_REGISTER;
 	private static final DeferredRegister<Feature<?>> TFC_FEATURE_REGISTER; // Used for inbuilt compat to prevent crashing when TFC not loaded.
 	private static final DeferredRegister<PlacementModifierType<?>> PLACEMENT_REGISTER;
 	private static final DeferredRegister<HeightProviderType<?>> HEIGHT_REGISTER;
 
-	public static RegistryObject<HeightProviderType<IGHeightProvider>> IG_HEIGHT_PROVIDER;
-	public static RegistryObject<PlacementModifierType<IGCountPlacement>> IG_COUNT_PLACEMENT;
-	public static RegistryObject<PlacementModifierType<IGSparsePlacement>> IG_SPARSE_PLACEMENT;
-	public static RegistryObject<PlacementModifierType<IGDefaultPlacement>> IG_DEFAULT_PLACEMENT;
-	public static final RegistryObject<IGEvaporateFeature> EVAPORITE_FEATURE;
+	public static DeferredHolder<?, HeightProviderType<IGHeightProvider>> IG_HEIGHT_PROVIDER;
+	public static DeferredHolder<?, PlacementModifierType<IGCountPlacement>> IG_COUNT_PLACEMENT;
+	public static DeferredHolder<?, PlacementModifierType<IGSparsePlacement>> IG_SPARSE_PLACEMENT;
+	public static DeferredHolder<?, PlacementModifierType<IGDefaultPlacement>> IG_DEFAULT_PLACEMENT;
+	public static final DeferredHolder<?, IGEvaporateFeature> EVAPORITE_FEATURE;
 
 	public static final TagKey<Biome> SALT_FLATS_BIOMES = TagKey.create(
 			Registries.BIOME,
@@ -61,7 +61,7 @@ public class IGWorldGen
 	);
 
 	public static final DeferredRegister<Codec<? extends BiomeModifier>> BIOME_MODIFIER_SERIALIZERS;
-	public static final RegistryObject<Codec<IGOreRemovalModifier>> ORE_MODIFIER_CODEC;
+	public static final DeferredHolder<?, Codec<IGOreRemovalModifier>> ORE_MODIFIER_CODEC;
 
 	public static void init()
 	{

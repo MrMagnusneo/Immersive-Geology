@@ -25,13 +25,13 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.neoforged.neoforge.common.util.Lazy;
-import net.neoforged.neoforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import org.jetbrains.annotations.NotNull;
 
 public class IGGeoRecipe extends IESerializableRecipe implements IJEIRecipe
 {
 	public final GeologyMaterial material;
-	public static RegistryObject<IERecipeSerializer<IGGeoRecipe>> SERIALIZER;
+	public static DeferredHolder<?, IERecipeSerializer<IGGeoRecipe>> SERIALIZER;
 	public static final CachedRecipeList<IGGeoRecipe> RECIPES = new CachedRecipeList<>(IGRecipeTypes.GEOHINT);
 	protected <T extends Recipe<?>> IGGeoRecipe(ResourceLocation id, GeologyMaterial material)
 	{

@@ -19,7 +19,7 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.neoforged.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.neoforged.neoforge.registries.DeferredRegister;
-import net.neoforged.neoforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 public class IGRecipeTypes
 {
@@ -51,7 +51,7 @@ public class IGRecipeTypes
 	private static <T extends Recipe<?>>
 	TypeWithClass<T> register(String name, Class<T> type)
 	{
-		RegistryObject<RecipeType<T>> regObj = REGISTER.register(name, () -> new RecipeType<>()
+		DeferredHolder<?, RecipeType<T>> regObj = REGISTER.register(name, () -> new RecipeType<>()
 		{
 		});
 		return new TypeWithClass<>(regObj, type);

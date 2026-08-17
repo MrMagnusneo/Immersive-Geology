@@ -18,14 +18,14 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.common.util.Lazy;
-import net.neoforged.neoforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 import javax.annotation.Nullable;
 
 public class RevFurnaceRecipe extends MultiblockRecipe
 {
 
-	public static RegistryObject<IERecipeSerializer<RevFurnaceRecipe>> SERIALIZER;
+	public static DeferredHolder<?, IERecipeSerializer<RevFurnaceRecipe>> SERIALIZER;
 	public static final CachedRecipeList<RevFurnaceRecipe> RECIPES = new CachedRecipeList<>(IGRecipeTypes.REVFURNACE);
 	public int waste, time;
 	public IngredientWithSize input;

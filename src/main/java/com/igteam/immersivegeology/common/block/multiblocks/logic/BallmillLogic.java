@@ -8,6 +8,8 @@
 
 package com.igteam.immersivegeology.common.block.multiblocks.logic;
 
+import blusunrize.immersiveengineering.api.multiblocks.blocks.component.IMultiblockComponent;
+
 import blusunrize.immersiveengineering.api.crafting.MultiblockRecipe;
 import blusunrize.immersiveengineering.api.energy.AveragingEnergyStorage;
 import blusunrize.immersiveengineering.api.multiblocks.blocks.component.IClientTickableComponent;
@@ -43,9 +45,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.neoforge.common.capabilities.Capability;
-import net.neoforged.neoforge.common.capabilities.ForgeCapabilities;
-import net.neoforged.neoforge.common.util.LazyOptional;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
@@ -104,20 +104,12 @@ public class BallmillLogic implements IMultiblockLogic<BallmillLogic.State>, ISe
     }
 
     @Override
-    public <T> LazyOptional<T> getCapability(IMultiblockContext<State> ctx, CapabilityPosition position, Capability<T> cap)
+    public void registerCapabilities(IMultiblockComponent.CapabilityRegistrar<State> register)
     {
-        final BallmillLogic.State state = ctx.getState();
-        if(cap == ForgeCapabilities.ENERGY)
-        {
-            if((position.side()==null || ENERGY_INPUTS.contains(position))) return state.energyCap.cast(ctx);
-        }
-
-        if(cap == ForgeCapabilities.ITEM_HANDLER && ITEM_INPUT_CAP.equals(position))
-        {
-            return state.insertionHandler.cast(ctx);
-        }
-
-        return LazyOptional.empty();
+        register.register(Capabilities.EnergyStorage.BLOCK, (state, position) ->
+                position.side()==null || ENERGY_INPUTS.contains(position) ? state.energyCap : null);
+        register.register(Capabilities.ItemHandler.BLOCK, (state, position) ->
+                ITEM_INPUT_CAP.equals(position) ? state.insertionHandler : null);
     }
 
     @Override
@@ -131,15 +123,15 @@ public class BallmillLogic implements IMultiblockLogic<BallmillLogic.State>, ISe
         public final RedstoneControl.RSState rsState = RedstoneControl.RSState.enabledByDefault();
 
         private final DroppingMultiblockOutput output;
-        private final StoredCapability<IItemHandler> insertionHandler;
+        private final IItemHandler insertionHandler;
         private float rotation;
         private boolean renderAsActive;
-        private final StoredCapability<IEnergyStorage> energyCap;
+        private final IEnergyStorage energyCap;
         private final MultiblockProcessor<BallmillRecipe, ProcessContextInWorld<BallmillRecipe>> processor;
         Supplier<@Nullable Level> levelGetter;
         public State(IInitialMultiblockContext<State> ctx){
             this.rotation = 0;
-            this.energyCap = new StoredCapability<>(this.energy);
+            this.energyCap = this.energy;
             this.output = new DroppingMultiblockOutput(OUTPUT_POS, ctx);
             this.processor = new MultiblockProcessor<>(64, 0, 8, ctx.getMarkDirtyRunnable(), BallmillRecipe.RECIPES::getById);
             final Supplier<@Nullable Level> levelGetter = ctx.levelSupplier();
@@ -150,7 +142,7 @@ public class BallmillLogic implements IMultiblockLogic<BallmillLogic.State>, ISe
                 sync.run();
             };
 
-            this.insertionHandler = new StoredCapability<>(new InsertOnlyInventory()
+            this.insertionHandler = new InsertOnlyInventory()
             {
                 @Override
                 protected ItemStack insert(ItemStack toInsert, boolean simulate)
@@ -169,7 +161,7 @@ public class BallmillLogic implements IMultiblockLogic<BallmillLogic.State>, ISe
                         return stack;
                     }
                 }
-            });
+            };
         }
 
 
@@ -221,12 +213,6 @@ public class BallmillLogic implements IMultiblockLogic<BallmillLogic.State>, ISe
             return rotation;
         }
 
-        @Override
-        public void invalidate(@NotNull IMultiblockContext<?> context)
-        {
-            this.energyCap.get(context).invalidate();
-            this.insertionHandler.get(context).invalidate();
-        }
     }
 
 }
