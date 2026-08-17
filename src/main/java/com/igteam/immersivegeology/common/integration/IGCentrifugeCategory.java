@@ -13,7 +13,7 @@ import com.igteam.immersivegeology.common.block.multiblocks.recipe.CentrifugeRec
 import com.igteam.immersivegeology.common.block.multiblocks.recipe.CrystallizerRecipe;
 import com.igteam.immersivegeology.core.lib.IGLib;
 import com.igteam.immersivegeology.core.registration.IGMultiblockProvider;
-import mezz.jei.api.forge.ForgeTypes;
+import mezz.jei.api.neoforge.NeoForgeTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawableStatic;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
@@ -24,7 +24,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.fluids.FluidType;
+import net.neoforged.neoforge.fluids.FluidType;
 
 public class IGCentrifugeCategory extends IGRecipeCategory<CentrifugeRecipe>
 {
@@ -43,7 +43,7 @@ public class IGCentrifugeCategory extends IGRecipeCategory<CentrifugeRecipe>
 		int tankSize = Math.max(2*FluidType.BUCKET_VOLUME,  Math.max(recipe.fluidIn.getAmount(),recipe.fluidIn.getAmount()));
 		builder.addSlot(RecipeIngredientRole.INPUT, 43, 9)
 				.setFluidRenderer(tankSize, false, 15, 51)
-				.addIngredients(ForgeTypes.FLUID_STACK, recipe.fluidIn.getMatchingFluidStacks())
+				.addIngredients(NeoForgeTypes.FLUID_STACK, recipe.fluidIn.getMatchingFluidStacks())
 				.addTooltipCallback(JEIHelper.fluidTooltipCallback);
 
 		if(!recipe.primaryFluidOutput.get().isEmpty())

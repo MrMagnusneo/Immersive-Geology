@@ -19,9 +19,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraftforge.common.util.Lazy;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.neoforge.common.util.Lazy;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.registries.RegistryObject;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Set;

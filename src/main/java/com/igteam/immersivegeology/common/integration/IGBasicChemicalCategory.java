@@ -14,14 +14,14 @@ import com.igteam.immersivegeology.common.block.multiblocks.recipe.BasicChemical
 import com.igteam.immersivegeology.common.block.multiblocks.recipe.ChemicalRecipe;
 import com.igteam.immersivegeology.core.lib.IGLib;
 import com.igteam.immersivegeology.core.registration.IGMultiblockProvider;
-import mezz.jei.api.forge.ForgeTypes;
+import mezz.jei.api.neoforge.NeoForgeTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawableStatic;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.fluids.FluidType;
+import net.neoforged.neoforge.fluids.FluidType;
 
 import java.util.List;
 
@@ -49,7 +49,7 @@ public class IGBasicChemicalCategory extends IGRecipeCategory<BasicChemicalRecip
 		{
 			builder.addSlot(RecipeIngredientRole.INPUT, tank_pos_list.get(i), tank_pos_list.get(i+1))
 					.setFluidRenderer(FluidType.BUCKET_VOLUME * 2, false, 10, 28)
-					.addIngredients(ForgeTypes.FLUID_STACK, fluid_tag.getMatchingFluidStacks())
+					.addIngredients(NeoForgeTypes.FLUID_STACK, fluid_tag.getMatchingFluidStacks())
 					.addTooltipCallback(JEIHelper.fluidTooltipCallback);
 			i = i + 2;
 		}

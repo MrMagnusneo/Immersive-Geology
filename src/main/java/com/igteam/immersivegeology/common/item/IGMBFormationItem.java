@@ -46,7 +46,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate.StructureBlockInfo;
-import net.minecraftforge.common.Tags.Items;
+import net.neoforged.neoforge.common.Tags.Items;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

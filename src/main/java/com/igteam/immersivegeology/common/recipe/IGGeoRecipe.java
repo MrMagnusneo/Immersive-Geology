@@ -24,8 +24,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
-import net.minecraftforge.common.util.Lazy;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.neoforge.common.util.Lazy;
+import net.neoforged.neoforge.registries.RegistryObject;
 import org.jetbrains.annotations.NotNull;
 
 public class IGGeoRecipe extends IESerializableRecipe implements IJEIRecipe

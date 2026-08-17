@@ -27,7 +27,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.energy.IEnergyStorage;
 import org.jetbrains.annotations.Nullable;
 
 public class IGMetalDetectorEntity extends IEBaseBlockEntity implements IEServerTickableBE, IEClientTickableBE, IHasDummyBlocks, IPlayerInteraction, IModelOffsetProvider

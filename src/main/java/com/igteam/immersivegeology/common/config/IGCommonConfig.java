@@ -9,9 +9,9 @@
 package com.igteam.immersivegeology.common.config;
 
 import com.igteam.immersivegeology.core.lib.IGLib;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.fml.common.Mod.EventBusSubscriber;
+import net.neoforged.fml.common.Mod.EventBusSubscriber.Bus;
 
 @EventBusSubscriber(modid = IGLib.MODID, bus = Bus.MOD)
 public class IGCommonConfig

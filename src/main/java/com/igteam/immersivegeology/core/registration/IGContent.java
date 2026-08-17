@@ -51,7 +51,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.data.ForgeRecipeProvider;
+import net.neoforged.neoforge.common.data.ForgeRecipeProvider;
 import org.jetbrains.annotations.Nullable;
 
 import java.text.DecimalFormat;

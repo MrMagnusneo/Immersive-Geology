@@ -17,10 +17,10 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.levelgen.GenerationStep.Decoration;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
-import net.minecraftforge.common.ForgeConfigSpec.BooleanValue;
-import net.minecraftforge.common.world.BiomeGenerationSettingsBuilder;
-import net.minecraftforge.common.world.BiomeModifier;
-import net.minecraftforge.common.world.ModifiableBiomeInfo.BiomeInfo.Builder;
+import net.neoforged.neoforge.common.ForgeConfigSpec.BooleanValue;
+import net.neoforged.neoforge.common.world.BiomeGenerationSettingsBuilder;
+import net.neoforged.neoforge.common.world.BiomeModifier;
+import net.neoforged.neoforge.common.world.ModifiableBiomeInfo.BiomeInfo.Builder;
 
 import java.util.*;
 import java.util.List;

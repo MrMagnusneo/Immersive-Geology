@@ -21,8 +21,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraftforge.fml.InterModComms;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.fml.InterModComms;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 
 public class CommonProxy
 {

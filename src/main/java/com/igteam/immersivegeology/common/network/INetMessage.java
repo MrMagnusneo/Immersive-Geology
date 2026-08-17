@@ -1,8 +1,8 @@
 package com.igteam.immersivegeology.common.network;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
-import net.minecraftforge.network.NetworkEvent.Context;
+import net.neoforged.neoforge.network.NetworkEvent;
+import net.neoforged.neoforge.network.NetworkEvent.Context;
 
 import java.util.function.Supplier;
 

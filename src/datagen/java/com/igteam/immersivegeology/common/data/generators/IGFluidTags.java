@@ -24,10 +24,10 @@ import net.minecraft.data.tags.FluidTagsProvider;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraftforge.common.Tags;
-import net.minecraftforge.common.Tags.Fluids;
-import net.minecraftforge.common.data.ExistingFileHelper;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.neoforge.common.Tags;
+import net.neoforged.neoforge.common.Tags.Fluids;
+import net.neoforged.neoforge.common.data.ExistingFileHelper;
+import net.neoforged.neoforge.registries.RegistryObject;
 
 import java.util.concurrent.CompletableFuture;
 

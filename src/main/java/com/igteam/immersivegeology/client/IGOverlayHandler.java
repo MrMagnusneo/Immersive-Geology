@@ -35,11 +35,11 @@ import net.minecraft.world.level.saveddata.maps.MapDecoration.Type;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.minecraftforge.client.event.RenderGuiOverlayEvent;
-import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.TickEvent.RenderTickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.neoforge.client.event.RenderGuiOverlayEvent;
+import net.neoforged.neoforge.client.gui.overlay.VanillaGuiOverlay;
+import net.neoforged.neoforge.event.TickEvent;
+import net.neoforged.neoforge.event.TickEvent.RenderTickEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;

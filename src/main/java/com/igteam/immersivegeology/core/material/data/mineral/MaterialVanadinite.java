@@ -20,8 +20,8 @@ import com.igteam.immersivegeology.core.material.helper.material.recipe.helper.I
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraftforge.common.Tags.Biomes;
-import net.minecraftforge.fluids.FluidStack;
+import net.neoforged.neoforge.common.Tags.Biomes;
+import net.neoforged.neoforge.fluids.FluidStack;
 
 import java.util.LinkedHashSet;
 import java.util.List;

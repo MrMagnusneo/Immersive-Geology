@@ -31,17 +31,17 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.repository.BuiltInPackSource;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.InterModComms;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig.Type;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.loading.FMLLoader;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.InterModComms;
+import net.neoforged.fml.ModLoadingContext;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig.Type;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.fml.event.lifecycle.InterModEnqueueEvent;
+import net.neoforged.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.neoforged.fml.loading.FMLLoader;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -71,7 +71,7 @@ public class ImmersiveGeology {
         IGRecipeSerializers.RECIPE_SERIALIZERS.register(modEventBus);
 
         IGLib.IG_LOGGER.info("- World Event Handler Registration");
-        MinecraftForge.EVENT_BUS.register(new IGWorldSubscription());
+        NeoForge.EVENT_BUS.register(new IGWorldSubscription());
 
         IGLib.IG_LOGGER.info("- Client Configuration Registration");
         ModLoadingContext.get().registerConfig(Type.CLIENT, IGClientConfig.CONFIG_SPEC);
@@ -89,9 +89,9 @@ public class ImmersiveGeology {
 
     private void clientSetup(FMLClientSetupEvent event) {
         IGLib.IG_LOGGER.info("- Custom Creative Menu Registration");
-        MinecraftForge.EVENT_BUS.register(new CreativeMenuHandler());
+        NeoForge.EVENT_BUS.register(new CreativeMenuHandler());
         IGLib.IG_LOGGER.info("- Custom Multiblock Overlay Registration");
-        MinecraftForge.EVENT_BUS.register(new IGOverlayHandler());
+        NeoForge.EVENT_BUS.register(new IGOverlayHandler());
 
         IGLib.IG_LOGGER.info("- Client Render Handler Registration");
         IGClientRenderHandler.register();
@@ -203,7 +203,7 @@ public class ImmersiveGeology {
     {
         IGRegistrationHolder.buildMaterialRecipes();
         IGLib.IG_LOGGER.info("- Event Handler Registration");
-        MinecraftForge.EVENT_BUS.register(new IGCommonForgeEvents());
+        NeoForge.EVENT_BUS.register(new IGCommonForgeEvents());
 
         proxy.registerFluidBehaviour(event);
     }

@@ -16,7 +16,7 @@ import com.igteam.immersivegeology.core.lib.IGLib;
 import com.igteam.immersivegeology.core.material.data.enums.ChemicalEnum;
 import com.igteam.immersivegeology.core.material.helper.flags.BlockCategoryFlags;
 import com.igteam.immersivegeology.core.registration.IGMultiblockProvider;
-import mezz.jei.api.forge.ForgeTypes;
+import mezz.jei.api.neoforge.NeoForgeTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawableStatic;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
@@ -29,7 +29,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraftforge.fluids.FluidType;
+import net.neoforged.neoforge.fluids.FluidType;
 
 import java.util.Arrays;
 
@@ -58,7 +58,7 @@ public class IGReverberationCategory extends IGRecipeCategory<RevFurnaceRecipe>
 		int tankSize = Math.max(FluidType.BUCKET_VOLUME,  recipe.getWasteAmount());
 		builder.addSlot(RecipeIngredientRole.OUTPUT, 81, 27)
 				.setFluidRenderer(tankSize, false, 16, 47)
-				.addIngredients(ForgeTypes.FLUID_STACK, taggedFluid.getMatchingFluidStacks())
+				.addIngredients(NeoForgeTypes.FLUID_STACK, taggedFluid.getMatchingFluidStacks())
 				.addTooltipCallback(JEIHelper.fluidTooltipCallback);
 	}
 

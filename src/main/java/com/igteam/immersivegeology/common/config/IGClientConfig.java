@@ -9,13 +9,13 @@
 package com.igteam.immersivegeology.common.config;
 
 import com.igteam.immersivegeology.core.lib.IGLib;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.common.ForgeConfigSpec.BooleanValue;
-import net.minecraftforge.common.ForgeConfigSpec.Builder;
-import net.minecraftforge.common.ForgeConfigSpec.DoubleValue;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.neoforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ForgeConfigSpec.BooleanValue;
+import net.neoforged.neoforge.common.ForgeConfigSpec.Builder;
+import net.neoforged.neoforge.common.ForgeConfigSpec.DoubleValue;
+import net.neoforged.fml.common.Mod.EventBusSubscriber;
+import net.neoforged.fml.common.Mod.EventBusSubscriber.Bus;
 
 @EventBusSubscriber(value = Dist.CLIENT, modid = IGLib.MODID, bus = Bus.MOD)
 public class IGClientConfig

@@ -26,8 +26,8 @@ import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.*;
-import net.minecraftforge.client.event.ScreenEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.neoforge.client.event.ScreenEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;

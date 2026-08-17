@@ -32,7 +32,7 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
-import net.minecraftforge.server.command.EnumArgument;
+import net.neoforged.neoforge.server.command.EnumArgument;
 import org.slf4j.Logger;
 
 import java.util.Arrays;

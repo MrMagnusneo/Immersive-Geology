@@ -29,9 +29,9 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.fml.LogicalSide;
-import net.minecraftforge.network.NetworkEvent;
-import net.minecraftforge.network.NetworkEvent.Context;
+import net.neoforged.fml.LogicalSide;
+import net.neoforged.neoforge.network.NetworkEvent;
+import net.neoforged.neoforge.network.NetworkEvent.Context;
 
 import java.util.Objects;
 import java.util.function.Supplier;
