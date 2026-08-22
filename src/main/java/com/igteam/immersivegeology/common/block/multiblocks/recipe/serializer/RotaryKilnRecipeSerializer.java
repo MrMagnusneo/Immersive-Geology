@@ -34,7 +34,7 @@ public class RotaryKilnRecipeSerializer extends LegacyIERecipeSerializer<RotaryK
 	public RotaryKilnRecipe readFromJson(ResourceLocation resourceLocation, JsonObject json, IContext iContext)
 	{
 		Lazy<ItemStack> output = readOutput(json.get("result"));
-		IngredientWithSize input = IngredientWithSize.deserialize(GsonHelper.getAsJsonObject(json, "input"));
+		IngredientWithSize input = IngredientWithSize.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json.get("input")).getOrThrow();
 		int time = GsonHelper.getAsInt(json, "time");
 		int heat = GsonHelper.getAsInt(json, "heat");
 		return new RotaryKilnRecipe(resourceLocation, input, output, time, heat);
@@ -44,7 +44,7 @@ public class RotaryKilnRecipeSerializer extends LegacyIERecipeSerializer<RotaryK
 	public @Nullable RotaryKilnRecipe fromNetwork(ResourceLocation resourceLocation, FriendlyByteBuf buffer)
 	{
 		Lazy<ItemStack> output = readLazyStack(buffer);
-		IngredientWithSize input = IngredientWithSize.read(buffer);
+		IngredientWithSize input = IngredientWithSize.STREAM_CODEC.decode((net.minecraft.network.RegistryFriendlyByteBuf)buffer);
 		int time = buffer.readInt();
 		int heat = buffer.readInt();
 		return new RotaryKilnRecipe(resourceLocation, input, output, time, heat);
@@ -54,7 +54,7 @@ public class RotaryKilnRecipeSerializer extends LegacyIERecipeSerializer<RotaryK
 	public void toNetwork(FriendlyByteBuf buffer, RotaryKilnRecipe recipe)
 	{
 		writeLazyStack(buffer, recipe.itemOutput);
-		recipe.itemIn.write(buffer);
+		IngredientWithSize.STREAM_CODEC.encode((net.minecraft.network.RegistryFriendlyByteBuf)buffer, recipe.itemIn);
 		buffer.writeInt(recipe.getTotalProcessTime());
 		buffer.writeInt(recipe.getHeatRequired());
 	}

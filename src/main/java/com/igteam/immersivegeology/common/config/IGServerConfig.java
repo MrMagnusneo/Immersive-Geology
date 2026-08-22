@@ -9,7 +9,7 @@
 package com.igteam.immersivegeology.common.config;
 
 import blusunrize.immersiveengineering.api.multiblocks.TemplateMultiblock;
-import com.electronwill.nightconfig.core.Config;
+import com.electronwill.nightconfig.core.UnmodifiableConfig;
 import com.google.common.base.Preconditions;
 import com.igteam.immersivegeology.common.block.helper.IGConfigurableMachine;
 import com.igteam.immersivegeology.common.world.IWorldGenConfig;
@@ -53,9 +53,9 @@ public class IGServerConfig
 		CONFIG_SPEC = builder.build();
 	}
 
-	private static Config rawConfig;
+	private static UnmodifiableConfig rawConfig;
 
-	public static Config getRawConfig()
+	public static UnmodifiableConfig getRawConfig()
 	{
 		return Preconditions.checkNotNull(rawConfig);
 	}
@@ -65,7 +65,7 @@ public class IGServerConfig
 	{
 		if(CONFIG_SPEC==ev.getConfig().getSpec())
 		{
-			rawConfig = ev.getConfig().getConfigData();
+			rawConfig = CONFIG_SPEC.getValues();
 		}
 	}
 
@@ -104,7 +104,7 @@ public class IGServerConfig
 			builder.comment("Specify biomes where ore removal should be disabled. Useful for preserving ore generation in specific areas without disabling the system entirely.");
 			this.biome_blacklist = builder.comment("List of biome tags (e.g., 'minecraft:is_overworld', 'forge:is_sandy', 'forge:is_dry/overworld', 'minecraft:spawns_warm_variant_frogs', or 'minecraft:has_structure/mineshaft_mesa') where ore removal will be skipped. Applies to all ore types defined above.").defineListAllowEmpty("biome_blacklist",
 					List.of(),
-					obj -> obj instanceof String && ResourceLocation.isValidResourceLocation((String) obj)
+					obj -> obj instanceof String value && ResourceLocation.tryParse(value) != null
 			);
 			builder.pop();
 		}
@@ -281,7 +281,7 @@ public class IGServerConfig
 
 				this.dimension_whitelist = builder.comment("A List of dimensions that this ore can generate in.").defineListAllowEmpty("dimension_whitelist",
 						mineral.getDefaultDimensions(),
-						obj -> obj instanceof String && ResourceLocation.isValidResourceLocation((String) obj)
+						obj -> obj instanceof String value && ResourceLocation.tryParse(value) != null
 				);
 
 				builder.pop();

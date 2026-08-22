@@ -31,7 +31,7 @@ public class MessageSCRFail implements INetMessage
 	public static final CustomPacketPayload.Type<MessageSCRFail> TYPE =
 			new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "scr_fail"));
 	public static final StreamCodec<FriendlyByteBuf, MessageSCRFail> STREAM_CODEC =
-			StreamCodec.of(MessageSCRFail::toBytes, MessageSCRFail::new);
+			StreamCodec.ofMember(MessageSCRFail::toBytes, MessageSCRFail::new);
 
 	private final BlockPos pos;
 	private final float damage;

@@ -180,11 +180,11 @@ public class ChemicalReactorLogic implements IMultiblockLogic<ChemicalReactorLog
 		IMultiblockLevel mbLevel = ctx.getLevel();
 		Level level = mbLevel.getRawLevel();
 		ChemicalReactorTanks fluidTanks = state.tanks;
-		ChemicalRecipe recipe = state.getRecipeForInputs(level);
+		net.minecraft.world.item.crafting.RecipeHolder<ChemicalRecipe> recipe = state.getRecipeForInputs(level);
 		if(recipe!=null)
 		{
 			MultiblockProcessInMachine<ChemicalRecipe> process = new MultiblockProcessInMachine<>(recipe, 0);
-			process.setInputAmounts(recipe.itemInput.getCount());
+			process.setInputAmounts(recipe.value().itemInput.getCount());
 			int size = (fluidTanks.leftInput.isEmpty()?0: 1)
 					+(fluidTanks.backInput.isEmpty()?0: 1)
 					+(fluidTanks.rightInput.isEmpty()?0: 1);
@@ -210,7 +210,7 @@ public class ChemicalReactorLogic implements IMultiblockLogic<ChemicalReactorLog
 				}
 			}
 
-			boolean hasInputForNewRecipe = inputStack.getCount() >= (recipeInputRequirements + recipe.itemInput.getCount());
+			boolean hasInputForNewRecipe = inputStack.getCount() >= (recipeInputRequirements + recipe.value().itemInput.getCount());
 
 			if(hasInputForNewRecipe)
 			{
@@ -331,7 +331,7 @@ public class ChemicalReactorLogic implements IMultiblockLogic<ChemicalReactorLog
 		private final Supplier<IItemHandler> input_output;
 		private final IItemHandler outputHandler;
 
-		private final Supplier<ChemicalRecipe> cachedRecipe;
+		private final Supplier<net.minecraft.world.item.crafting.RecipeHolder<ChemicalRecipe>> cachedRecipe;
 		private final IFluidHandler inputCapLeft;
 		private final IFluidHandler inputCapBack;
 		private final IFluidHandler inputCapRight;
@@ -374,7 +374,7 @@ public class ChemicalReactorLogic implements IMultiblockLogic<ChemicalReactorLog
 			this.energy.deserializeNBT(provider, nbt.getCompound("energy"));
 			this.tanks.readNBT(nbt.getCompound("tanks"), provider);
 			this.inventory.deserializeNBT(provider, nbt.getCompound("inventory"));
-			this.processor.fromNBT(nbt.getList("processor", Tag.TAG_COMPOUND), MultiblockProcessInMachine::new, provider);
+			this.processor.fromNBT(nbt.getList("processor", Tag.TAG_COMPOUND), (getter, data, registries) -> new MultiblockProcessInMachine<>(getter, data), provider);
 		}
 
 		public void clearProcessor()
@@ -462,7 +462,7 @@ public class ChemicalReactorLogic implements IMultiblockLogic<ChemicalReactorLog
 			return inventory;
 		}
 
-		public @Nullable ChemicalRecipe getRecipeForInputs(Level level)
+		public @Nullable net.minecraft.world.item.crafting.RecipeHolder<ChemicalRecipe> getRecipeForInputs(Level level)
 		{
 			return ChemicalRecipe.findRecipe(level, tanks.leftInput.getFluid(), tanks.backInput.getFluid(), tanks.rightInput.getFluid(), inventory.getStackInSlot(0));
 		}

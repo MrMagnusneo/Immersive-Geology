@@ -128,14 +128,14 @@ public class CentrifugeLogic implements IMultiblockLogic<State>, IServerTickable
 
         final FluidStack input = state.tank.getFluid();
         if(input.isEmpty()) return;
-        CentrifugeRecipe recipe = CentrifugeRecipe.findRecipe(level, input);
+        net.minecraft.world.item.crafting.RecipeHolder<CentrifugeRecipe> recipe = CentrifugeRecipe.findRecipe(level, input);
         if(recipe == null) return;
         MultiblockProcessInMachine<CentrifugeRecipe> process = new MultiblockProcessInMachine<>(recipe);
         if(input.isEmpty()) process.setInputTanks(0);
 
         if(state.processor.addProcessToQueue(process, level, true))
         {
-            state.tank.drain(recipe.fluidIn.getAmount(), FluidAction.EXECUTE);
+            state.tank.drain(recipe.value().fluidIn.getAmount(), FluidAction.EXECUTE);
             state.processor.addProcessToQueue(process, level, false);
         }
     }
@@ -269,7 +269,7 @@ public class CentrifugeLogic implements IMultiblockLogic<State>, IServerTickable
         @Override
         public void readSaveNBT(CompoundTag nbt, HolderLookup.Provider provider){
             energy.deserializeNBT(provider, nbt.getCompound("energy"));
-            processor.fromNBT(nbt.getList("processor", Tag.TAG_COMPOUND), MultiblockProcessInMachine::new, provider);
+            processor.fromNBT(nbt.getList("processor", Tag.TAG_COMPOUND), (getter, data, registries) -> new MultiblockProcessInMachine<>(getter, data), provider);
             tank.readFromNBT(provider, nbt.getCompound("tank"));
             primary_output_tank.readFromNBT(provider, nbt.getCompound("primary_output_tank"));
             secondary_output_tank.readFromNBT(provider, nbt.getCompound("secondary_output_tank"));

@@ -9,7 +9,7 @@
 package com.igteam.immersivegeology.common.loot;
 
 import com.igteam.immersivegeology.common.block.multiblocks.skins.IGChemicalReactorSkins;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.world.item.Item;
@@ -25,7 +25,7 @@ import java.util.List;
 
 public class IGLootModifier extends LootModifier
 {
-	public static final Codec<IGLootModifier> CODEC = RecordCodecBuilder.create(inst -> codecStart(inst).and(
+	public static final MapCodec<IGLootModifier> CODEC = RecordCodecBuilder.mapCodec(inst -> codecStart(inst).and(
 			BuiltInRegistries.ITEM.byNameCodec().listOf().fieldOf("items").forGetter(m -> m.item_pool)
 	).apply(inst, IGLootModifier::new));
 
@@ -51,7 +51,7 @@ public class IGLootModifier extends LootModifier
 	}
 
 	@Override
-	public Codec<? extends IGlobalLootModifier> codec()
+	public MapCodec<? extends IGlobalLootModifier> codec()
 	{
 		return CODEC;
 	}

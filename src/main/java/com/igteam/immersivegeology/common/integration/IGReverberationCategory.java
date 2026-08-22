@@ -59,7 +59,7 @@ public class IGReverberationCategory extends IGRecipeCategory<RevFurnaceRecipe>
 		builder.addSlot(RecipeIngredientRole.OUTPUT, 81, 27)
 				.setFluidRenderer(tankSize, false, 16, 47)
 				.addIngredients(NeoForgeTypes.FLUID_STACK, taggedFluid.getMatchingFluidStacks())
-				.addTooltipCallback(JEIHelper.fluidTooltipCallback);
+				.addRichTooltipCallback(JEIHelper.fluidTooltipCallback);
 	}
 
 	@Override

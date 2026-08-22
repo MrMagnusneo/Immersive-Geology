@@ -21,6 +21,8 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.crafting.FluidIngredient;
+import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction;
 import org.jetbrains.annotations.Nullable;
@@ -110,6 +112,19 @@ public final class FluidTagInput implements Predicate<FluidStack>
     public int getAmount()
     {
         return amount;
+    }
+
+    /** Exposes the equivalent native 1.21 ingredient used by IE multiblock processing. */
+    public SizedFluidIngredient asSizedIngredient()
+    {
+        return fluids.map(
+                tag -> SizedFluidIngredient.of(tag, amount),
+                ids -> new SizedFluidIngredient(
+                        FluidIngredient.of(ids.stream().map(BuiltInRegistries.FLUID::get)
+                                .filter(java.util.Objects::nonNull).toArray(Fluid[]::new)),
+                        amount
+                )
+        );
     }
 
     public FluidStack getRandomizedExampleStack(int random)

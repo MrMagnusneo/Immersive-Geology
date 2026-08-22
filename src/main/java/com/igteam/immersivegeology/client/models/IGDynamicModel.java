@@ -64,7 +64,7 @@ public class IGDynamicModel
 		return get().getQuads(null, null, ApiUtils.RANDOM_SOURCE, data, null);
 	}
 
-	public ResourceLocation getName()
+	public ModelResourceLocation getName()
 	{
 		return name;
 	}

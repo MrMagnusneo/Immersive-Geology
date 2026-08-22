@@ -12,11 +12,14 @@ import blusunrize.immersiveengineering.api.crafting.FluidTagInput;
 import blusunrize.immersiveengineering.api.crafting.IERecipeSerializer;
 import blusunrize.immersiveengineering.api.crafting.IERecipeTypes.TypeWithClass;
 import blusunrize.immersiveengineering.api.crafting.MultiblockRecipe;
+import blusunrize.immersiveengineering.api.crafting.TagOutput;
 import blusunrize.immersiveengineering.api.crafting.cache.CachedRecipeList;
 import com.igteam.immersivegeology.core.registration.IGRecipeTypes;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.common.util.Lazy;
@@ -28,24 +31,26 @@ import java.util.Set;
 
 public class CoreDrillRecipe extends MultiblockRecipe
 {
-	public static DeferredHolder<?, IERecipeSerializer<CoreDrillRecipe>> SERIALIZER;
+	public static DeferredHolder<RecipeSerializer<?>, ? extends IERecipeSerializer<CoreDrillRecipe>> SERIALIZER;
 	public static final CachedRecipeList<CoreDrillRecipe> RECIPES = new CachedRecipeList<>(IGRecipeTypes.COREDRILL);
 
 	FluidTagInput input;
 	Fluid output;
 
-	public <T extends Recipe<?>> CoreDrillRecipe(ResourceLocation id, FluidTagInput input, Fluid output)
+	public CoreDrillRecipe(ResourceLocation id, FluidTagInput input, Fluid output)
 	{
-		super(LAZY_EMPTY, IGRecipeTypes.COREDRILL, id);
+		super(TagOutput.EMPTY, IGRecipeTypes.COREDRILL, 1, 1, () -> new RecipeMultiplier(() -> 1, () -> 1));
 		this.input = input;
 		this.output = output;
+		this.fluidInputList = java.util.List.of(input.asSizedIngredient());
 	}
 
 	@Nullable
 	public static CoreDrillRecipe get(Level level, FluidStack fluid)
 	{
-		for(CoreDrillRecipe r : RECIPES.getRecipes(level))
+		for(RecipeHolder<CoreDrillRecipe> holder : RECIPES.getRecipes(level))
 		{
+			CoreDrillRecipe r = holder.value();
 			if(r.input.test(fluid))
 			{
 				return r;

@@ -34,7 +34,7 @@ public class PelletizerRecipeSerializer extends LegacyIERecipeSerializer<Pelleti
 	public PelletizerRecipe readFromJson(ResourceLocation resourceLocation, JsonObject json, IContext iContext)
 	{
 		Lazy<ItemStack> output = readOutput(json.get("result"));
-		IngredientWithSize input = IngredientWithSize.deserialize(GsonHelper.getAsJsonObject(json, "input"));
+		IngredientWithSize input = IngredientWithSize.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json.get("input")).getOrThrow();
 		int energy = GsonHelper.getAsInt(json, "energy");
 		int time = GsonHelper.getAsInt(json, "time");
 		return new PelletizerRecipe(resourceLocation, input, output, energy, time);
@@ -44,7 +44,7 @@ public class PelletizerRecipeSerializer extends LegacyIERecipeSerializer<Pelleti
 	public @Nullable PelletizerRecipe fromNetwork(ResourceLocation resourceLocation, FriendlyByteBuf buffer)
 	{
 		Lazy<ItemStack> output = readLazyStack(buffer);
-		IngredientWithSize input = IngredientWithSize.read(buffer);
+		IngredientWithSize input = IngredientWithSize.STREAM_CODEC.decode((net.minecraft.network.RegistryFriendlyByteBuf)buffer);
 		int energy = buffer.readInt();
 		int time = buffer.readInt();
 		return new PelletizerRecipe(resourceLocation, input, output, energy, time);
@@ -54,7 +54,7 @@ public class PelletizerRecipeSerializer extends LegacyIERecipeSerializer<Pelleti
 	public void toNetwork(FriendlyByteBuf buffer, PelletizerRecipe recipe)
 	{
 		writeLazyStack(buffer, recipe.itemOutput);
-		recipe.itemIn.write(buffer);
+		IngredientWithSize.STREAM_CODEC.encode((net.minecraft.network.RegistryFriendlyByteBuf)buffer, recipe.itemIn);
 		buffer.writeInt(recipe.getTotalProcessEnergy());
 		buffer.writeInt(recipe.getTotalProcessTime());
 	}

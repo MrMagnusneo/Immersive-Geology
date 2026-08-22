@@ -165,7 +165,7 @@ public class IGCommonForgeEvents
 	}
 
 	private static boolean isCustomOreFeaturePresent(Holder<Biome> biomeHolder, ChunkPos pos, long seed) {
-		Biome biome = biomeHolder.get();
+		Biome biome = biomeHolder.value();
 		List<HolderSet<PlacedFeature>> features = biome.getGenerationSettings().features();
 
 		for (HolderSet<PlacedFeature> featureSet : features) {
@@ -179,7 +179,7 @@ public class IGCommonForgeEvents
 	}
 
 	private static boolean isCustomOreFeature(PlacedFeature placedFeature, ChunkPos pos, Holder<Biome> biome, long seed) {
-		ConfiguredFeature<?, ?> feature = placedFeature.feature().get();
+		ConfiguredFeature<?, ?> feature = placedFeature.feature().value();
 		return feature.config() instanceof IGOreFeatureConfig;
 	}
 }

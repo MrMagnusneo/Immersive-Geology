@@ -43,7 +43,7 @@ public class IGItemGroup extends CreativeModeTab {
     }
 
     @Override
-    public @NotNull ResourceLocation getBackgroundLocation() {
+    public @NotNull ResourceLocation getBackgroundTexture() {
         switch(selectedGroup)
         {
             case geologic: return GEOLOGIC_BACKGROUND_TEXTURES;
@@ -81,8 +81,8 @@ public class IGItemGroup extends CreativeModeTab {
         ret.clear();
     }
 
-    static Collection<ItemStack> ret = ItemStackLinkedSet.createTypeAndTagSet();
-    static Collection<ItemStack> dis = ItemStackLinkedSet.createTypeAndTagSet();
+    static Collection<ItemStack> ret = ItemStackLinkedSet.createTypeAndComponentsSet();
+    static Collection<ItemStack> dis = ItemStackLinkedSet.createTypeAndComponentsSet();
     private static boolean updateRet = true;
     @Override
     public @NotNull Collection<ItemStack> getDisplayItems()

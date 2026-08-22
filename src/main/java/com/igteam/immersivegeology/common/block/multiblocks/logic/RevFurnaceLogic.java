@@ -247,11 +247,11 @@ public class RevFurnaceLogic implements IMultiblockLogic<RevFurnaceLogic.State>,
         final boolean isMirrored = context.getLevel().getOrientation().mirrored();
         if(context.getLevel().shouldTickModulo(2))
         {
-            if(((state.active_left &! state.fluidOutput1.isPresent())))
+            if(state.active_left && state.fluidOutput1.get() == null)
             {
                 spawnSmoke(context, isMirrored ? SMOKE_POSITION_RIGHT : SMOKE_POSITION_LEFT);
             }
-            if(((state.active_right &! state.fluidOutput2.isPresent())))
+            if(state.active_right && state.fluidOutput2.get() == null)
             {
                 spawnSmoke(context, isMirrored ? SMOKE_POSITION_LEFT : SMOKE_POSITION_RIGHT);
             }

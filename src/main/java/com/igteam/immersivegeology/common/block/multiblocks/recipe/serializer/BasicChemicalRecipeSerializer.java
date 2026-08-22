@@ -50,8 +50,8 @@ public class BasicChemicalRecipeSerializer extends LegacyIERecipeSerializer<Basi
 			itemOut = ItemStack.EMPTY;
 		}
 
-		FluidStack fluidOut = ApiUtils.jsonDeserializeFluidStack(GsonHelper.getAsJsonObject(json, "fluidResult"));
-		IngredientWithSize itemInput =IngredientWithSize.deserialize(json.get("itemInput"));
+		FluidStack fluidOut = FluidStack.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json.get("fluidResult")).getOrThrow();
+		IngredientWithSize itemInput = IngredientWithSize.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json.get("itemInput")).getOrThrow();
 		Set<FluidTagInput> fluidSet = new HashSet<>();
 
 		if(GsonHelper.isValidNode(json, "fluidInputA")) fluidSet.add(FluidTagInput.deserialize(GsonHelper.getAsJsonObject(json, "fluidInputA")));
@@ -70,7 +70,7 @@ public class BasicChemicalRecipeSerializer extends LegacyIERecipeSerializer<Basi
 		
 		ItemStack output = ItemStack.OPTIONAL_STREAM_CODEC.decode((net.minecraft.network.RegistryFriendlyByteBuf) buffer);
 		FluidStack fluidOut = FluidStack.OPTIONAL_STREAM_CODEC.decode((net.minecraft.network.RegistryFriendlyByteBuf) buffer);
-		IngredientWithSize itemInput = IngredientWithSize.read(buffer);
+		IngredientWithSize itemInput = IngredientWithSize.STREAM_CODEC.decode((net.minecraft.network.RegistryFriendlyByteBuf)buffer);
 		HashSet<FluidTagInput> fluidSet = new HashSet<>();
 		int fluid_input_size = buffer.readInt();
 		for(int i = 0; i < fluid_input_size; i++) {
@@ -89,7 +89,7 @@ public class BasicChemicalRecipeSerializer extends LegacyIERecipeSerializer<Basi
 	{
 		ItemStack.OPTIONAL_STREAM_CODEC.encode((net.minecraft.network.RegistryFriendlyByteBuf) buffer, recipe.itemOutput);
 		FluidStack.OPTIONAL_STREAM_CODEC.encode((net.minecraft.network.RegistryFriendlyByteBuf) buffer, recipe.fluidOutput);
-		recipe.itemInput.write(buffer);
+		IngredientWithSize.STREAM_CODEC.encode((net.minecraft.network.RegistryFriendlyByteBuf)buffer, recipe.itemInput);
 		buffer.writeInt(recipe.fluidIn.size());
 		recipe.fluidIn.forEach(f -> f.write(buffer));
 		buffer.writeInt(recipe.getTotalProcessEnergy());

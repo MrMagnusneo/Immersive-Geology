@@ -44,14 +44,14 @@ public class IGCentrifugeCategory extends IGRecipeCategory<CentrifugeRecipe>
 		builder.addSlot(RecipeIngredientRole.INPUT, 43, 9)
 				.setFluidRenderer(tankSize, false, 15, 51)
 				.addIngredients(NeoForgeTypes.FLUID_STACK, recipe.fluidIn.getMatchingFluidStacks())
-				.addTooltipCallback(JEIHelper.fluidTooltipCallback);
+				.addRichTooltipCallback(JEIHelper.fluidTooltipCallback);
 
 		if(!recipe.primaryFluidOutput.get().isEmpty())
 		{
 			builder.addSlot(RecipeIngredientRole.OUTPUT, 10, 37)
 					.setFluidRenderer(432, false, 15, 55)
 					.addFluidStack(recipe.primaryFluidOutput.get().getFluid(), recipe.primaryFluidOutput.get().getAmount())
-					.addTooltipCallback(JEIHelper.fluidTooltipCallback);
+					.addRichTooltipCallback(JEIHelper.fluidTooltipCallback);
 		}
 
 		if(!recipe.secondaryFluidOutput.get().isEmpty())
@@ -59,7 +59,7 @@ public class IGCentrifugeCategory extends IGRecipeCategory<CentrifugeRecipe>
 			builder.addSlot(RecipeIngredientRole.OUTPUT, 76, 37)
 					.setFluidRenderer(432, false, 15, 55)
 					.addFluidStack(recipe.secondaryFluidOutput.get().getFluid(), recipe.secondaryFluidOutput.get().getAmount())
-					.addTooltipCallback(JEIHelper.fluidTooltipCallback);
+					.addRichTooltipCallback(JEIHelper.fluidTooltipCallback);
 		}
 
 		builder.addSlot(RecipeIngredientRole.OUTPUT, 42, 76)

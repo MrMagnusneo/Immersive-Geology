@@ -31,6 +31,8 @@ import net.neoforged.bus.api.SubscribeEvent;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 
 public class CreativeMenuHandler {
     private static final ResourceLocation CEX_GUI_TEXTURES = ResourceLocation.fromNamespaceAndPath(IGLib.MODID,"textures/gui/creative_tabs/creative_expansion.png");
@@ -46,10 +48,8 @@ public class CreativeMenuHandler {
         if(screen instanceof CreativeModeInventoryScreen) {
             CreativeModeInventoryScreen gui = (CreativeModeInventoryScreen) screen;
             int i = (int) (gui.getGuiLeft() - Math.floor(136*1.425));
-            CreativeModeTab selectedTab = CreativeModeInventoryScreen.selectedTab;
-
             CreativeModeTab igTab = IGRegistrationHolder.IG_BASE_TAB.get();
-            if(selectedTab.equals(igTab)) {
+            if(isTabSelected(gui, igTab)) {
                 if(reset) screen.resize(event.getScreen().getMinecraft(), screen.width, screen.height);
                 if(!jeiCompatUpdate) {
                     // When JEI loads it takes the display items available by default.
@@ -84,6 +84,19 @@ public class CreativeMenuHandler {
                 }
             }
         }
+    }
+
+    private static boolean isTabSelected(CreativeModeInventoryScreen screen, CreativeModeTab tab) {
+        Collection<ItemStack> displayed = tab.getDisplayItems();
+        if(screen.getMenu().items.size()!=displayed.size())
+            return false;
+        Iterator<ItemStack> expected = displayed.iterator();
+        for(ItemStack actual : screen.getMenu().items) {
+            ItemStack next = expected.next();
+            if(actual.getCount()!=next.getCount()||!ItemStack.isSameItemSameComponents(actual, next))
+                return false;
+        }
+        return true;
     }
 
     @SubscribeEvent

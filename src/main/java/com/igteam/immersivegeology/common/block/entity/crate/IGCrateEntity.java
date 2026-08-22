@@ -180,7 +180,7 @@ public class IGCrateEntity extends RandomizableContainerBlockEntity implements I
 			CompoundTag customData = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
 			this.loadIEData(customData, level.registryAccess());
 			if (stack.has(DataComponents.CUSTOM_NAME)) {
-				this.setCustomName(stack.getHoverName());
+				this.applyComponents(net.minecraft.core.component.DataComponentMap.builder().set(DataComponents.CUSTOM_NAME, stack.getHoverName()).build(), net.minecraft.core.component.DataComponentPatch.EMPTY);
 			}
 
 			if(customData.contains("ench", 9))

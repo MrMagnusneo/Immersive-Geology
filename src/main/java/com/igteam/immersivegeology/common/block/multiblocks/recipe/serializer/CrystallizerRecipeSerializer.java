@@ -43,29 +43,29 @@ public class CrystallizerRecipeSerializer extends LegacyIERecipeSerializer<Cryst
 	public CrystallizerRecipe readFromJson(ResourceLocation resourceLocation, JsonObject json, IContext iContext)
 	{
 		Lazy<ItemStack> output = readOutput(json.get("result"));
-		FluidStack fluid_output = ApiUtils.jsonDeserializeFluidStack(GsonHelper.getAsJsonObject(json, "fluidResult"));
+		FluidStack fluid_output = FluidStack.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json.get("fluidResult")).getOrThrow();
 		FluidTagInput input = FluidTagInput.deserialize(GsonHelper.getAsJsonObject(json, "input"));
 		int energy = GsonHelper.getAsInt(json, "energy");
 		int time = GsonHelper.getAsInt(json, "time");
-		return new CrystallizerRecipe(resourceLocation, input, output, ()->fluid_output, energy, time);
+		return new CrystallizerRecipe(resourceLocation, input, output, Lazy.of(()->fluid_output), energy, time);
 	}
 
 	@Override
 	public @Nullable CrystallizerRecipe fromNetwork(ResourceLocation resourceLocation, FriendlyByteBuf buffer)
 	{
 		Lazy<ItemStack> output = readLazyStack(buffer);
-		FluidStack fluid_output = buffer.readFluidStack();
+		FluidStack fluid_output = FluidStack.OPTIONAL_STREAM_CODEC.decode((net.minecraft.network.RegistryFriendlyByteBuf)buffer);
 		FluidTagInput input = FluidTagInput.read(buffer);
 		int energy = buffer.readInt();
 		int time = buffer.readInt();
-		return new CrystallizerRecipe(resourceLocation, input, output, ()->fluid_output, energy, time);
+		return new CrystallizerRecipe(resourceLocation, input, output, Lazy.of(()->fluid_output), energy, time);
 	}
 
 	@Override
 	public void toNetwork(FriendlyByteBuf buffer, CrystallizerRecipe recipe)
 	{
 		writeLazyStack(buffer, recipe.itemOutput);
-		buffer.writeFluidStack(recipe.fluidOutput.get());
+		FluidStack.OPTIONAL_STREAM_CODEC.encode((net.minecraft.network.RegistryFriendlyByteBuf)buffer, recipe.fluidOutput.get());
 		recipe.fluidIn.write(buffer);
 		buffer.writeInt(recipe.getTotalProcessEnergy());
 		buffer.writeInt(recipe.getTotalProcessTime());

@@ -21,6 +21,7 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 
 import java.util.List;
@@ -39,7 +40,7 @@ public class RotaryKilnProcess extends MultiblockProcessInMachine<RotaryKilnReci
 		this(getRecipe, data);
 	}
 
-    public RotaryKilnProcess(RotaryKilnRecipe recipe, int slot) {
+    public RotaryKilnProcess(RecipeHolder<RotaryKilnRecipe> recipe, int slot) {
 		super(recipe);
 		this.slot = slot;
 	}
@@ -56,9 +57,9 @@ public class RotaryKilnProcess extends MultiblockProcessInMachine<RotaryKilnReci
 			return NonNullList.create();
 		} else {
 			ItemStack input = context.getInventory().getStackInSlot(slot);
-			recipe = RotaryKilnRecipe.findRecipe(level, input);
-			if(recipe == null) return NonNullList.create();
-			return recipe.getItemOutputs();
+			RecipeHolder<RotaryKilnRecipe> foundRecipe = RotaryKilnRecipe.findRecipe(level, input);
+			if(foundRecipe == null) return NonNullList.create();
+			return foundRecipe.value().getItemOutputs();
 		}
 	}
 

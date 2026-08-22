@@ -37,8 +37,14 @@ import com.igteam.immersivegeology.core.material.helper.material.recipe.IGRecipe
 import com.igteam.immersivegeology.core.material.helper.material.recipe.IGRecipeStage;
 import com.igteam.immersivegeology.core.registration.IGRecipeSerializers;
 import com.igteam.immersivegeology.core.registration.IGRegistrationHolder;
+import com.google.gson.JsonObject;
+import com.mojang.serialization.JsonOps;
+import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.AdvancementHolder;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.*;
 import net.minecraft.resources.ResourceKey;
@@ -52,6 +58,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
@@ -60,13 +67,16 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.dimension.BuiltinDimensionTypes;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.neoforged.neoforge.common.Tags;
+import net.neoforged.neoforge.common.conditions.ICondition;
 import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.ForgeRegistries;
-import net.neoforged.neoforge.registries.RegistryObject;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 import static blusunrize.immersiveengineering.api.utils.TagUtils.createItemWrapper;
@@ -74,14 +84,18 @@ import static blusunrize.immersiveengineering.data.Recipes.getTagCondition;
 
 public class IGRecipes extends RecipeProvider
 {
-	public IGRecipes(PackOutput pOutput)
+	private final CompletableFuture<HolderLookup.Provider> registries;
+
+	public IGRecipes(PackOutput output, CompletableFuture<HolderLookup.Provider> registries)
 	{
-		super(pOutput);
+		super(output, registries);
+		this.registries = registries;
 	}
 
 	@Override
-	protected void buildRecipes(@NotNull Consumer<FinishedRecipe> consumer)
+	protected void buildRecipes(@NotNull RecipeOutput output)
 	{
+		LegacyAwareRecipeOutput consumer = new LegacyAwareRecipeOutput(output, registries.join());
 		IGLib.IG_LOGGER.info("Started Registration of Immersive Geology Recipes");
 		multiblockRecipes(consumer);
 		tfcCompatRecipes(consumer);
@@ -92,7 +106,7 @@ public class IGRecipes extends RecipeProvider
 		IGLib.IG_LOGGER.info("Finished Registration of Immersive Geology Recipes");
 	}
 
-	private void methodRecipes(Consumer<FinishedRecipe> consumer)
+	private void methodRecipes(LegacyAwareRecipeOutput consumer)
 	{
 		IGLib.IG_LOGGER.info("- Method Recipe Registration");
 		for(MaterialInterface<?> entry : IGLib.getGeologyMaterials())
@@ -107,7 +121,7 @@ public class IGRecipes extends RecipeProvider
 		}
 	}
 
-	private void manualRecipes(Consumer<FinishedRecipe> consumer)
+	private void manualRecipes(LegacyAwareRecipeOutput consumer)
 	{
 		IGLib.IG_LOGGER.info("- Basic Recipe Registration");
 
@@ -391,7 +405,7 @@ public class IGRecipes extends RecipeProvider
 		GeothermalExchangerRecipeBuilder.builder(new FluidStack(MiscEnum.Steam.getFluid(BlockCategoryFlags.FLUID), 50)).addInput(FluidTags.WATER, 25).setTime(20).setEnergy(2560).build(consumer, IGLib.rl("geothermal/water_to_steam"));
 	}
 
-	private void igMineralMixes(Consumer<FinishedRecipe> consumer)
+	private void igMineralMixes(LegacyAwareRecipeOutput consumer)
 	{
 		ResourceKey<DimensionType> overworld = BuiltinDimensionTypes.OVERWORLD;
 		ResourceKey<DimensionType> nether = BuiltinDimensionTypes.NETHER;
@@ -532,7 +546,7 @@ public class IGRecipes extends RecipeProvider
 
 	private static final List<MetalEnum> wires_to_register = List.of(MetalEnum.Neodymium, MetalEnum.Titanium, MetalEnum.TungstenCarbide);
 
-	private void tfcCompatRecipes(Consumer<FinishedRecipe> consumer)
+	private void tfcCompatRecipes(LegacyAwareRecipeOutput consumer)
 	{
 		IGLib.IG_LOGGER.info("- Terra Firma Craft Recipe Registration");
 		if(!ModFlags.TFC.isStrictlyLoaded())
@@ -540,7 +554,7 @@ public class IGRecipes extends RecipeProvider
 			IGLib.IG_LOGGER.info("- SKIPPED [TFC Not Loaded]");
 			return;
 		}
-		for(RegistryObject<Block> block : IGRegistrationHolder.getBlockRegistryMap().values())
+		for(DeferredHolder<Block, Block> block : IGRegistrationHolder.getBlockRegistryMap().values())
 		{
 			if(block.get() instanceof IOreBlock oreBlock)
 			{
@@ -551,7 +565,7 @@ public class IGRecipes extends RecipeProvider
 
 	private static Set<MaterialInterface<?>> move_material_raw_to_crush = Set.of(MineralEnum.Sphalerite);
 
-	private void multiblockRecipes(Consumer<FinishedRecipe> consumer)
+	private void multiblockRecipes(LegacyAwareRecipeOutput consumer)
 	{
 		IGLib.IG_LOGGER.info("- Multiblock Test Recipe Registration");
 		Item stone_work_hammer = StoneEnum.MCStone.getItem(ItemCategoryFlags.HAMMER);
@@ -706,7 +720,7 @@ public class IGRecipes extends RecipeProvider
 	final int BASE_COAL_COKE_TIME = 1400;
 
 	// Helper method to register bloomery fuels for different mineral qualities
-	private void registerMineralBloomeryFuels(Consumer<FinishedRecipe> consumer, MineralEnum mineral, int baseTime) {
+	private void registerMineralBloomeryFuels(LegacyAwareRecipeOutput consumer, MineralEnum mineral, int baseTime) {
 		String mineralName = mineral.getName();
 		BloomeryFuelBuilder.builder(mineral.getItem(ItemCategoryFlags.NORMAL_ORE))
 				.setTime(baseTime * NORMAL_QUALITY_MULTIPLIER)
@@ -718,7 +732,7 @@ public class IGRecipes extends RecipeProvider
 	}
 
 	// Helper method to register blast furnace fuels
-	private void registerBlastFurnaceFuels(Consumer<FinishedRecipe> consumer, MineralEnum mineral, int baseTime) {
+	private void registerBlastFurnaceFuels(LegacyAwareRecipeOutput consumer, MineralEnum mineral, int baseTime) {
 		String mineralName = mineral.getName();
 		BlastFurnaceFuelBuilder.builder(mineral.getItem(ItemCategoryFlags.NORMAL_ORE))
 				.setTime(baseTime * NORMAL_QUALITY_MULTIPLIER)
@@ -730,7 +744,7 @@ public class IGRecipes extends RecipeProvider
 	}
 
 	// Helper method to register torch recipes
-	private void registerTorchRecipes(Consumer<FinishedRecipe> consumer, MineralEnum mineral, float mult) {
+	private void registerTorchRecipes(LegacyAwareRecipeOutput consumer, MineralEnum mineral, float mult) {
 		String mineralName = mineral.getName();
 		ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Items.TORCH, Mth.floor(4*mult))
 				.define('s', Items.STICK)
@@ -742,7 +756,7 @@ public class IGRecipes extends RecipeProvider
 	}
 
 	// Helper method to register coking recipes
-	private void registerCokingRecipes(Consumer<FinishedRecipe> consumer, MineralEnum mineral) {
+	private void registerCokingRecipes(LegacyAwareRecipeOutput consumer, MineralEnum mineral) {
 		String mineralName = mineral.getName();
 		CokeOvenRecipeBuilder.builder(IETags.coalCoke, 1)
 				.setOil(500)
@@ -764,5 +778,41 @@ public class IGRecipes extends RecipeProvider
 	private ResourceLocation igRL(String crafting)
 	{
 		return ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "crafting/" + crafting);
+	}
+
+	/** Bridges IG's retained JSON builders into the 1.21 recipe output contract. */
+	private static final class LegacyAwareRecipeOutput implements RecipeOutput, Consumer<FinishedRecipe>
+	{
+		private final RecipeOutput delegate;
+		private final HolderLookup.Provider registries;
+
+		private LegacyAwareRecipeOutput(RecipeOutput delegate, HolderLookup.Provider registries)
+		{
+			this.delegate = delegate;
+			this.registries = registries;
+		}
+
+		@Override
+		public void accept(FinishedRecipe finished)
+		{
+			JsonObject json = new JsonObject();
+			finished.serializeRecipeData(json);
+			Recipe<?> recipe = finished.getType().codec().codec()
+					.parse(RegistryOps.create(JsonOps.INSTANCE, registries), json)
+					.getOrThrow();
+			delegate.accept(finished.getId(), recipe, null);
+		}
+
+		@Override
+		public void accept(ResourceLocation id, Recipe<?> recipe, @Nullable AdvancementHolder advancement, ICondition... conditions)
+		{
+			delegate.accept(id, recipe, advancement, conditions);
+		}
+
+		@Override
+		public Advancement.Builder advancement()
+		{
+			return delegate.advancement();
+		}
 	}
 }

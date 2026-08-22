@@ -27,7 +27,7 @@ import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.Tags.Fluids;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
-import net.neoforged.neoforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -44,7 +44,7 @@ public class IGFluidTags extends FluidTagsProvider
 	protected void addTags(Provider provider)
 	{
 		IGLib.IG_LOGGER.info("Starting Registration of Immersive Geology Fluid Tags");
-		for(RegistryObject<Fluid> holder : IGRegistrationHolder.getFluidRegistryMap().values())
+		for(DeferredHolder<Fluid, Fluid> holder : IGRegistrationHolder.getFluidRegistryMap().values())
 		{
 			if(holder.get() instanceof IGFluid fluid)
 			{

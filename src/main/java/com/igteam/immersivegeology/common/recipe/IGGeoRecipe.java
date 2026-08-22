@@ -13,6 +13,7 @@ import blusunrize.immersiveengineering.api.crafting.IERecipeTypes.TypeWithClass;
 import blusunrize.immersiveengineering.api.crafting.IESerializableRecipe;
 import blusunrize.immersiveengineering.api.crafting.IJEIRecipe;
 import blusunrize.immersiveengineering.api.crafting.IMultiblockRecipe;
+import blusunrize.immersiveengineering.api.crafting.TagOutput;
 import blusunrize.immersiveengineering.api.crafting.cache.CachedRecipeList;
 import com.igteam.immersivegeology.common.block.multiblocks.recipe.IndustrialSluiceRecipe;
 import com.igteam.immersivegeology.core.material.GeologyMaterial;
@@ -24,6 +25,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.neoforged.neoforge.common.util.Lazy;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import org.jetbrains.annotations.NotNull;
@@ -31,11 +33,11 @@ import org.jetbrains.annotations.NotNull;
 public class IGGeoRecipe extends IESerializableRecipe implements IJEIRecipe
 {
 	public final GeologyMaterial material;
-	public static DeferredHolder<?, IERecipeSerializer<IGGeoRecipe>> SERIALIZER;
+	public static DeferredHolder<RecipeSerializer<?>, ? extends IERecipeSerializer<IGGeoRecipe>> SERIALIZER;
 	public static final CachedRecipeList<IGGeoRecipe> RECIPES = new CachedRecipeList<>(IGRecipeTypes.GEOHINT);
-	protected <T extends Recipe<?>> IGGeoRecipe(ResourceLocation id, GeologyMaterial material)
+	protected IGGeoRecipe(ResourceLocation id, GeologyMaterial material)
 	{
-		super(LAZY_EMPTY, IGRecipeTypes.GEOHINT, id);
+		super(TagOutput.EMPTY, IGRecipeTypes.GEOHINT);
 		this.material = material;
 	}
 

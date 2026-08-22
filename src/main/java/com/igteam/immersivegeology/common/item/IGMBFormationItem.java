@@ -25,6 +25,7 @@ import com.igteam.immersivegeology.core.material.helper.material.MaterialInterfa
 import com.igteam.immersivegeology.core.material.helper.material.MaterialTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -67,7 +68,7 @@ public class IGMBFormationItem extends IGGenericItem
 	BiPredicate<IMultiblock, MaterialInterface<?>> validPredicate = (multiblock, material) -> material.canFormMB(multiblock);
 	public IGMBFormationItem(ItemCategoryFlags flag, MaterialInterface<?> material, int max_durability)
 	{
-		super(flag, material, new Properties().defaultDurability(max_durability));
+		super(flag, material, new Properties().durability(max_durability));
 	}
 
 	@Override
@@ -218,8 +219,8 @@ public class IGMBFormationItem extends IGGenericItem
 		return true;
 	}
 
-	public boolean canApplyAtEnchantingTable(ItemStack stack, Enchantment enchantment) {
-		return enchantment == Enchantments.UNBREAKING || enchantment == Enchantments.MENDING;
+	public boolean canApplyAtEnchantingTable(ItemStack stack, Holder<Enchantment> enchantment) {
+		return enchantment.is(Enchantments.UNBREAKING) || enchantment.is(Enchantments.MENDING);
 	}
 
 	@Override
@@ -232,11 +233,14 @@ public class IGMBFormationItem extends IGGenericItem
 	@Override
 	public ItemStack getCraftingRemainingItem(@Nonnull ItemStack stack) {
 		ItemStack container = stack.copy();
-		return container.hurt(1, ApiUtils.RANDOM_SOURCE, (ServerPlayer)null) ? ItemStack.EMPTY : container;
+		int damage = container.getDamageValue() + 1;
+		if(damage >= container.getMaxDamage()) return ItemStack.EMPTY;
+		container.setDamageValue(damage);
+		return container;
 	}
 
 	public boolean isValidRepairItem(ItemStack stack, ItemStack repairCandidate) {
-		if(materialMap.get(MaterialTexture.base) instanceof StoneEnum) return repairCandidate.is(Items.COBBLESTONE);
+		if(materialMap.get(MaterialTexture.base) instanceof StoneEnum) return repairCandidate.is(net.minecraft.world.item.Items.COBBLESTONE);
 		return repairCandidate.is(materialMap.get(MaterialTexture.base).getItem(ItemCategoryFlags.INGOT));
 	}
 

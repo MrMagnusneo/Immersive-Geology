@@ -50,7 +50,7 @@ public class IGBasicChemicalCategory extends IGRecipeCategory<BasicChemicalRecip
 			builder.addSlot(RecipeIngredientRole.INPUT, tank_pos_list.get(i), tank_pos_list.get(i+1))
 					.setFluidRenderer(FluidType.BUCKET_VOLUME * 2, false, 10, 28)
 					.addIngredients(NeoForgeTypes.FLUID_STACK, fluid_tag.getMatchingFluidStacks())
-					.addTooltipCallback(JEIHelper.fluidTooltipCallback);
+					.addRichTooltipCallback(JEIHelper.fluidTooltipCallback);
 			i = i + 2;
 		}
 
@@ -59,7 +59,7 @@ public class IGBasicChemicalCategory extends IGRecipeCategory<BasicChemicalRecip
 			builder.addSlot(RecipeIngredientRole.OUTPUT, 35, 66)
 					.setFluidRenderer(FluidType.BUCKET_VOLUME*2, false, 10, 28)
 					.addFluidStack(recipe.fluidOutput.getFluid(), recipe.fluidOutput.getAmount())
-					.addTooltipCallback(JEIHelper.fluidTooltipCallback);
+					.addRichTooltipCallback(JEIHelper.fluidTooltipCallback);
 		}
 		builder.addSlot(RecipeIngredientRole.OUTPUT, 55, 77)
 				.addItemStack(recipe.itemOutput);

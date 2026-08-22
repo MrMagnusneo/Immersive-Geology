@@ -47,7 +47,7 @@ public class RevFurnaceRecipeSerializer extends LegacyIERecipeSerializer<RevFurn
 	public @Nullable RevFurnaceRecipe fromNetwork(ResourceLocation resourceLocation, FriendlyByteBuf buffer)
 	{
 		Lazy<ItemStack> output = readLazyStack(buffer);
-		IngredientWithSize input = IngredientWithSize.read(buffer);
+		IngredientWithSize input = IngredientWithSize.STREAM_CODEC.decode((net.minecraft.network.RegistryFriendlyByteBuf)buffer);
 		int waste = buffer.readInt();
 		int time = buffer.readInt();
 		return new RevFurnaceRecipe(resourceLocation, input, output, waste, time);
@@ -57,7 +57,7 @@ public class RevFurnaceRecipeSerializer extends LegacyIERecipeSerializer<RevFurn
 	public void toNetwork(FriendlyByteBuf buffer, RevFurnaceRecipe recipe)
 	{
 		writeLazyStack(buffer, recipe.result);
-		recipe.input.write(buffer);
+		IngredientWithSize.STREAM_CODEC.encode((net.minecraft.network.RegistryFriendlyByteBuf)buffer, recipe.input);
 		buffer.writeInt(recipe.getWasteAmount());
 		buffer.writeInt(recipe.getTotalProcessTime());
 	}

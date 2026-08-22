@@ -27,11 +27,17 @@ import com.igteam.immersivegeology.core.registration.IGRegistrationHolder;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.advancements.critereon.EnchantmentPredicate;
 import net.minecraft.advancements.critereon.ItemPredicate;
+import net.minecraft.advancements.critereon.ItemEnchantmentsPredicate;
+import net.minecraft.advancements.critereon.ItemSubPredicates;
 import net.minecraft.advancements.critereon.MinMaxBounds;
 import net.minecraft.advancements.critereon.MinMaxBounds.Ints;
 import net.minecraft.advancements.critereon.StatePropertiesPredicate;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.loot.LootTableSubProvider;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.ItemStack;
@@ -52,7 +58,7 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.predicates.*;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
-import net.neoforged.neoforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -61,14 +67,25 @@ import java.util.function.Supplier;
 public class IGBlockLootProvider implements LootTableSubProvider
 {
 	private final Set<ResourceLocation> generatedTables = new HashSet();
-	private BiConsumer<ResourceLocation, LootTable.Builder> out;
+	private final Holder<Enchantment> silkTouch;
+	private final Holder<Enchantment> blockFortune;
+	private final EnchantmentPredicate HAS_SILK;
+	private BiConsumer<ResourceKey<LootTable>, LootTable.Builder> out;
+
+	public IGBlockLootProvider(HolderLookup.Provider registries)
+	{
+		HolderLookup.RegistryLookup<Enchantment> enchantments = registries.lookupOrThrow(Registries.ENCHANTMENT);
+		this.silkTouch = enchantments.getOrThrow(Enchantments.SILK_TOUCH);
+		this.blockFortune = enchantments.getOrThrow(Enchantments.BLOCK_FORTUNE);
+		this.HAS_SILK = new EnchantmentPredicate(silkTouch, MinMaxBounds.Ints.atLeast(1));
+	}
 
 	private ResourceLocation toTableLoc(ResourceLocation in) {
 		return ResourceLocation.fromNamespaceAndPath(in.getNamespace(), "blocks/" + in.getPath());
 	}
 
 	@Override
-	public void generate(BiConsumer<ResourceLocation, LootTable.Builder> out)
+	public void generate(BiConsumer<ResourceKey<LootTable>, LootTable.Builder> out)
 	{
 		IGLib.IG_LOGGER.info("Started Registration of Immersive Geology Block Loot");
 		this.out = out;
@@ -84,26 +101,21 @@ public class IGBlockLootProvider implements LootTableSubProvider
 
 	private void registerOres()
 	{
-		for(RegistryObject<Block> block_object : IGRegistrationHolder.getBlockRegistryMap().values())
+		for(DeferredHolder<Block, Block> block_object : IGRegistrationHolder.getBlockRegistryMap().values())
 		{
-			if(block_object.isPresent())
+			Block block = block_object.get();
+			if(block instanceof IOreBlock ore)
 			{
-				Block block = block_object.get();
-				if(block instanceof IOreBlock ore)
-				{
-					this.registerOreSpecial(block_object, ore.getItemDrop(), ore.getExtraDrops());
-				}
-				if(block instanceof IGCrystalBlock crystal)
-				{
-					this.register(block_object, this.singleItem(crystal.getItemDrop()));
-				}
-				if(block instanceof IGEvaporateMineralBlock mineral)
-				{
-					this.registerOre(block_object, mineral.getItemDrop());
-				}
-				continue;
+				this.registerOreSpecial(block_object, ore.getItemDrop(), ore.getExtraDrops());
 			}
-			IGLib.IG_LOGGER.warn("Failed to access Registry Object");
+			if(block instanceof IGCrystalBlock crystal)
+			{
+				this.register(block_object, this.singleItem(crystal.getItemDrop()));
+			}
+			if(block instanceof IGEvaporateMineralBlock mineral)
+			{
+				this.registerOre(block_object, mineral.getItemDrop());
+			}
 		}
 	}
 
@@ -122,11 +134,9 @@ public class IGBlockLootProvider implements LootTableSubProvider
 		this.registerMultiblock(IGMultiblockProvider.CENTRIFUGE);
 	}
 
-	EnchantmentPredicate HAS_SILK = new EnchantmentPredicate(Enchantments.SILK_TOUCH, MinMaxBounds.Ints.atLeast(1));
-
 	private void registerCrates()
 	{
-		for(RegistryObject<Block> block : IGRegistrationHolder.getBlockRegister().getEntries())
+		for(DeferredHolder<Block, ? extends Block> block : IGRegistrationHolder.getBlockRegister().getEntries())
 		{
 			if(block.get() instanceof IGCrateEntityType type)
 			{
@@ -134,11 +144,11 @@ public class IGBlockLootProvider implements LootTableSubProvider
 				{
 					LootTable.Builder loot = LootTable.lootTable()
 							.withPool(
-									dropInv().when(InvertedLootItemCondition.invert(MatchTool.toolMatches(ItemPredicate.Builder.item().hasEnchantment(HAS_SILK)))))
+									dropInv().when(InvertedLootItemCondition.invert(MatchTool.toolMatches(silkTouchPredicate()))))
 							.withPool(
 									singleItemRandomAmount(MiscEnum.RustyMetal.getItem(ItemCategoryFlags.PLATE), 1,8)
-											.when(InvertedLootItemCondition.invert(MatchTool.toolMatches(ItemPredicate.Builder.item().hasEnchantment(HAS_SILK)))))
-							.withPool(tileDrop().when(MatchTool.toolMatches(ItemPredicate.Builder.item().hasEnchantment(HAS_SILK))));
+											.when(InvertedLootItemCondition.invert(MatchTool.toolMatches(silkTouchPredicate()))))
+							.withPool(tileDrop().when(MatchTool.toolMatches(silkTouchPredicate())));
 
 					this.register(block, loot);
 				}
@@ -151,7 +161,7 @@ public class IGBlockLootProvider implements LootTableSubProvider
 	}
 
 	private void registerSlabs() {
-		for(RegistryObject<Block> block : IGRegistrationHolder.getBlockRegister().getEntries())
+		for(DeferredHolder<Block, ? extends Block> block : IGRegistrationHolder.getBlockRegister().getEntries())
 		{
 			if(block.get() instanceof IGSlabBlock slab)
 			{
@@ -174,7 +184,7 @@ public class IGBlockLootProvider implements LootTableSubProvider
 	}
 
 	private void registerAllRemainingAsDefault() {
-		for(RegistryObject<Block> b : IGRegistrationHolder.getBlockRegister().getEntries())
+		for(DeferredHolder<Block, ? extends Block> b : IGRegistrationHolder.getBlockRegister().getEntries())
 		{
 			if(b.get() instanceof IGBlockType block)
 			{
@@ -236,7 +246,7 @@ public class IGBlockLootProvider implements LootTableSubProvider
 		if (!this.generatedTables.add(loc)) {
 			throw new IllegalStateException("Duplicate loot table " + name);
 		} else {
-			this.out.accept(loc, table.setParamSet(LootContextParamSets.BLOCK));
+			this.out.accept(ResourceKey.create(Registries.LOOT_TABLE, loc), table.setParamSet(LootContextParamSets.BLOCK));
 		}
 	}
 
@@ -268,9 +278,8 @@ public class IGBlockLootProvider implements LootTableSubProvider
 	private void registerOre(Supplier<Block> ore, ItemStack rawOre) {
 		LootPool.Builder pool_builder = LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F));
 		pool_builder.add((LootItem.lootTableItem(rawOre.getItem())
-				.when(MatchTool.toolMatches(net.minecraft.advancements.critereon.ItemPredicate.Builder.item()
-						.hasEnchantment(new EnchantmentPredicate(Enchantments.SILK_TOUCH, Ints.atLeast(1))))))
-				.otherwise(LootItem.lootTableItem(rawOre.getItem()).apply(SetItemCountFunction.setCount(ConstantValue.exactly(rawOre.getCount()))).apply(ApplyBonusCount.addOreBonusCount(Enchantments.BLOCK_FORTUNE))
+				.when(MatchTool.toolMatches(silkTouchPredicate()))
+				.otherwise(LootItem.lootTableItem(rawOre.getItem()).apply(SetItemCountFunction.setCount(ConstantValue.exactly(rawOre.getCount()))).apply(ApplyBonusCount.addOreBonusCount(blockFortune))
 						.apply(ApplyExplosionDecay.explosionDecay())));
 
 		LootTable.Builder ret = LootTable.lootTable()
@@ -281,9 +290,8 @@ public class IGBlockLootProvider implements LootTableSubProvider
 	private void registerOreSpecial(Supplier<Block> ore, ItemStack rawOre, List<Pair<ItemStack, Float>> extras) {
 		LootPool.Builder pool_builder = LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F));
 		pool_builder.add((LootItem.lootTableItem(rawOre.getItem())
-				.when(MatchTool.toolMatches(net.minecraft.advancements.critereon.ItemPredicate.Builder.item()
-						.hasEnchantment(new EnchantmentPredicate(Enchantments.SILK_TOUCH, Ints.atLeast(1))))))
-				.otherwise(LootItem.lootTableItem(rawOre.getItem()).apply(SetItemCountFunction.setCount(ConstantValue.exactly(rawOre.getCount()))).apply(ApplyBonusCount.addOreBonusCount(Enchantments.BLOCK_FORTUNE))
+				.when(MatchTool.toolMatches(silkTouchPredicate()))
+				.otherwise(LootItem.lootTableItem(rawOre.getItem()).apply(SetItemCountFunction.setCount(ConstantValue.exactly(rawOre.getCount()))).apply(ApplyBonusCount.addOreBonusCount(blockFortune))
 						.apply(ApplyExplosionDecay.explosionDecay())));
 
 		for(Pair<ItemStack, Float> entry : extras)
@@ -302,8 +310,16 @@ public class IGBlockLootProvider implements LootTableSubProvider
 		this.register(ore, ret);
 	}
 
-	private LootPool.Builder binBonusLootPool(ItemLike item, Enchantment ench, float prob, int extra) {
+	private LootPool.Builder binBonusLootPool(ItemLike item, Holder<Enchantment> ench, float prob, int extra) {
 		return this.createPoolBuilder().add(LootItem.lootTableItem(item)).apply(ApplyBonusCount.addBonusBinomialDistributionCount(ench, prob, extra));
+	}
+
+	private ItemPredicate.Builder silkTouchPredicate()
+	{
+		return ItemPredicate.Builder.item().withSubPredicate(
+				ItemSubPredicates.ENCHANTMENTS,
+				ItemEnchantmentsPredicate.enchantments(List.of(HAS_SILK))
+		);
 	}
 
 	private <T extends Comparable<T> & StringRepresentable> LootItemCondition.Builder propertyIs(Supplier<? extends Block> b, Property<T> prop, T value) {

@@ -10,9 +10,9 @@ package com.igteam.immersivegeology.client.menu.multiblock;
 
 import blusunrize.immersiveengineering.client.gui.IEContainerScreen;
 import blusunrize.immersiveengineering.client.gui.info.EnergyInfoArea;
-import blusunrize.immersiveengineering.client.gui.info.FluidInfoArea;
 import blusunrize.immersiveengineering.client.gui.info.InfoArea;
 import com.google.common.collect.ImmutableList;
+import com.igteam.immersivegeology.client.menu.IGFluidInfoArea;
 import com.igteam.immersivegeology.common.block.multiblocks.gui.CrystallizerMenu;
 import com.igteam.immersivegeology.common.block.multiblocks.gui.ReverberationFurnaceMenu;
 import com.igteam.immersivegeology.common.block.multiblocks.logic.helper.IGRevFurnaceHandler.RevStateView;
@@ -77,8 +77,8 @@ public class CrystallizerScreen extends IEContainerScreen<CrystallizerMenu>
 	protected List<InfoArea> makeInfoAreas()
 	{
 		return ImmutableList.of(
-				new FluidInfoArea(this.menu.tanks[0], new Rect2i(this.leftPos + 49, this.topPos + 14, 16, 47), 174, 47, 20, 51, TEXTURE),
-				new FluidInfoArea(this.menu.tanks[1], new Rect2i(this.leftPos + 89, this.topPos + 52, 34, 9), 0, 0, 0, 0, TEXTURE),
+				new IGFluidInfoArea(this.menu.tanks[0], new Rect2i(this.leftPos + 49, this.topPos + 14, 16, 47), 174, 47, 20, 51, TEXTURE),
+				new IGFluidInfoArea(this.menu.tanks[1], new Rect2i(this.leftPos + 89, this.topPos + 52, 34, 9), 0, 0, 0, 0, TEXTURE),
 				new EnergyInfoArea(this.leftPos + 22,this.topPos + 15, this.menu.energy));
 	}
 }

@@ -150,14 +150,14 @@ public class BallmillLogic implements IMultiblockLogic<BallmillLogic.State>, ISe
                 protected ItemStack insert(ItemStack toInsert, boolean simulate)
                 {
                     ItemStack stack = toInsert.copy();
-                    BallmillRecipe recipe = BallmillRecipe.findRecipe(levelGetter.get(), stack);
+                    net.minecraft.world.item.crafting.RecipeHolder<BallmillRecipe> recipe = BallmillRecipe.findRecipe(levelGetter.get(), stack);
                     if (recipe == null) {
                         return stack;
                     } else {
                         MultiblockProcessInWorld<BallmillRecipe> process = new MultiblockProcessInWorld<>(recipe, stack);
 
                         if (processor.addProcessToQueue(process, levelGetter.get(), simulate)) {
-                            stack.shrink(recipe.itemIn.getCount());
+                            stack.shrink(recipe.value().itemIn.getCount());
                         }
 
                         return stack;

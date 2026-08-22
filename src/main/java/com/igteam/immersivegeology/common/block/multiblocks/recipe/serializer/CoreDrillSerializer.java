@@ -35,7 +35,7 @@ public class CoreDrillSerializer extends LegacyIERecipeSerializer<CoreDrillRecip
 	@Override
 	public CoreDrillRecipe readFromJson(ResourceLocation resourceLocation, JsonObject json, IContext iContext)
 	{
-		FluidStack fluid_output = ApiUtils.jsonDeserializeFluidStack(GsonHelper.getAsJsonObject(json, "fluidResult"));
+		FluidStack fluid_output = FluidStack.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json.get("fluidResult")).getOrThrow();
 		FluidTagInput input = FluidTagInput.deserialize(GsonHelper.getAsJsonObject(json, "input"));
 		return new CoreDrillRecipe(resourceLocation, input, fluid_output.getFluid());
 	}
@@ -43,7 +43,7 @@ public class CoreDrillSerializer extends LegacyIERecipeSerializer<CoreDrillRecip
 	@Override
 	public @Nullable CoreDrillRecipe fromNetwork(ResourceLocation resourceLocation, FriendlyByteBuf buffer)
 	{
-		FluidStack fluid_output = buffer.readFluidStack();
+		FluidStack fluid_output = FluidStack.OPTIONAL_STREAM_CODEC.decode((net.minecraft.network.RegistryFriendlyByteBuf)buffer);
 		FluidTagInput input = FluidTagInput.read(buffer);
 		return new CoreDrillRecipe(resourceLocation, input, fluid_output.getFluid());
 	}
@@ -51,7 +51,7 @@ public class CoreDrillSerializer extends LegacyIERecipeSerializer<CoreDrillRecip
 	@Override
 	public void toNetwork(FriendlyByteBuf buffer, CoreDrillRecipe recipe)
 	{
-		buffer.writeFluidStack(new FluidStack(recipe.getOutput(), 1));
+		FluidStack.OPTIONAL_STREAM_CODEC.encode((net.minecraft.network.RegistryFriendlyByteBuf)buffer, new FluidStack(recipe.getOutput(), 1));
 		recipe.getInput().write(buffer);
 	}
 }

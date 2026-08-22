@@ -43,7 +43,7 @@ public final class MultiblockCapabilityReference<T> implements Supplier<T>
             BlockEntity local, BlockCapability<T, Direction> capability, Direction side
     )
     {
-        return forRelative(local, capability, side.getNormal(), side.getOpposite());
+        return forRelative(local, capability, BlockPos.ZERO.relative(side), side.getOpposite());
     }
 
     public static <T> MultiblockCapabilityReference<T> forRelative(

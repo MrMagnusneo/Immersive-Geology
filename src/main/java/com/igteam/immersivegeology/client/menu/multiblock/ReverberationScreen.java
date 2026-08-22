@@ -9,9 +9,9 @@
 package com.igteam.immersivegeology.client.menu.multiblock;
 
 import blusunrize.immersiveengineering.client.gui.IEContainerScreen;
-import blusunrize.immersiveengineering.client.gui.info.FluidInfoArea;
 import blusunrize.immersiveengineering.client.gui.info.InfoArea;
 import com.google.common.collect.ImmutableList;
+import com.igteam.immersivegeology.client.menu.IGFluidInfoArea;
 import com.igteam.immersivegeology.common.block.multiblocks.gui.ReverberationFurnaceMenu;
 import com.igteam.immersivegeology.common.block.multiblocks.logic.helper.IGRevFurnaceHandler.RevStateView;
 import com.igteam.immersivegeology.core.lib.IGLib;
@@ -107,6 +107,6 @@ public class ReverberationScreen extends IEContainerScreen<ReverberationFurnaceM
 	@Override
 	protected List<InfoArea> makeInfoAreas()
 	{
-		return ImmutableList.of(new FluidInfoArea(this.menu.tank, new Rect2i(this.leftPos + 13, this.topPos + 18, 16, 47), 177, 31, 20, 51, TEXTURE));
+		return ImmutableList.of(new IGFluidInfoArea(this.menu.tank, new Rect2i(this.leftPos + 13, this.topPos + 18, 16, 47), 177, 31, 20, 51, TEXTURE));
 	}
 }

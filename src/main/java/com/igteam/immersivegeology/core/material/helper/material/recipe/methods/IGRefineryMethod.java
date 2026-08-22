@@ -10,7 +10,7 @@ package com.igteam.immersivegeology.core.material.helper.material.recipe.methods
 
 import blusunrize.immersiveengineering.api.crafting.FluidTagInput;
 import blusunrize.immersiveengineering.api.crafting.builders.RefineryRecipeBuilder;
-import blusunrize.immersiveengineering.client.gui.info.FluidInfoArea;
+import com.igteam.immersivegeology.client.menu.IGFluidInfoArea;
 import blusunrize.immersiveengineering.common.blocks.multiblocks.IEMultiblocks;
 import blusunrize.lib.manual.gui.ManualScreen;
 import com.igteam.immersivegeology.core.lib.IGLib;
@@ -96,7 +96,7 @@ public class IGRefineryMethod extends IGRecipeMethod
 		FluidTank tank = new FluidTank(1000);
 		tank.setFluid(output);
 
-		FluidInfoArea fluid = new FluidInfoArea(tank, new Rect2i(x, y, 16, 16), 0,0,0,0,  IGLib.makeTextureLocation("reverberation_furnace"));
+		IGFluidInfoArea fluid = new IGFluidInfoArea(tank, new Rect2i(x, y, 16, 16), 0,0,0,0,  IGLib.makeTextureLocation("reverberation_furnace"));
 		fluid.draw(graphics);
 		render_x_space = 48;
 	}

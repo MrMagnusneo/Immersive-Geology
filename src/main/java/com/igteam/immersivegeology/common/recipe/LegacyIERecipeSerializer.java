@@ -1,6 +1,8 @@
 package com.igteam.immersivegeology.common.recipe;
 
 import blusunrize.immersiveengineering.api.crafting.IERecipeSerializer;
+import blusunrize.immersiveengineering.api.crafting.StackWithChance;
+import blusunrize.immersiveengineering.api.crafting.TagOutput;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.DataResult;
@@ -18,7 +20,9 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.common.conditions.ICondition.IContext;
+import net.neoforged.neoforge.common.util.Lazy;
 import net.neoforged.neoforge.network.connection.ConnectionType;
 import org.jetbrains.annotations.Nullable;
 
@@ -39,6 +43,32 @@ public abstract class LegacyIERecipeSerializer<R extends Recipe<?>> extends IERe
     public abstract R readFromJson(ResourceLocation id, JsonObject json, IContext context);
     public abstract @Nullable R fromNetwork(ResourceLocation id, FriendlyByteBuf buffer);
     public abstract void toNetwork(FriendlyByteBuf buffer, R recipe);
+
+    protected static Lazy<ItemStack> readOutput(JsonElement json)
+    {
+        ItemStack stack = TagOutput.CODECS.codec().parse(JsonOps.INSTANCE, json).getOrThrow().get();
+        return Lazy.of(() -> stack);
+    }
+
+    protected static Lazy<ItemStack> readLazyStack(FriendlyByteBuf buffer)
+    {
+        ItemStack stack = ItemStack.OPTIONAL_STREAM_CODEC.decode((RegistryFriendlyByteBuf)buffer);
+        return Lazy.of(() -> stack);
+    }
+
+    protected static void writeLazyStack(FriendlyByteBuf buffer, Lazy<ItemStack> stack)
+    {
+        ItemStack.OPTIONAL_STREAM_CODEC.encode((RegistryFriendlyByteBuf)buffer, stack.get());
+    }
+
+    protected static @Nullable StackWithChance readConditionalStackWithChance(JsonObject json, IContext context)
+    {
+        StackWithChance stack = StackWithChance.OPTIONAL_BASIC_CODEC.parse(JsonOps.INSTANCE, json).getOrThrow();
+        for(var condition : stack.conditions())
+            if(!condition.test(context))
+                return null;
+        return stack;
+    }
 
     @Override
     protected final DualMapCodec<RegistryFriendlyByteBuf, R> codecs()

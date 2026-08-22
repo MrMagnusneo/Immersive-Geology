@@ -20,6 +20,7 @@ import com.igteam.immersivegeology.core.material.helper.material.MaterialTexture
 import com.igteam.immersivegeology.core.registration.IGRegistrationHolder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
@@ -48,7 +49,7 @@ public class IGHydroVentEntity extends IEBaseBlockEntity implements IEServerTick
 	public IGHydroVentEntity(BlockPos pos, BlockState state)
 	{
 		super(resolveEntityType(state), pos, state);
-		this.ventType = () -> state.getBlock() instanceof IGBlockType type ? type.getMaterial(MaterialTexture.base).getFluid(BlockCategoryFlags.FLUID) : null;
+		this.ventType = Lazy.of(() -> state.getBlock() instanceof IGBlockType type ? type.getMaterial(MaterialTexture.base).getFluid(BlockCategoryFlags.FLUID) : null);
 		this.ventOutput = () -> level==null?null:level.getCapability(
 				Capabilities.FluidHandler.BLOCK, worldPosition.above(), Direction.DOWN);
 	}
@@ -68,13 +69,13 @@ public class IGHydroVentEntity extends IEBaseBlockEntity implements IEServerTick
 	}
 
 	@Override
-	public void readCustomNBT(CompoundTag compoundTag, boolean b)
+	public void readCustomNBT(CompoundTag compoundTag, boolean b, HolderLookup.Provider registries)
 	{
 
 	}
 
 	@Override
-	public void writeCustomNBT(CompoundTag compoundTag, boolean b)
+	public void writeCustomNBT(CompoundTag compoundTag, boolean b, HolderLookup.Provider registries)
 	{
 
 	}

@@ -247,8 +247,8 @@ public class GeothermalExchangerLogic implements IMultiblockLogic<GeothermalExch
                                           Level rawLevel, MutableBlockPos localPos, GeothermalExchangerRecipe exchangerRecipe) {
         GeothermalConversionRecipe recipe = helper.getRandomCellPosition(state, localPos);
         if(recipe == null) return false;
-        if(!exchangerRecipe.isCooling() && recipe.blockHeat >= exchangerRecipe.fluidOutput.get().getRawFluid().getFluidType().getTemperature()) return processConversionCell(helper, multiblockLevel, rawLevel, localPos, exchangerRecipe);
-        if(exchangerRecipe.isCooling() && recipe.blockHeat <= exchangerRecipe.fluidOutput.get().getRawFluid().getFluidType().getTemperature()) return processConversionCell(helper, multiblockLevel, rawLevel, localPos, exchangerRecipe);
+        if(!exchangerRecipe.isCooling() && recipe.blockHeat >= exchangerRecipe.fluidOutput.get().getFluid().getFluidType().getTemperature()) return processConversionCell(helper, multiblockLevel, rawLevel, localPos, exchangerRecipe);
+        if(exchangerRecipe.isCooling() && recipe.blockHeat <= exchangerRecipe.fluidOutput.get().getFluid().getFluidType().getTemperature()) return processConversionCell(helper, multiblockLevel, rawLevel, localPos, exchangerRecipe);
         return false;
 	}
 
@@ -294,16 +294,16 @@ public class GeothermalExchangerLogic implements IMultiblockLogic<GeothermalExch
 
         final FluidStack input = state.water_tank.getFluid();
         if(input.isEmpty()) return false;
-        GeothermalExchangerRecipe recipe = GeothermalExchangerRecipe.findRecipe(rawLevel, input);
+        net.minecraft.world.item.crafting.RecipeHolder<GeothermalExchangerRecipe> recipe = GeothermalExchangerRecipe.findRecipe(rawLevel, input);
         if(recipe == null) return false;
         MultiblockProcessInMachine<GeothermalExchangerRecipe> process = new MultiblockProcessInMachine<>(recipe);
         if(input.isEmpty()) process.setInputTanks(1);
-        int drainSimulation = state.water_tank.drain(recipe.fluidIn.getAmount(), FluidAction.SIMULATE).getAmount();
-        int drainAmount = recipe.fluidIn.getAmount();
+        int drainSimulation = state.water_tank.drain(recipe.value().fluidIn.getAmount(), FluidAction.SIMULATE).getAmount();
+        int drainAmount = recipe.value().fluidIn.getAmount();
         if(state.processor.addProcessToQueue(process, rawLevel, true) && drainSimulation == drainAmount)
         {
             state.processor.addProcessToQueue(process, rawLevel, false);
-            state.water_tank.drain(recipe.fluidIn.getAmount(), FluidAction.EXECUTE).getAmount();
+            state.water_tank.drain(recipe.value().fluidIn.getAmount(), FluidAction.EXECUTE).getAmount();
             state.heatHelper.setupRecipeData(multiblockLevel);
             state.currentY = 4;
             return true;
@@ -342,7 +342,7 @@ public class GeothermalExchangerLogic implements IMultiblockLogic<GeothermalExch
                         int heatBlockIndex = -1;
                         if(recipe != null && (isSource || !isFluid))
                         {
-                            List<GeothermalConversionRecipe> recipeList = GeothermalConversionRecipe.RECIPES.getRecipes(rawLevel).stream().toList();
+                            List<GeothermalConversionRecipe> recipeList = GeothermalConversionRecipe.RECIPES.getRecipes(rawLevel).stream().map(net.minecraft.world.item.crafting.RecipeHolder::value).toList();
                             heatBlockIndex = recipeList.indexOf(recipe);
                         }
 
@@ -493,7 +493,7 @@ public class GeothermalExchangerLogic implements IMultiblockLogic<GeothermalExch
             cooling_rate = nbt.getFloat("cooling");
             water_tank.readFromNBT(provider, nbt.getCompound("water_tank"));
             output_tank.readFromNBT(provider, nbt.getCompound("steam_tank"));
-            processor.fromNBT(nbt.getList("processor", Tag.TAG_COMPOUND), MultiblockProcessInMachine::new, provider);
+            processor.fromNBT(nbt.getList("processor", Tag.TAG_COMPOUND), (getter, data, registries) -> new MultiblockProcessInMachine<>(getter, data), provider);
             heatHelper.fromNBT(nbt);
         }
 

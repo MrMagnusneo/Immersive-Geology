@@ -35,7 +35,7 @@ public class BloomeryRecipeSerializer extends LegacyIERecipeSerializer<BloomeryR
 	public BloomeryRecipe readFromJson(ResourceLocation resourceLocation, JsonObject json, IContext iContext)
 	{
 		Lazy<ItemStack> output = readOutput(json.get("result"));
-		IngredientWithSize input = IngredientWithSize.deserialize(GsonHelper.getAsJsonObject(json, "input"));
+		IngredientWithSize input = IngredientWithSize.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json.get("input")).getOrThrow();
 		int time = GsonHelper.getAsInt(json, "time");
 		return new BloomeryRecipe(resourceLocation, input, output, time);
 	}
@@ -45,7 +45,7 @@ public class BloomeryRecipeSerializer extends LegacyIERecipeSerializer<BloomeryR
 	{
 		
 		Lazy<ItemStack> output = readLazyStack(buffer);
-		IngredientWithSize input = IngredientWithSize.read(buffer);
+		IngredientWithSize input = IngredientWithSize.STREAM_CODEC.decode((net.minecraft.network.RegistryFriendlyByteBuf)buffer);
 		int time = buffer.readInt();
 		return new BloomeryRecipe(resourceLocation, input, output, time);
 	}
@@ -55,7 +55,7 @@ public class BloomeryRecipeSerializer extends LegacyIERecipeSerializer<BloomeryR
 	{
 		
 		writeLazyStack(buffer, recipe.result);
-		recipe.input.write(buffer);
+		IngredientWithSize.STREAM_CODEC.encode((net.minecraft.network.RegistryFriendlyByteBuf)buffer, recipe.input);
 		buffer.writeInt(recipe.getTotalProcessTime());
 	}
 }

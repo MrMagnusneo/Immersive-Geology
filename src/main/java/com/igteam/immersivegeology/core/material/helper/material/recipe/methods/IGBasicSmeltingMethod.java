@@ -130,7 +130,8 @@ public class IGBasicSmeltingMethod extends IGRecipeMethod
 	{
 		try
 		{
-			SimpleCookingRecipeBuilder.smelting(Ingredient.of(input), RecipeCategory.MISC, output, xp, smeltingTime).unlockedBy("has_"+input.asItem().getDescriptionId(), InventoryChangeTrigger.TriggerInstance.hasItems(input)).save(consumer, getLocation());
+			if(!(consumer instanceof net.minecraft.data.recipes.RecipeOutput recipeOutput)) return false;
+			SimpleCookingRecipeBuilder.smelting(Ingredient.of(input), RecipeCategory.MISC, output, xp, smeltingTime).unlockedBy("has_"+input.asItem().getDescriptionId(), InventoryChangeTrigger.TriggerInstance.hasItems(input)).save(recipeOutput, getLocation());
 			return true;
 		} catch(Exception exception)
 		{

@@ -58,6 +58,7 @@ import com.igteam.immersivegeology.core.material.helper.flags.*;
 import com.igteam.immersivegeology.core.material.helper.material.MaterialHelper;
 import com.igteam.immersivegeology.core.material.helper.material.MaterialInterface;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -104,13 +105,13 @@ public class IGRegistrationHolder {
 
     private static final DeferredRegister<BlockEntityType<?>> TE_REGISTER = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, IGLib.MODID);
     public static final DeferredRegister<CreativeModeTab> TAB_REGISTER = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, IGLib.MODID);
-    public static final DeferredRegister<Codec<? extends IGlobalLootModifier>> LOOT_SERIALIZER_REGISTER = DeferredRegister.create(NeoForgeRegistries.Keys.GLOBAL_LOOT_MODIFIER_SERIALIZERS, IGLib.MODID);
+    public static final DeferredRegister<MapCodec<? extends IGlobalLootModifier>> LOOT_SERIALIZER_REGISTER = DeferredRegister.create(NeoForgeRegistries.Keys.GLOBAL_LOOT_MODIFIER_SERIALIZERS, IGLib.MODID);
 
-    private static final LinkedHashMap<String, DeferredHolder<?, Block>> BLOCK_REGISTRY_MAP = new LinkedHashMap<>();
-    private static final LinkedHashMap<String, DeferredHolder<?, BlockEntityType<?>>> TE_REGISTRY_MAP = new LinkedHashMap<>();
-    private static final LinkedHashMap<String, DeferredHolder<?, Item>> ITEM_REGISTRY_MAP = new LinkedHashMap<>();
-    private static final LinkedHashMap<String, DeferredHolder<?, Fluid>> FLUID_REGISTRY_MAP = new LinkedHashMap<>();
-    private static final LinkedHashMap<String, DeferredHolder<?, FluidType>> FLUID_TYPE_REGISTRY_MAP = new LinkedHashMap<>();
+    private static final LinkedHashMap<String, DeferredHolder<Block, Block>> BLOCK_REGISTRY_MAP = new LinkedHashMap<>();
+    private static final LinkedHashMap<String, DeferredHolder<BlockEntityType<?>, BlockEntityType<?>>> TE_REGISTRY_MAP = new LinkedHashMap<>();
+    private static final LinkedHashMap<String, DeferredHolder<Item, Item>> ITEM_REGISTRY_MAP = new LinkedHashMap<>();
+    private static final LinkedHashMap<String, DeferredHolder<Fluid, Fluid>> FLUID_REGISTRY_MAP = new LinkedHashMap<>();
+    private static final LinkedHashMap<String, DeferredHolder<FluidType, FluidType>> FLUID_TYPE_REGISTRY_MAP = new LinkedHashMap<>();
 
     public static LinkedHashMap<String, MultiblockRegistration<?>> MB_REGISTRY_MAP = new LinkedHashMap<>();
     public static final LinkedHashMap<String, TemplateMultiblock> MB_TEMPLATE_MAP = new LinkedHashMap<>();
@@ -143,7 +144,7 @@ public class IGRegistrationHolder {
     public static Function<String, TemplateMultiblock> getMBTemplate = MB_TEMPLATE_MAP::get;
     public static Function<String, Fluid> getFluid = (key) -> FLUID_REGISTRY_MAP.get(key).get();
 
-    public static final DeferredHolder<?, CreativeModeTab> IG_BASE_TAB = TAB_REGISTER.register("main", () -> new CreativeModeTab.Builder(CreativeModeTab.Row.TOP, 0)
+    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> IG_BASE_TAB = TAB_REGISTER.register("main", () -> new CreativeModeTab.Builder(CreativeModeTab.Row.TOP, 0)
             .icon(() -> IGRegistrationHolder.getItem.apply("prospector_kit").getDefaultInstance())
             .title(Component.translatable("itemGroup.immersivegeology"))
             .displayItems(IGRegistrationHolder::fillIGTab)
@@ -184,6 +185,17 @@ public class IGRegistrationHolder {
     }
 
     private static final List<Consumer<IEventBus>> MOD_BUS_CALLBACKS = new ArrayList<>();
+    private static IEventBus modEventBus;
+
+    public static void setModEventBus(IEventBus eventBus)
+    {
+        modEventBus = Objects.requireNonNull(eventBus, "eventBus");
+    }
+
+    public static IEventBus getModEventBus()
+    {
+        return Objects.requireNonNull(modEventBus, "The mod event bus must be set before multiblocks are initialized");
+    }
 
     private static boolean checkModMaterialsForOverlap(StoneEnum stoneType, GeologyMaterial ore, IFlagType<?> flag)
     {
@@ -250,8 +262,8 @@ public class IGRegistrationHolder {
         );
     }
 
-    public static DeferredHolder<?, BlockEntityType<IGEnergyPipeEntity>> ENERGY_PIPE;
-    public static DeferredHolder<?, BlockEntityType<IGHydroVentEntity>> IG_HYDROVENT;
+    public static DeferredHolder<BlockEntityType<?>, BlockEntityType<IGEnergyPipeEntity>> ENERGY_PIPE;
+    public static DeferredHolder<BlockEntityType<?>, BlockEntityType<IGHydroVentEntity>> IG_HYDROVENT;
     public static void initialize()
     {
 
@@ -303,10 +315,10 @@ public class IGRegistrationHolder {
                         case HYDROVENT ->
                         {
                             String registryKey = blockCategory.getRegistryKey(material);
-                            DeferredHolder<?, BlockEntityType<IGHydroVentEntity>> TYPE = TE_REGISTER.register(material.getName() + "_vent_entity_type", makeType(IGHydroVentEntity::new, ()-> getBlock.apply(registryKey)));
+                            DeferredHolder<BlockEntityType<?>, BlockEntityType<IGHydroVentEntity>> TYPE = TE_REGISTER.register(material.getName() + "_vent_entity_type", makeType(IGHydroVentEntity::new, ()-> getBlock.apply(registryKey)));
 
                             @SuppressWarnings("unchecked")
-                            DeferredHolder<?, BlockEntityType<?>> typeCast = (DeferredHolder<?, BlockEntityType<?>>)(Object) TYPE;
+                            DeferredHolder<BlockEntityType<?>, BlockEntityType<?>> typeCast = (DeferredHolder<BlockEntityType<?>, BlockEntityType<?>>)(Object) TYPE;
                             TE_REGISTRY_MAP.put(registryKey, typeCast);
 
                             registerBlock(registryKey, () -> new IGHydroVent(blockCategory, material, TYPE));
@@ -316,11 +328,11 @@ public class IGRegistrationHolder {
                         {
                             String registryKey = blockCategory.getRegistryKey(material);
 
-                            DeferredHolder<?, BlockEntityType<IGCrateEntity>> TYPE = TE_REGISTER.register(material.getName() + "_crate_entity_type", makeType(IGCrateEntity::new, ()-> getBlock.apply(registryKey)));
+                            DeferredHolder<BlockEntityType<?>, BlockEntityType<IGCrateEntity>> TYPE = TE_REGISTER.register(material.getName() + "_crate_entity_type", makeType(IGCrateEntity::new, ()-> getBlock.apply(registryKey)));
                             // Because RegistryObject is invariant in its type parameter we need to do this hack
                             // basically we just need to explicitly tell the compiler that yes this is what you're looking for.
                             @SuppressWarnings("unchecked")
-                            DeferredHolder<?, BlockEntityType<?>> typeCast = (DeferredHolder<?, BlockEntityType<?>>)(Object) TYPE;
+                            DeferredHolder<BlockEntityType<?>, BlockEntityType<?>> typeCast = (DeferredHolder<BlockEntityType<?>, BlockEntityType<?>>)(Object) TYPE;
                             TE_REGISTRY_MAP.put(registryKey, typeCast);
 
                             registerBlock(registryKey, () -> new IGCrateEntityType(blockCategory, material, TYPE));
@@ -393,7 +405,7 @@ public class IGRegistrationHolder {
                             // Fluid Type Registration
                             registerFluidType(registryKey, () -> getFluid.apply(registryKey).getFluidType());
                             registerItem(bucket_type.getRegistryKey(material, blockCategory), () -> new IGGenericBucketItem(() -> getFluid.apply(registryKey), blockCategory, bucket_type, material));
-                            registerBlock(registryKey + "_block", () -> new IGFluidBlock(() -> (FlowingFluid) getFluid.apply(registryKey), material, BlockBehaviour.Properties.copy(Blocks.WATER)));
+            registerBlock(registryKey + "_block", () -> new IGFluidBlock(() -> (FlowingFluid) getFluid.apply(registryKey), material, BlockBehaviour.Properties.ofFullCopy(Blocks.WATER)));
                         }
                         case SLURRY ->
                         {
@@ -413,7 +425,7 @@ public class IGRegistrationHolder {
                                     // Flowing
                                     registerFluid(registryKey + "_flowing", () -> new IGFluid.Flowing(material, slurry_material, blockCategory, ItemCategoryFlags.CLEAN_FLASK));
 
-                                    registerBlock(registryKey + "_block", () -> new IGFluidBlock(() -> (FlowingFluid) getFluid.apply(registryKey), material, BlockBehaviour.Properties.copy(Blocks.WATER)));
+            registerBlock(registryKey + "_block", () -> new IGFluidBlock(() -> (FlowingFluid) getFluid.apply(registryKey), material, BlockBehaviour.Properties.ofFullCopy(Blocks.WATER)));
 
                                     registerItem(ItemCategoryFlags.CLEAN_FLASK.getRegistryKey(material, slurry_material), () -> new IGGenericBucketItem(() -> getFluid.apply(registryKey), blockCategory, ItemCategoryFlags.CLEAN_FLASK, material, slurry_material));
                                 }
@@ -437,7 +449,7 @@ public class IGRegistrationHolder {
                                     // Flowing
                                     registerFluid(registryKey + "_flowing", () -> new IGFluid.Flowing(material, slurry_material, blockCategory, ItemCategoryFlags.CLOUDY_FLASK));
 
-                                    registerBlock(registryKey + "_block", () -> new IGFluidBlock(() -> (FlowingFluid) getFluid.apply(registryKey), material, BlockBehaviour.Properties.copy(Blocks.WATER)));
+            registerBlock(registryKey + "_block", () -> new IGFluidBlock(() -> (FlowingFluid) getFluid.apply(registryKey), material, BlockBehaviour.Properties.ofFullCopy(Blocks.WATER)));
 
                                     registerItem(ItemCategoryFlags.CLOUDY_FLASK.getRegistryKey(material, slurry_material), () -> new IGGenericBucketItem(() -> getFluid.apply(registryKey), blockCategory, ItemCategoryFlags.CLOUDY_FLASK, material, slurry_material));
                                 }
@@ -613,22 +625,22 @@ public class IGRegistrationHolder {
         return builder.build();
     }
 
-    public static LinkedHashMap<String, DeferredHolder<?, Item>> getItemRegistryMap() {
+    public static LinkedHashMap<String, DeferredHolder<Item, Item>> getItemRegistryMap() {
         return ITEM_REGISTRY_MAP;
     }
 
-    public static LinkedHashMap<String, DeferredHolder<?, Fluid>> getFluidRegistryMap()
+    public static LinkedHashMap<String, DeferredHolder<Fluid, Fluid>> getFluidRegistryMap()
     {
         return FLUID_REGISTRY_MAP;
     }
 
-    public static HashMap<String, DeferredHolder<?, Block>> getBlockRegistryMap() {
+    public static HashMap<String, DeferredHolder<Block, Block>> getBlockRegistryMap() {
         return BLOCK_REGISTRY_MAP;
     }
 
     public static void registerCapabilities(RegisterCapabilitiesEvent event)
     {
-        for(DeferredHolder<?, BlockEntityType<?>> holder : TE_REGISTRY_MAP.values())
+        for(DeferredHolder<BlockEntityType<?>, BlockEntityType<?>> holder : TE_REGISTRY_MAP.values())
         {
             @SuppressWarnings("unchecked")
             BlockEntityType<BlockEntity> type = (BlockEntityType<BlockEntity>)(Object)holder.get();
@@ -639,7 +651,7 @@ public class IGRegistrationHolder {
         }
         event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, ENERGY_PIPE.get(),
                 IGEnergyPipeEntity::getEnergyHandler);
-        for(DeferredHolder<?, Item> holder : ITEM_REGISTRY_MAP.values())
+        for(DeferredHolder<Item, Item> holder : ITEM_REGISTRY_MAP.values())
             if(holder.get() instanceof IGGenericBucketItem bucket)
                 event.registerItem(Capabilities.FluidHandler.ITEM,
                         (stack, ignored) -> new IGGenericBucketItem.FluidHandler(stack), bucket);
@@ -653,7 +665,7 @@ public class IGRegistrationHolder {
         IGLib.IG_LOGGER.info("- Complete");
     }
 
-    public static DeferredHolder<?, Codec<? extends IGlobalLootModifier>> IG_LOOT_MODIFICATION;
+    public static DeferredHolder<MapCodec<? extends IGlobalLootModifier>, MapCodec<IGLootModifier>> IG_LOOT_MODIFICATION;
 
     public static void initializeLootModifications()
     {

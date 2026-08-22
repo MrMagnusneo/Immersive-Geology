@@ -19,9 +19,11 @@ import blusunrize.immersiveengineering.common.blocks.ticking.IEServerTickableBE;
 import blusunrize.immersiveengineering.common.util.MultiblockCapability;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -53,13 +55,13 @@ public class IGMetalDetectorEntity extends IEBaseBlockEntity implements IEServer
 	}
 
 	@Override
-	public void readCustomNBT(CompoundTag compoundTag, boolean b)
+	public void readCustomNBT(CompoundTag compoundTag, boolean b, HolderLookup.Provider registries)
 	{
 
 	}
 
 	@Override
-	public void writeCustomNBT(CompoundTag compoundTag, boolean b)
+	public void writeCustomNBT(CompoundTag compoundTag, boolean b, HolderLookup.Provider registries)
 	{
 
 	}
@@ -84,9 +86,9 @@ public class IGMetalDetectorEntity extends IEBaseBlockEntity implements IEServer
 	}
 
 	@Override
-	public boolean interact(Direction direction, Player player, InteractionHand interactionHand, ItemStack itemStack, float v, float v1, float v2)
+	public ItemInteractionResult interact(Direction direction, Player player, InteractionHand interactionHand, ItemStack itemStack, float v, float v1, float v2)
 	{
-		return false;
+		return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 	}
 
 	@Override

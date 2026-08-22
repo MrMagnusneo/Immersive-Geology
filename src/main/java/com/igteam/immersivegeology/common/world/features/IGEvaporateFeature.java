@@ -86,7 +86,7 @@ public class IGEvaporateFeature extends Feature<IGEvaporateConfig>
 		height = radius / 2 + 1; // Semi-dome height
 
 		// Ensure we place only on sand
-		if (!world.getBlockState(origin.below()).is(Tags.Blocks.SAND) || isWet) {
+		if (!world.getBlockState(origin.below()).is(Tags.Blocks.SANDS) || isWet) {
 			return false;
 		}
 
@@ -96,7 +96,7 @@ public class IGEvaporateFeature extends Feature<IGEvaporateConfig>
 				if (distance <= radius * radius) {
 					for (int y = 0; y <= height; y++) {
 						BlockPos pos = origin.offset(x, -y, z);
-						if (world.getBlockState(pos).is(Tags.Blocks.SAND)) {
+						if (world.getBlockState(pos).is(Tags.Blocks.SANDS)) {
 							world.setBlock(pos, evaporiteBlock, 2);
 						}
 					}

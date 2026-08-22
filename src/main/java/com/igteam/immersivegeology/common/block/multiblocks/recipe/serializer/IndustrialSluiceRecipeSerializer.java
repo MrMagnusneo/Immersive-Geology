@@ -57,7 +57,9 @@ public class IndustrialSluiceRecipeSerializer extends LegacyIERecipeSerializer<I
 
 		for (int index = 0; index < amount_of_byproducts; index++) {
 			JsonObject byproductObject = jsonArray.get(index).getAsJsonObject();
-			list.add(readConditionalStackWithChance(byproductObject, IContext.EMPTY));
+			StackWithChance byproduct = readConditionalStackWithChance(byproductObject, IContext.EMPTY);
+			if(byproduct != null)
+				list.add(byproduct);
 		}
 
 		return list;
@@ -83,7 +85,7 @@ public class IndustrialSluiceRecipeSerializer extends LegacyIERecipeSerializer<I
 		NonNullList<StackWithChance> item_list = NonNullList.createWithCapacity(size);
 		for(int index = 0; index < size; index++)
 		{
-			item_list.add(StackWithChance.read(buffer));
+			item_list.add(StackWithChance.CODECS.streamCodec().decode((net.minecraft.network.RegistryFriendlyByteBuf)buffer));
 		}
 
 		return item_list;
@@ -98,7 +100,7 @@ public class IndustrialSluiceRecipeSerializer extends LegacyIERecipeSerializer<I
 		buffer.writeInt(size);
 		for(int index = 0; index < size; index++)
 		{
-			byproducts.get(index).write(buffer);
+			StackWithChance.CODECS.streamCodec().encode((net.minecraft.network.RegistryFriendlyByteBuf)buffer, byproducts.get(index));
 		}
 	}
 

@@ -146,13 +146,13 @@ public class PelletizerLogic implements ISkinnableMultiblockLogic<State>, IServe
             bindingAgent = ChemicalEnum.BindingAgent.getFluid(BlockCategoryFlags.FLUID);
             if(bindingAgent.isSame(state.tank.getFluid().getFluid()))
             {
-                PelletizerRecipe recipe = PelletizerRecipe.findRecipe(level, inputStack);
+                net.minecraft.world.item.crafting.RecipeHolder<PelletizerRecipe> recipe = PelletizerRecipe.findRecipe(level, inputStack);
                 if(recipe == null) return;
                 MultiblockProcessInWorld<PelletizerRecipe> process = new MultiblockProcessInWorld<>(recipe, inputStack);
                 if(state.processor.addProcessToQueue(process, level, true))
                 {
                     state.processor.addProcessToQueue(process, level, false);
-                    inputStack.shrink(recipe.itemIn.getCount());
+                    inputStack.shrink(recipe.value().itemIn.getCount());
                 }
                 return;
             }
@@ -219,7 +219,7 @@ public class PelletizerLogic implements ISkinnableMultiblockLogic<State>, IServe
     private static boolean insertItemToInventory(ItemStack stack, State state, Level level, boolean simulate)
     {
         if(PelletizerRecipe.findRecipe(level, stack) == null) return false;
-        ItemStack remaining = state.insertionHandler.getValue().insertItem(0, new ItemStack(stack.getItem()) , simulate);
+        ItemStack remaining = state.insertionHandler.insertItem(0, new ItemStack(stack.getItem()) , simulate);
         return remaining.isEmpty();
     }
 

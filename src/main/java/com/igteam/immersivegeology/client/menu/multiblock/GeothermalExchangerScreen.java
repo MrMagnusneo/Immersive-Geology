@@ -12,7 +12,6 @@ import blusunrize.immersiveengineering.api.multiblocks.ClientMultiblocks;
 import blusunrize.immersiveengineering.api.multiblocks.TemplateMultiblock;
 import blusunrize.immersiveengineering.client.gui.IEContainerScreen;
 import blusunrize.immersiveengineering.client.gui.info.EnergyInfoArea;
-import blusunrize.immersiveengineering.client.gui.info.FluidInfoArea;
 import blusunrize.immersiveengineering.client.gui.info.InfoArea;
 import blusunrize.immersiveengineering.client.utils.IERenderTypes;
 import blusunrize.immersiveengineering.client.utils.TransformingVertexBuilder;
@@ -21,6 +20,7 @@ import com.google.common.collect.ImmutableList;
 import com.igteam.immersivegeology.client.IGShaders;
 import com.igteam.immersivegeology.client.helper.FluidCuboid;
 import com.igteam.immersivegeology.client.helper.IGFluidRenderHelper;
+import com.igteam.immersivegeology.client.menu.IGFluidInfoArea;
 import com.igteam.immersivegeology.client.renderer.IGRenderTypes;
 import com.igteam.immersivegeology.common.block.multiblocks.IGGeothermalExchangerMultiblock;
 import com.igteam.immersivegeology.common.block.multiblocks.gui.GeothermalExchangerMenu;
@@ -147,9 +147,9 @@ public class GeothermalExchangerScreen extends IEContainerScreen<GeothermalExcha
 	}
 
 	@Override
-	public void renderBackground(@NotNull GuiGraphics graphics)
+	public void renderBackground(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
 	{
-		super.renderBackground(graphics);
+		super.renderBackground(graphics, mouseX, mouseY, partialTick);
 	}
 
 	private Transformation createRenderTransform() {
@@ -309,8 +309,8 @@ public class GeothermalExchangerScreen extends IEContainerScreen<GeothermalExcha
 	protected List<InfoArea> makeInfoAreas()
 	{
 		return ImmutableList.of(
-				new FluidInfoArea(this.menu.tanks[0], new Rect2i(this.leftPos + 157, this.topPos + 23, 16, 47), 101, 187, 20, 51, TEXTURE),
-				new FluidInfoArea(this.menu.tanks[1], new Rect2i(this.leftPos + 61, this.topPos + 23, 16, 47), 101, 187, 20, 51, TEXTURE),
+				new IGFluidInfoArea(this.menu.tanks[0], new Rect2i(this.leftPos + 157, this.topPos + 23, 16, 47), 101, 187, 20, 51, TEXTURE),
+				new IGFluidInfoArea(this.menu.tanks[1], new Rect2i(this.leftPos + 61, this.topPos + 23, 16, 47), 101, 187, 20, 51, TEXTURE),
 				new EnergyInfoArea(this.leftPos + 206,this.topPos + 98, this.menu.energy_storage));
 	}
 

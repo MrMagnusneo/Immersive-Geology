@@ -11,7 +11,7 @@ package com.igteam.immersivegeology.common.world.modifiers;
 import com.igteam.immersivegeology.common.config.IGServerConfig;
 import com.igteam.immersivegeology.common.world.IGWorldGen;
 import com.igteam.immersivegeology.core.lib.IGLib;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.biome.Biome;
@@ -29,14 +29,14 @@ import java.util.stream.Collectors;
 public record IGOreRemovalModifier() implements BiomeModifier
 {
 	@Override
-	public Codec<? extends BiomeModifier> codec()
+	public MapCodec<? extends BiomeModifier> codec()
 	{
 		return IGWorldGen.ORE_MODIFIER_CODEC.get();
 	}
 
 	private Set<ResourceLocation> getBlacklistedBiomes()
 	{
-		return IGServerConfig.REMOVAL.biome_blacklist.get().stream().map(ResourceLocation::new).collect(Collectors.toSet());
+		return IGServerConfig.REMOVAL.biome_blacklist.get().stream().map(ResourceLocation::parse).collect(Collectors.toSet());
 	}
 
 	private static final BooleanValue isDebugLogEnabled = IGServerConfig.REMOVAL.logProcess;

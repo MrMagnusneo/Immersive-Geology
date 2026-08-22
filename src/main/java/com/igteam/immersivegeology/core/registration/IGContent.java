@@ -31,7 +31,6 @@ import com.igteam.immersivegeology.core.material.data.enums.StoneEnum;
 import com.igteam.immersivegeology.core.material.helper.flags.BlockCategoryFlags;
 import com.igteam.immersivegeology.core.material.helper.material.MaterialInterface;
 import com.igteam.immersivegeology.core.material.helper.material.recipe.helper.IGRecipeChain;
-import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
@@ -41,6 +40,7 @@ import net.minecraft.util.GsonHelper;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Skeleton;
 import net.minecraft.world.entity.player.Player;
@@ -51,6 +51,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import org.jetbrains.annotations.Nullable;
 
 import java.text.DecimalFormat;
@@ -67,7 +68,7 @@ public class IGContent {
         ChemthrowerHandler.registerEffect(ChemicalEnum.ChemicalWaste.getFluidTag(), new ChemthrowerEffect()
         {
             @Override
-            public void applyToEntity(LivingEntity livingEntity, @Nullable Player player, ItemStack itemStack, Fluid fluid)
+            public void applyToEntity(LivingEntity livingEntity, @Nullable Player player, @Nullable Entity directHit, ItemStack itemStack, Fluid fluid)
             {
                 livingEntity.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 50));
                 livingEntity.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 140));
@@ -78,7 +79,7 @@ public class IGContent {
             }
 
             @Override
-            public void applyToBlock(Level level, HitResult hitResult, @Nullable Player player, ItemStack itemStack, Fluid fluid)
+            public void applyToBlock(Level level, HitResult hitResult, @Nullable Player player, @Nullable Entity directHit, ItemStack itemStack, Fluid fluid)
             {
                 Vec3 vec = hitResult.getLocation();
                 BlockPos loc = new BlockPos((int)vec.x(), (int)vec.y(), (int)vec.z()).below();
@@ -88,7 +89,7 @@ public class IGContent {
                 {
                     level.setBlock(loc, Blocks.DIRT.defaultBlockState(), 3);
                 }
-                if(state.is(Blocks.TALL_GRASS) || state.is(Blocks.GRASS) || state.is(Blocks.FERN) || state.is(Blocks.LARGE_FERN))
+                if(state.is(Blocks.TALL_GRASS) || state.is(Blocks.SHORT_GRASS) || state.is(Blocks.FERN) || state.is(Blocks.LARGE_FERN))
                 {
                     level.setBlock(loc, Blocks.AIR.defaultBlockState(), 0);
                 }
@@ -111,18 +112,18 @@ public class IGContent {
         ChemthrowerHandler.registerEffect(ChemicalEnum.SulfuricAcid.getFluidTag(), new ChemthrowerEffect()
         {
             @Override
-            public void applyToEntity(LivingEntity livingEntity, @Nullable Player player, ItemStack itemStack, Fluid fluid)
+            public void applyToEntity(LivingEntity livingEntity, @Nullable Player player, @Nullable Entity directHit, ItemStack itemStack, Fluid fluid)
             {
                 if(!(livingEntity instanceof Skeleton))
                 {
-                    livingEntity.setSecondsOnFire(5);
+                    livingEntity.igniteForSeconds(5);
                     livingEntity.addEffect(new MobEffectInstance(MobEffects.WITHER, 10, 0));
-                    livingEntity.addEffect(new MobEffectInstance(IEPotions.FLAMMABLE.get(), 20 * 5,0));
+                    livingEntity.addEffect(new MobEffectInstance(IEPotions.FLAMMABLE, 20 * 5,0));
                 }
             }
 
             @Override
-            public void applyToBlock(Level level, HitResult hitResult, @Nullable Player player, ItemStack itemStack, Fluid fluid)
+            public void applyToBlock(Level level, HitResult hitResult, @Nullable Player player, @Nullable Entity directHit, ItemStack itemStack, Fluid fluid)
             {
 
             }
@@ -132,16 +133,16 @@ public class IGContent {
         IGLib.IG_LOGGER.info("Finished");
     }
 
-    public static void registerContainersAndScreens()
+    public static void registerContainersAndScreens(RegisterMenuScreensEvent event)
     {
-        MenuScreens.register(IGMenuTypes.BLOOMERY.getType(), BloomeryScreen::new);
-        MenuScreens.register(IGMenuTypes.REVERBERATION_FURNACE.getType(), ReverberationScreen::new);
-        MenuScreens.register(IGMenuTypes.GEOTHERMAL_EXCHANGER.getType(), GeothermalExchangerScreen::new);
-        MenuScreens.register(IGMenuTypes.CRYSTALLIZER.getType(), CrystallizerScreen::new);
-        MenuScreens.register(IGMenuTypes.CHEMICAL_REACTOR.getType(), ChemicalReactorScreen::new);
-        MenuScreens.register(IGMenuTypes.SMALL_CHEMICAL_REACTOR.getType(), SmallChemicalReactorScreen::new);
-        MenuScreens.register(IGMenuTypes.ROTARY_KILN.getType(), RotaryKilnScreen::new);
-        MenuScreens.register(IGMenuTypes.CRATE.get(), IGCrateScreen.StandardIGCrate::new);
+        event.register(IGMenuTypes.BLOOMERY.getType(), BloomeryScreen::new);
+        event.register(IGMenuTypes.REVERBERATION_FURNACE.getType(), ReverberationScreen::new);
+        event.register(IGMenuTypes.GEOTHERMAL_EXCHANGER.getType(), GeothermalExchangerScreen::new);
+        event.register(IGMenuTypes.CRYSTALLIZER.getType(), CrystallizerScreen::new);
+        event.register(IGMenuTypes.CHEMICAL_REACTOR.getType(), ChemicalReactorScreen::new);
+        event.register(IGMenuTypes.SMALL_CHEMICAL_REACTOR.getType(), SmallChemicalReactorScreen::new);
+        event.register(IGMenuTypes.ROTARY_KILN.getType(), RotaryKilnScreen::new);
+        event.register(IGMenuTypes.CRATE.get(), IGCrateScreen.StandardIGCrate::new);
     }
 
     public static void initializeManualEntries()
@@ -415,14 +416,14 @@ public class IGContent {
     ChemthrowerEffect acidic = new ChemthrowerEffect()
     {
         @Override
-        public void applyToEntity(LivingEntity livingEntity, @Nullable Player player, ItemStack itemStack, Fluid fluid)
+        public void applyToEntity(LivingEntity livingEntity, @Nullable Player player, @Nullable Entity directHit, ItemStack itemStack, Fluid fluid)
         {
             livingEntity.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 40));
             livingEntity.addEffect(new MobEffectInstance(MobEffects.POISON, 40, 1));
         }
 
         @Override
-        public void applyToBlock(Level level, HitResult hitResult, @Nullable Player player, ItemStack itemStack, Fluid fluid)
+        public void applyToBlock(Level level, HitResult hitResult, @Nullable Player player, @Nullable Entity directHit, ItemStack itemStack, Fluid fluid)
         {
             Vec3 vec = hitResult.getLocation();
             BlockPos loc = new BlockPos((int)vec.x(), (int)vec.y(), (int)vec.z());
@@ -432,7 +433,7 @@ public class IGContent {
                 level.setBlock(loc, Blocks.DIRT.defaultBlockState(), 0);
             }
 
-            if(state.is(Blocks.TALL_GRASS) || state.is(Blocks.GRASS) || state.is(Blocks.FERN) || state.is(Blocks.LARGE_FERN))
+            if(state.is(Blocks.TALL_GRASS) || state.is(Blocks.SHORT_GRASS) || state.is(Blocks.FERN) || state.is(Blocks.LARGE_FERN))
             {
                 level.setBlock(loc, Blocks.AIR.defaultBlockState(), 0);
             }

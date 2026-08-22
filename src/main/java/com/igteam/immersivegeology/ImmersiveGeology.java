@@ -56,10 +56,14 @@ public class ImmersiveGeology {
         IGLib.IG_LOGGER.info("======== Starting Immersive Geology ========");
         modEventBus.addListener(this::setup);
         modEventBus.addListener(this::clientSetup);
+        if(FMLLoader.getDist().isClient()) {
+            modEventBus.addListener(IGContent::registerContainersAndScreens);
+        }
         modEventBus.addListener(this::enqueueIMC);
         modEventBus.addListener(RegisterCapabilitiesEvent.class, IGRegistrationHolder::registerCapabilities);
 
         IGLib.IG_LOGGER.info("- Initializing IG Multiblocks");
+        IGRegistrationHolder.setModEventBus(modEventBus);
         IGRegistrationHolder.initializeMultiblocks();
 
         IGLib.IG_LOGGER.info("- Recipe Serializer Registration");
@@ -94,9 +98,6 @@ public class ImmersiveGeology {
         
         IGLib.IG_LOGGER.info("- Color Tint Registration");
         supplyMaterialTint();
-
-        IGLib.IG_LOGGER.info("- Container And Screen Registration");
-        IGContent.registerContainersAndScreens();
 
         IGLib.IG_LOGGER.info("- Custom IE Manual Entry Registration");
         IGContent.initializeManualEntries();

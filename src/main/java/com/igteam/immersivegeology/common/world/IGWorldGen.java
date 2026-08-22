@@ -15,7 +15,7 @@ import com.igteam.immersivegeology.common.world.placements.IGCountPlacement;
 import com.igteam.immersivegeology.common.world.placements.IGPlaceholderFeature;
 import com.igteam.immersivegeology.core.lib.IGLib;
 import com.igteam.immersivegeology.core.material.helper.flags.ModFlags;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -31,25 +31,25 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 
 public class IGWorldGen
 {
-	public static final DeferredHolder<?, IGOreFeature> IG_CONFIG_ORE;
+	public static final DeferredHolder<Feature<?>, IGOreFeature> IG_CONFIG_ORE;
 	private static final DeferredRegister<Feature<?>> FEATURE_REGISTER;
 	private static final DeferredRegister<Feature<?>> TFC_FEATURE_REGISTER; // Used for inbuilt compat to prevent crashing when TFC not loaded.
 	private static final DeferredRegister<PlacementModifierType<?>> PLACEMENT_REGISTER;
 	private static final DeferredRegister<HeightProviderType<?>> HEIGHT_REGISTER;
 
-	public static DeferredHolder<?, HeightProviderType<IGHeightProvider>> IG_HEIGHT_PROVIDER;
-	public static DeferredHolder<?, PlacementModifierType<IGCountPlacement>> IG_COUNT_PLACEMENT;
-	public static DeferredHolder<?, PlacementModifierType<IGSparsePlacement>> IG_SPARSE_PLACEMENT;
-	public static DeferredHolder<?, PlacementModifierType<IGDefaultPlacement>> IG_DEFAULT_PLACEMENT;
-	public static final DeferredHolder<?, IGEvaporateFeature> EVAPORITE_FEATURE;
+	public static DeferredHolder<HeightProviderType<?>, HeightProviderType<IGHeightProvider>> IG_HEIGHT_PROVIDER;
+	public static DeferredHolder<PlacementModifierType<?>, PlacementModifierType<IGCountPlacement>> IG_COUNT_PLACEMENT;
+	public static DeferredHolder<PlacementModifierType<?>, PlacementModifierType<IGSparsePlacement>> IG_SPARSE_PLACEMENT;
+	public static DeferredHolder<PlacementModifierType<?>, PlacementModifierType<IGDefaultPlacement>> IG_DEFAULT_PLACEMENT;
+	public static final DeferredHolder<Feature<?>, IGEvaporateFeature> EVAPORITE_FEATURE;
 
 	public static final TagKey<Biome> SALT_FLATS_BIOMES = TagKey.create(
 			Registries.BIOME,
 			ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "salt_flats")
 	);
 
-	public static final DeferredRegister<Codec<? extends BiomeModifier>> BIOME_MODIFIER_SERIALIZERS;
-	public static final DeferredHolder<?, Codec<IGOreRemovalModifier>> ORE_MODIFIER_CODEC;
+	public static final DeferredRegister<MapCodec<? extends BiomeModifier>> BIOME_MODIFIER_SERIALIZERS;
+	public static final DeferredHolder<MapCodec<? extends BiomeModifier>, MapCodec<IGOreRemovalModifier>> ORE_MODIFIER_CODEC;
 
 	public static void init(IEventBus modEventBus)
 	{
@@ -83,7 +83,7 @@ public class IGWorldGen
 
 		BIOME_MODIFIER_SERIALIZERS = DeferredRegister.create(NeoForgeRegistries.Keys.BIOME_MODIFIER_SERIALIZERS, IGLib.MODID);
 
-		ORE_MODIFIER_CODEC = BIOME_MODIFIER_SERIALIZERS.register("ore_removal", () -> Codec.unit(IGOreRemovalModifier::new));
+		ORE_MODIFIER_CODEC = BIOME_MODIFIER_SERIALIZERS.register("ore_removal", () -> MapCodec.unit(IGOreRemovalModifier::new));
 
 
 		PLACEMENT_REGISTER = DeferredRegister.create(Registries.PLACEMENT_MODIFIER_TYPE, IGLib.MODID);

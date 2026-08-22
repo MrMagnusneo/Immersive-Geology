@@ -45,14 +45,14 @@ public class IGGeothermalExchangerCategory extends IGRecipeCategory<GeothermalEx
 		builder.addSlot(RecipeIngredientRole.INPUT, 11, 23)
 				.setFluidRenderer(tankSize, false, 16, 55)
 				.addIngredients(NeoForgeTypes.FLUID_STACK, recipe.fluidIn.getMatchingFluidStacks())
-				.addTooltipCallback(JEIHelper.fluidTooltipCallback);
+				.addRichTooltipCallback(JEIHelper.fluidTooltipCallback);
 
 		if(!recipe.fluidOutput.get().isEmpty())
 		{
 			builder.addSlot(RecipeIngredientRole.OUTPUT, 74, 23)
 					.setFluidRenderer(432, false, 16, 55)
 					.addFluidStack(recipe.fluidOutput.get().getFluid(), recipe.fluidOutput.get().getAmount())
-					.addTooltipCallback(JEIHelper.fluidTooltipCallback);
+					.addRichTooltipCallback(JEIHelper.fluidTooltipCallback);
 		}
 	}
 

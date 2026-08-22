@@ -9,7 +9,6 @@
 package com.igteam.immersivegeology.core.registration;
 
 import blusunrize.immersiveengineering.api.crafting.IERecipeSerializer;
-import blusunrize.immersiveengineering.common.crafting.serializers.SimpleRecipeSerializer;
 import com.igteam.immersivegeology.common.block.multiblocks.recipe.*;
 import com.igteam.immersivegeology.common.block.multiblocks.recipe.builder.GeothermalBiomeRecipeBuilder;
 import com.igteam.immersivegeology.common.block.multiblocks.recipe.builder.TurbineFuelBuilder;
@@ -20,23 +19,18 @@ import com.igteam.immersivegeology.common.recipe.IGRepairItemRecipe;
 import com.igteam.immersivegeology.core.lib.IGLib;
 import com.igteam.immersivegeology.core.registration.helper.EmptyRecipe;
 import com.igteam.immersivegeology.core.registration.helper.EmptySerializer;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.crafting.CraftingBookCategory;
-import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.SimpleCraftingRecipeSerializer;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.minecraft.core.registries.Registries;
 import net.neoforged.neoforge.registries.DeferredHolder;
-
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 public class IGRecipeSerializers
 {
 	public static final DeferredRegister<RecipeSerializer<?>> RECIPE_SERIALIZERS = DeferredRegister.create(Registries.RECIPE_SERIALIZER, IGLib.MODID);
 
-	public static final DeferredHolder<?, IERecipeSerializer<EmptyRecipe>> EMPTY_SERIALIZER;
-	public static final DeferredHolder<?, SimpleRecipeSerializer<IGRepairItemRecipe>> IG_REPAIR_SERIALIZER;
+	public static final DeferredHolder<RecipeSerializer<?>, IERecipeSerializer<EmptyRecipe>> EMPTY_SERIALIZER;
+	public static final DeferredHolder<RecipeSerializer<?>, SimpleCraftingRecipeSerializer<IGRepairItemRecipe>> IG_REPAIR_SERIALIZER;
 
 
 	static {
@@ -61,13 +55,9 @@ public class IGRecipeSerializers
 		GeothermalBiomeRecipe.SERIALIZER = RECIPE_SERIALIZERS.register("geothermal_biome", GeothermalBiomeRecipeSerializer::new);
 		IGGeoRecipe.SERIALIZER = RECIPE_SERIALIZERS.register("geo_hint", IGGeoSerializer::new);
 
-		IG_REPAIR_SERIALIZER = RECIPE_SERIALIZERS.register("ig_item_repair", special(IGRepairItemRecipe::new));
+		IG_REPAIR_SERIALIZER = RECIPE_SERIALIZERS.register("ig_item_repair", () -> new SimpleCraftingRecipeSerializer<>(IGRepairItemRecipe::new));
 
 		EMPTY_SERIALIZER = RECIPE_SERIALIZERS.register("empty", EmptySerializer::new);
 	}
 
-	private static <T extends Recipe<?>> Supplier<SimpleRecipeSerializer<T>> special(Function<CraftingBookCategory, T> create)
-	{
-		return () -> new SimpleRecipeSerializer<>(create);
-	}
 }

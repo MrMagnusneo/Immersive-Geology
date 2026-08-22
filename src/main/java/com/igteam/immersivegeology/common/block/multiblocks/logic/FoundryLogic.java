@@ -94,16 +94,16 @@ public class FoundryLogic implements IMultiblockLogic<FoundryLogic.State>, IServ
 
         final FluidStack input = state.tank.getFluid();
         if(input.isEmpty()) return;
-        FoundryRecipe recipe = FoundryRecipe.findRecipe(level, input);
+        net.minecraft.world.item.crafting.RecipeHolder<FoundryRecipe> recipe = FoundryRecipe.findRecipe(level, input);
         if(recipe == null) return;
         MultiblockProcessInMachine<FoundryRecipe> process = new MultiblockProcessInMachine<>(recipe);
         if(input.isEmpty()) process.setInputTanks(1);
-        int drainSimulation = state.tank.drain(recipe.fluidIn.getAmount(), FluidAction.SIMULATE).getAmount();
-        int drainAmount = recipe.fluidIn.getAmount();
+        int drainSimulation = state.tank.drain(recipe.value().fluidIn.getAmount(), FluidAction.SIMULATE).getAmount();
+        int drainAmount = recipe.value().fluidIn.getAmount();
         if(state.processor.addProcessToQueue(process, level, true) && drainSimulation == drainAmount)
         {
             state.processor.addProcessToQueue(process, level, false);
-            state.tank.drain(recipe.fluidIn.getAmount(), FluidAction.EXECUTE).getAmount();
+            state.tank.drain(recipe.value().fluidIn.getAmount(), FluidAction.EXECUTE).getAmount();
         }
     }
 
@@ -187,7 +187,7 @@ public class FoundryLogic implements IMultiblockLogic<FoundryLogic.State>, IServ
             energy.deserializeNBT(provider, nbt.getCompound("energy"));
             tank.readFromNBT(provider, nbt.getCompound("tank"));
             inventory.deserializeNBT(provider, nbt.getCompound("inventory"));
-            processor.fromNBT(nbt.getList("processor", Tag.TAG_COMPOUND), MultiblockProcessInMachine::new, provider);
+            processor.fromNBT(nbt.getList("processor", Tag.TAG_COMPOUND), (getter, data, registries) -> new MultiblockProcessInMachine<>(getter, data), provider);
         }
 
         @Override

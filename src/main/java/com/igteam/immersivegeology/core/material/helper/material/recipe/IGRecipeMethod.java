@@ -8,7 +8,7 @@
 
 package com.igteam.immersivegeology.core.material.helper.material.recipe;
 
-import blusunrize.immersiveengineering.client.gui.info.FluidInfoArea;
+import com.igteam.immersivegeology.client.menu.IGFluidInfoArea;
 import blusunrize.lib.manual.gui.ManualScreen;
 import com.igteam.immersivegeology.core.lib.IGLib;
 import com.igteam.immersivegeology.core.material.helper.flags.IFlagType;
@@ -117,7 +117,7 @@ public abstract class IGRecipeMethod
 	{
 		FluidTank tank = new FluidTank(128);
 		tank.setFluid(new FluidStack(stack, 128));
-		FluidInfoArea fluid = new FluidInfoArea(tank, new Rect2i(x, y, w, h), 0,0, 0,0, getMethod().getGuiLocation());
+		IGFluidInfoArea fluid = new IGFluidInfoArea(tank, new Rect2i(x, y, w, h), 0,0, 0,0, getMethod().getGuiLocation());
 		fluid.draw(graphics);
 		if(mx > x && (x+w) > mx && my > y && (y+h) > my)
 		{
@@ -131,7 +131,7 @@ public abstract class IGRecipeMethod
 		FluidTank tank = new FluidTank(128);
 		stack.setAmount(128);
 		tank.setFluid(stack);
-		FluidInfoArea fluid = new FluidInfoArea(tank, new Rect2i(x, y, w, h), 0,0, 0,0, getMethod().getGuiLocation());
+		IGFluidInfoArea fluid = new IGFluidInfoArea(tank, new Rect2i(x, y, w, h), 0,0, 0,0, getMethod().getGuiLocation());
 		fluid.draw(graphics);
 		if(mx > x && (x+w) > mx && my > y && (y+h) > my)
 		{
@@ -143,7 +143,7 @@ public abstract class IGRecipeMethod
 	{
 		FluidTank tank = new FluidTank(amount);
 		tank.setFluid(new FluidStack(stack, amount));
-		FluidInfoArea fluid = new FluidInfoArea(tank, new Rect2i(x, y, w, h), 0,0, 0,0, getMethod().getGuiLocation());
+		IGFluidInfoArea fluid = new IGFluidInfoArea(tank, new Rect2i(x, y, w, h), 0,0, 0,0, getMethod().getGuiLocation());
 		fluid.draw(graphics);
 		if(mx > x && (x+w) > mx && my > y && (y+h) > my)
 		{

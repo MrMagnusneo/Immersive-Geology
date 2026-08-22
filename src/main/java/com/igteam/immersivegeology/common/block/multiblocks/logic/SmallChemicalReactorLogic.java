@@ -185,11 +185,11 @@ public class SmallChemicalReactorLogic implements ISkinnableMultiblockLogic<Stat
         IMultiblockLevel mbLevel = ctx.getLevel();
         Level level = mbLevel.getRawLevel();
         SmallChemicalReactorTanks fluidTanks = state.tanks;
-        BasicChemicalRecipe recipe = state.getRecipeForInputs(level);
+        net.minecraft.world.item.crafting.RecipeHolder<BasicChemicalRecipe> recipe = state.getRecipeForInputs(level);
         if(recipe!=null)
         {
             MultiblockProcessInMachine<BasicChemicalRecipe> process = new MultiblockProcessInMachine<>(recipe, 0);
-            process.setInputAmounts(recipe.itemInput.getCount());
+            process.setInputAmounts(recipe.value().itemInput.getCount());
             int size = (fluidTanks.leftInput().isEmpty()?0: 1)
                     +(fluidTanks.rightInput().isEmpty()?0: 1);
 
@@ -213,7 +213,7 @@ public class SmallChemicalReactorLogic implements ISkinnableMultiblockLogic<Stat
                 }
             }
 
-            boolean hasInputForNewRecipe = inputStack.getCount() >= (recipeInputRequirements + recipe.itemInput.getCount());
+            boolean hasInputForNewRecipe = inputStack.getCount() >= (recipeInputRequirements + recipe.value().itemInput.getCount());
 
             if(hasInputForNewRecipe)
             {
@@ -332,7 +332,7 @@ public class SmallChemicalReactorLogic implements ISkinnableMultiblockLogic<Stat
             this.dummy = new BasicChemicalProcessor(4, 0, 4, ctx.getMarkDirtyRunnable(), BasicChemicalRecipe.RECIPES::getById);
         }
 
-        public @Nullable BasicChemicalRecipe getRecipeForInputs(Level level)
+        public @Nullable net.minecraft.world.item.crafting.RecipeHolder<BasicChemicalRecipe> getRecipeForInputs(Level level)
         {
             return BasicChemicalRecipe.findRecipe(level, tanks.leftInput.getFluid(), tanks.rightInput.getFluid(), inventory.getStackInSlot(0));
         }
@@ -348,7 +348,7 @@ public class SmallChemicalReactorLogic implements ISkinnableMultiblockLogic<Stat
             this.energy.deserializeNBT(provider, nbt.getCompound("energy"));
             this.tanks.readNBT(nbt.getCompound("tanks"), provider);
             this.inventory.deserializeNBT(provider, nbt.getCompound("inventory"));
-            this.processor.fromNBT(nbt.getList("processor", Tag.TAG_COMPOUND), MultiblockProcessInMachine::new, provider);
+            this.processor.fromNBT(nbt.getList("processor", Tag.TAG_COMPOUND), (getter, data, registries) -> new MultiblockProcessInMachine<>(getter, data), provider);
             this.damage = nbt.getFloat("damage");
             this.isInvalidated = nbt.getBoolean("invalid");
         }

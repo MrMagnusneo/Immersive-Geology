@@ -123,7 +123,7 @@ public class RotaryKilnLogic implements ISkinnableMultiblockLogic<State>, IServe
         ItemStack inputSlot = state.inventory.getStackInSlot(0).copy();
         if(!inputSlot.isEmpty())
         {
-            RotaryKilnRecipe recipe = RotaryKilnRecipe.findRecipe(level, inputSlot);
+            net.minecraft.world.item.crafting.RecipeHolder<RotaryKilnRecipe> recipe = RotaryKilnRecipe.findRecipe(level, inputSlot);
             if(recipe!=null)
             {
                 for(int i = 1; i < 8; i++)
@@ -135,7 +135,7 @@ public class RotaryKilnLogic implements ISkinnableMultiblockLogic<State>, IServe
                     }
                 }
                 RotaryKilnProcess process = new RotaryKilnProcess(recipe, processIndex);
-                int rCount = recipe.itemIn.getCount();
+                int rCount = recipe.value().itemIn.getCount();
                 process.setInputAmounts(rCount);
                 if(state.processor.addProcessToQueue(process, level, true) && state.inventory.getStackInSlot(processIndex).isEmpty())
                 {

@@ -105,10 +105,10 @@ public abstract class GeologyMaterial implements MaterialHelper {
                 case STORAGE_BLOCK, ENGINEERING_BLOCK, ADVANCED_ENGINEERING_BLOCK -> IGLib.DEFAULT_METAL_PROPERTIES;
                 case SCAFFOLDING -> IGLib.METAL_PROPERTIES_NO_OCCLUSION;
                 case EVAPORATE, EVAPORATE_CRYSTAL -> IGLib.STONE_DECO_PROPS.mapColor(DyeColor.WHITE);
-                default -> BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK);
+                default -> BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK);
             };
         }
-        return BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK);
+        return BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK);
     }
 
     public Set<IGRecipeChain> getRecipeChains()
@@ -536,7 +536,7 @@ public abstract class GeologyMaterial implements MaterialHelper {
     {
         if(hasFlag(MaterialFlags.IS_MOLTEN_METAL))
         {
-            if(!entity.fireImmune()) entity.setSecondsOnFire(2);
+            if(!entity.fireImmune()) entity.igniteForSeconds(2);
         }
     }
 

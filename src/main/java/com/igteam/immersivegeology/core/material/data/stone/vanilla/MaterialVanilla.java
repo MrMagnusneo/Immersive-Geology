@@ -13,6 +13,7 @@ import com.igteam.immersivegeology.core.material.helper.flags.MaterialFlags;
 import com.igteam.immersivegeology.core.material.helper.flags.ModFlags;
 import com.igteam.immersivegeology.core.material.helper.material.StoneFormation;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockBehaviour.Properties;
 import net.minecraft.world.level.block.state.BlockState;
@@ -49,7 +50,7 @@ public class MaterialVanilla extends MaterialStone {
         BlockState poor = mineral.getOreBlock(this, OreRichness.POOR).getIGDefaultBlockState();
         BlockState normal = mineral.getOreBlock(this, OreRichness.NORMAL).getIGDefaultBlockState();
         BlockState rich = mineral.getOreBlock(this, OreRichness.RICH).getIGDefaultBlockState();
-        return List.of(OreConfiguration.target(new TagMatchTest(Tags.Blocks.STONE), normal));
+        return List.of(OreConfiguration.target(new TagMatchTest(BlockTags.BASE_STONE_OVERWORLD), normal));
     }
 
     @Override
@@ -61,6 +62,6 @@ public class MaterialVanilla extends MaterialStone {
     @Override
     public Properties getProperties(IFlagType<?> flag)
     {
-        return BlockBehaviour.Properties.copy(Blocks.STONE);
+        return BlockBehaviour.Properties.ofFullCopy(Blocks.STONE);
     }
 }

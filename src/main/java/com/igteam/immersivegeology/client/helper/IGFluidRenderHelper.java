@@ -92,7 +92,7 @@ public class IGFluidRenderHelper
 
 		// if rotating by 90 or 270, swap U and V
 		float minU, maxU, minV, maxV;
-		double size = flowing ? 8 : 16;
+		float size = flowing ? 8 : 16;
 		if ((rotation % 180) == 90) {
 			minU = sprite.getU(v1 * size);
 			maxU = sprite.getU(v2 * size);
@@ -139,44 +139,58 @@ public class IGFluidRenderHelper
 		int r = color >> 16 & 0xFF;
 		int g = color >> 8 & 0xFF;
 		int b = color & 0xFF;
+		Vector3f normal = normalMatrix.transform(new Vector3f(0, 1, 0));
 		switch (face) {
 			case DOWN -> {
-				renderer.vertex(matrix, x1, y1, z2).color(r, g, b, a).uv(u1, v1).uv2(light1, light2).normal(normalMatrix, 0, 1, 0).overlayCoords(OverlayTexture.NO_OVERLAY).endVertex();
-				renderer.vertex(matrix, x1, y1, z1).color(r, g, b, a).uv(u2, v2).uv2(light1, light2).normal(normalMatrix, 0, 1, 0).overlayCoords(OverlayTexture.NO_OVERLAY).endVertex();
-				renderer.vertex(matrix, x2, y1, z1).color(r, g, b, a).uv(u3, v3).uv2(light1, light2).normal(normalMatrix, 0, 1, 0).overlayCoords(OverlayTexture.NO_OVERLAY).endVertex();
-				renderer.vertex(matrix, x2, y1, z2).color(r, g, b, a).uv(u4, v4).uv2(light1, light2).normal(normalMatrix, 0, 1, 0).overlayCoords(OverlayTexture.NO_OVERLAY).endVertex();
+				putVertex(renderer, matrix, normal, x1, y1, z2, r, g, b, a, u1, v1, light1, light2);
+				putVertex(renderer, matrix, normal, x1, y1, z1, r, g, b, a, u2, v2, light1, light2);
+				putVertex(renderer, matrix, normal, x2, y1, z1, r, g, b, a, u3, v3, light1, light2);
+				putVertex(renderer, matrix, normal, x2, y1, z2, r, g, b, a, u4, v4, light1, light2);
 			}
 			case UP -> {
-				renderer.vertex(matrix, x1, y2, z1).color(r, g, b, a).uv(u1, v1).uv2(light1, light2).normal(normalMatrix, 0, 1, 0).overlayCoords(OverlayTexture.NO_OVERLAY).endVertex();
-				renderer.vertex(matrix, x1, y2, z2).color(r, g, b, a).uv(u2, v2).uv2(light1, light2).normal(normalMatrix, 0, 1, 0).overlayCoords(OverlayTexture.NO_OVERLAY).endVertex();
-				renderer.vertex(matrix, x2, y2, z2).color(r, g, b, a).uv(u3, v3).uv2(light1, light2).normal(normalMatrix, 0, 1, 0).overlayCoords(OverlayTexture.NO_OVERLAY).endVertex();
-				renderer.vertex(matrix, x2, y2, z1).color(r, g, b, a).uv(u4, v4).uv2(light1, light2).normal(normalMatrix, 0, 1, 0).overlayCoords(OverlayTexture.NO_OVERLAY).endVertex();
+				putVertex(renderer, matrix, normal, x1, y2, z1, r, g, b, a, u1, v1, light1, light2);
+				putVertex(renderer, matrix, normal, x1, y2, z2, r, g, b, a, u2, v2, light1, light2);
+				putVertex(renderer, matrix, normal, x2, y2, z2, r, g, b, a, u3, v3, light1, light2);
+				putVertex(renderer, matrix, normal, x2, y2, z1, r, g, b, a, u4, v4, light1, light2);
 			}
 			case NORTH -> {
-				renderer.vertex(matrix, x1, y1, z1).color(r, g, b, a).uv(u1, v1).uv2(light1, light2).normal(normalMatrix, 0, 1, 0).overlayCoords(OverlayTexture.NO_OVERLAY).endVertex();
-				renderer.vertex(matrix, x1, y2, z1).color(r, g, b, a).uv(u2, v2).uv2(light1, light2).normal(normalMatrix, 0, 1, 0).overlayCoords(OverlayTexture.NO_OVERLAY).endVertex();
-				renderer.vertex(matrix, x2, y2, z1).color(r, g, b, a).uv(u3, v3).uv2(light1, light2).normal(normalMatrix, 0, 1, 0).overlayCoords(OverlayTexture.NO_OVERLAY).endVertex();
-				renderer.vertex(matrix, x2, y1, z1).color(r, g, b, a).uv(u4, v4).uv2(light1, light2).normal(normalMatrix, 0, 1, 0).overlayCoords(OverlayTexture.NO_OVERLAY).endVertex();
+				putVertex(renderer, matrix, normal, x1, y1, z1, r, g, b, a, u1, v1, light1, light2);
+				putVertex(renderer, matrix, normal, x1, y2, z1, r, g, b, a, u2, v2, light1, light2);
+				putVertex(renderer, matrix, normal, x2, y2, z1, r, g, b, a, u3, v3, light1, light2);
+				putVertex(renderer, matrix, normal, x2, y1, z1, r, g, b, a, u4, v4, light1, light2);
 			}
 			case SOUTH -> {
-				renderer.vertex(matrix, x2, y1, z2).color(r, g, b, a).uv(u1, v1).uv2(light1, light2).normal(normalMatrix, 0, 1, 0).overlayCoords(OverlayTexture.NO_OVERLAY).endVertex();
-				renderer.vertex(matrix, x2, y2, z2).color(r, g, b, a).uv(u2, v2).uv2(light1, light2).normal(normalMatrix, 0, 1, 0).overlayCoords(OverlayTexture.NO_OVERLAY).endVertex();
-				renderer.vertex(matrix, x1, y2, z2).color(r, g, b, a).uv(u3, v3).uv2(light1, light2).normal(normalMatrix, 0, 1, 0).overlayCoords(OverlayTexture.NO_OVERLAY).endVertex();
-				renderer.vertex(matrix, x1, y1, z2).color(r, g, b, a).uv(u4, v4).uv2(light1, light2).normal(normalMatrix, 0, 1, 0).overlayCoords(OverlayTexture.NO_OVERLAY).endVertex();
+				putVertex(renderer, matrix, normal, x2, y1, z2, r, g, b, a, u1, v1, light1, light2);
+				putVertex(renderer, matrix, normal, x2, y2, z2, r, g, b, a, u2, v2, light1, light2);
+				putVertex(renderer, matrix, normal, x1, y2, z2, r, g, b, a, u3, v3, light1, light2);
+				putVertex(renderer, matrix, normal, x1, y1, z2, r, g, b, a, u4, v4, light1, light2);
 			}
 			case WEST -> {
-				renderer.vertex(matrix, x1, y1, z2).color(r, g, b, a).uv(u1, v1).uv2(light1, light2).normal(normalMatrix, 0, 1, 0).overlayCoords(OverlayTexture.NO_OVERLAY).endVertex();
-				renderer.vertex(matrix, x1, y2, z2).color(r, g, b, a).uv(u2, v2).uv2(light1, light2).normal(normalMatrix, 0, 1, 0).overlayCoords(OverlayTexture.NO_OVERLAY).endVertex();
-				renderer.vertex(matrix, x1, y2, z1).color(r, g, b, a).uv(u3, v3).uv2(light1, light2).normal(normalMatrix, 0, 1, 0).overlayCoords(OverlayTexture.NO_OVERLAY).endVertex();
-				renderer.vertex(matrix, x1, y1, z1).color(r, g, b, a).uv(u4, v4).uv2(light1, light2).normal(normalMatrix, 0, 1, 0).overlayCoords(OverlayTexture.NO_OVERLAY).endVertex();
+				putVertex(renderer, matrix, normal, x1, y1, z2, r, g, b, a, u1, v1, light1, light2);
+				putVertex(renderer, matrix, normal, x1, y2, z2, r, g, b, a, u2, v2, light1, light2);
+				putVertex(renderer, matrix, normal, x1, y2, z1, r, g, b, a, u3, v3, light1, light2);
+				putVertex(renderer, matrix, normal, x1, y1, z1, r, g, b, a, u4, v4, light1, light2);
 			}
 			case EAST -> {
-				renderer.vertex(matrix, x2, y1, z1).color(r, g, b, a).uv(u1, v1).uv2(light1, light2).normal(normalMatrix, 0, 1, 0).overlayCoords(OverlayTexture.NO_OVERLAY).endVertex();
-				renderer.vertex(matrix, x2, y2, z1).color(r, g, b, a).uv(u2, v2).uv2(light1, light2).normal(normalMatrix, 0, 1, 0).overlayCoords(OverlayTexture.NO_OVERLAY).endVertex();
-				renderer.vertex(matrix, x2, y2, z2).color(r, g, b, a).uv(u3, v3).uv2(light1, light2).normal(normalMatrix, 0, 1, 0).overlayCoords(OverlayTexture.NO_OVERLAY).endVertex();
-				renderer.vertex(matrix, x2, y1, z2).color(r, g, b, a).uv(u4, v4).uv2(light1, light2).normal(normalMatrix, 0, 1, 0).overlayCoords(OverlayTexture.NO_OVERLAY).endVertex();
+				putVertex(renderer, matrix, normal, x2, y1, z1, r, g, b, a, u1, v1, light1, light2);
+				putVertex(renderer, matrix, normal, x2, y2, z1, r, g, b, a, u2, v2, light1, light2);
+				putVertex(renderer, matrix, normal, x2, y2, z2, r, g, b, a, u3, v3, light1, light2);
+				putVertex(renderer, matrix, normal, x2, y1, z2, r, g, b, a, u4, v4, light1, light2);
 			}
 		}
+	}
+
+	private static void putVertex(
+			VertexConsumer renderer, Matrix4f matrix, Vector3f normal,
+			float x, float y, float z, int r, int g, int b, int a,
+			float u, float v, int light1, int light2
+	) {
+		renderer.addVertex(matrix, x, y, z)
+				.setColor(r, g, b, a)
+				.setUv(u, v)
+				.setUv2(light1, light2)
+				.setNormal(normal.x(), normal.y(), normal.z())
+				.setOverlay(OverlayTexture.NO_OVERLAY);
 	}
 
 	/**

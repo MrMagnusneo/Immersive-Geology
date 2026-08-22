@@ -20,7 +20,7 @@ public class IGParticles
 {
 	public static final DeferredRegister<ParticleType<?>> PARTICLES = DeferredRegister.create(Registries.PARTICLE_TYPE, IGLib.MODID);
 
-	public static final DeferredHolder<?, SimpleParticleType> FLOWING_WATER = PARTICLES.register("flowing_water",
+	public static final DeferredHolder<ParticleType<?>, SimpleParticleType> FLOWING_WATER = PARTICLES.register("flowing_water",
 			() -> new SimpleParticleType(true));
 
 	public static void register(IEventBus eventBus) {

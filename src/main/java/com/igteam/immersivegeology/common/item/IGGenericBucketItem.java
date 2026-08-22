@@ -46,9 +46,11 @@ public class IGGenericBucketItem extends BucketItem implements IGFlagItem, Dispe
     private final Map<MaterialTexture, MaterialInterface<?>> materialMap = new HashMap<>();
     private final BlockCategoryFlags fluid_category;
     private final ItemCategoryFlags bucket_type;
+    private final Fluid containedFluid;
 
     public IGGenericBucketItem(Supplier<? extends Fluid> fluid, BlockCategoryFlags flag, ItemCategoryFlags bucket_type, MaterialInterface<?> material) {
-        super(fluid, new Properties().stacksTo(1).craftRemainder(Items.BUCKET));
+        super(fluid.get(), new Properties().stacksTo(1).craftRemainder(Items.BUCKET));
+        this.containedFluid = fluid.get();
         this.materialMap.put(MaterialTexture.base, material);
         this.fluid_category = flag;
         this.bucket_type = bucket_type;
@@ -129,6 +131,11 @@ public class IGGenericBucketItem extends BucketItem implements IGFlagItem, Dispe
     public BlockCategoryFlags getFluidCategory()
     {
         return fluid_category;
+    }
+
+    public Fluid getFluid()
+    {
+        return containedFluid;
     }
 
     @Override

@@ -68,7 +68,7 @@ public class GeothermalConversionRecipeSerializer extends LegacyIERecipeSerializ
 			lowerBound = Pair.of(lowerBoundBlock, upperHeat);
 		}
 
-		return new GeothermalConversionRecipe(resourceLocation, () -> transitionBlock, transitionBlockHeat, upperBound, lowerBound);
+		return new GeothermalConversionRecipe(resourceLocation, Lazy.of(() -> transitionBlock), transitionBlockHeat, upperBound, lowerBound);
 	}
 
 	@Override
@@ -98,7 +98,7 @@ public class GeothermalConversionRecipeSerializer extends LegacyIERecipeSerializ
 			lowerBound = Pair.of(lowerBlock, buffer.readInt());
 		}
 
-		return new GeothermalConversionRecipe(resourceLocation, () -> baseBlock, transitionBlockHeat, upperBound, lowerBound);
+		return new GeothermalConversionRecipe(resourceLocation, Lazy.of(() -> baseBlock), transitionBlockHeat, upperBound, lowerBound);
 	}
 
 	@Override

@@ -11,6 +11,8 @@ package com.igteam.immersivegeology.common.block.multiblocks.recipe;
 import blusunrize.immersiveengineering.api.crafting.IERecipeSerializer;
 import blusunrize.immersiveengineering.api.crafting.MultiblockRecipe;
 import blusunrize.immersiveengineering.api.crafting.StackWithChance;
+import blusunrize.immersiveengineering.api.crafting.TagOutput;
+import blusunrize.immersiveengineering.api.crafting.TagOutputList;
 import blusunrize.immersiveengineering.api.crafting.cache.CachedRecipeList;
 import com.igteam.immersivegeology.core.registration.IGRecipeTypes;
 import net.minecraft.core.NonNullList;
@@ -19,6 +21,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.common.util.Lazy;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -28,7 +31,7 @@ import java.util.stream.Collectors;
 
 public class IndustrialSluiceRecipe extends MultiblockRecipe
 {
-	public static DeferredHolder<?, IERecipeSerializer<IndustrialSluiceRecipe>> SERIALIZER;
+	public static DeferredHolder<RecipeSerializer<?>, ? extends IERecipeSerializer<IndustrialSluiceRecipe>> SERIALIZER;
 	public static final CachedRecipeList<IndustrialSluiceRecipe> RECIPES = new CachedRecipeList<>(IGRecipeTypes.SLUICE);
 	public final Lazy<ItemStack> itemOutput;
 	public final Ingredient itemIn;
@@ -37,9 +40,9 @@ public class IndustrialSluiceRecipe extends MultiblockRecipe
 	Lazy<Integer> totalProcessEnergy;
 	Lazy<NonNullList<StackWithChance>> byproducts;
 
-	public <T extends Recipe<?>> IndustrialSluiceRecipe(ResourceLocation id, Ingredient itemIn, Lazy<ItemStack> output, NonNullList<StackWithChance> byproducts, int water, int time, int energy)
+	public IndustrialSluiceRecipe(ResourceLocation id, Ingredient itemIn, Lazy<ItemStack> output, NonNullList<StackWithChance> byproducts, int water, int time, int energy)
 	{
-		super(LAZY_EMPTY, IGRecipeTypes.SLUICE, id);
+		super(new TagOutput(output.get()), IGRecipeTypes.SLUICE, time, energy, () -> new RecipeMultiplier(() -> 1, () -> 1));
 		this.itemOutput = output;
 		this.itemIn = itemIn;
 		this.byproducts = Lazy.of(() -> byproducts);
@@ -52,7 +55,10 @@ public class IndustrialSluiceRecipe extends MultiblockRecipe
 		outputs.add(output.get());
 		outputs.addAll(stacks);
 
-		this.outputList = Lazy.of(() -> outputs);
+		this.outputList = new TagOutputList(java.util.stream.Stream.concat(
+				java.util.stream.Stream.of(new TagOutput(output.get())), byproducts.stream().map(StackWithChance::stack)
+		).toList());
+		this.setInputList(java.util.List.of(itemIn));
 	}
 
 	@Override
@@ -75,9 +81,9 @@ public class IndustrialSluiceRecipe extends MultiblockRecipe
 
 	public static IndustrialSluiceRecipe findRecipe(Level level, ItemStack item)
 	{
-		for(IndustrialSluiceRecipe recipe : RECIPES.getRecipes(level))
-			if(recipe.itemIn.test(item))
-				return recipe;
+		for(RecipeHolder<IndustrialSluiceRecipe> holder : RECIPES.getRecipes(level))
+			if(holder.value().itemIn.test(item))
+				return holder.value();
 		return null;
 	}
 

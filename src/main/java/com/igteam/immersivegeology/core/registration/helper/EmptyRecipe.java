@@ -22,6 +22,8 @@ import org.jetbrains.annotations.NotNull;
 
 public class EmptyRecipe extends IESerializableRecipe
 {
+	private static final Lazy<ItemStack> LAZY_EMPTY = Lazy.of(() -> ItemStack.EMPTY);
+
 	protected <T extends Recipe<?>> EmptyRecipe(ResourceLocation id)
 	{
 		super(LAZY_EMPTY, IGRecipeTypes.EMPTY, id);

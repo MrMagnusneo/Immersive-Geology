@@ -40,12 +40,12 @@ public class CentrifugeRecipeSerializer extends LegacyIERecipeSerializer<Centrif
 	{
 		FluidTagInput input = FluidTagInput.deserialize(GsonHelper.getAsJsonObject(json, "fluid_input"));
 		Lazy<ItemStack> output = readOutput(json.get("item_output"));
-		FluidStack primary_fluid_output = ApiUtils.jsonDeserializeFluidStack(GsonHelper.getAsJsonObject(json, "primary_fluid_out"));
-		FluidStack secondary_fluid_output = ApiUtils.jsonDeserializeFluidStack(GsonHelper.getAsJsonObject(json, "secondary_fluid_out"));
+		FluidStack primary_fluid_output = FluidStack.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json.get("primary_fluid_out")).getOrThrow();
+		FluidStack secondary_fluid_output = FluidStack.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json.get("secondary_fluid_out")).getOrThrow();
 		int energy = GsonHelper.getAsInt(json, "energy");
 		int time = GsonHelper.getAsInt(json, "time");
 
-		return new CentrifugeRecipe(resourceLocation, input, output, () -> primary_fluid_output, () -> secondary_fluid_output, energy, time);
+		return new CentrifugeRecipe(resourceLocation, input, output, Lazy.of(() -> primary_fluid_output), Lazy.of(() -> secondary_fluid_output), energy, time);
 	}
 
 	@Override
@@ -53,11 +53,11 @@ public class CentrifugeRecipeSerializer extends LegacyIERecipeSerializer<Centrif
 	{
 		FluidTagInput input = FluidTagInput.read(buffer);
 		Lazy<ItemStack> output = readLazyStack(buffer);
-		FluidStack primaryFluidOutput = buffer.readFluidStack();
-		FluidStack secondaryFluidOutput = buffer.readFluidStack();
+		FluidStack primaryFluidOutput = FluidStack.OPTIONAL_STREAM_CODEC.decode((net.minecraft.network.RegistryFriendlyByteBuf)buffer);
+		FluidStack secondaryFluidOutput = FluidStack.OPTIONAL_STREAM_CODEC.decode((net.minecraft.network.RegistryFriendlyByteBuf)buffer);
 		int energy = buffer.readInt();
 		int time = buffer.readInt();
-		return new CentrifugeRecipe(resourceLocation, input, output, () -> primaryFluidOutput, () -> secondaryFluidOutput, energy, time);
+		return new CentrifugeRecipe(resourceLocation, input, output, Lazy.of(() -> primaryFluidOutput), Lazy.of(() -> secondaryFluidOutput), energy, time);
 	}
 
 	@Override
@@ -65,8 +65,8 @@ public class CentrifugeRecipeSerializer extends LegacyIERecipeSerializer<Centrif
 	{
 		recipe.fluidIn.write(buffer);
 		writeLazyStack(buffer, recipe.itemOutput);
-		buffer.writeFluidStack(recipe.primaryFluidOutput.get());
-		buffer.writeFluidStack(recipe.secondaryFluidOutput.get());
+		FluidStack.OPTIONAL_STREAM_CODEC.encode((net.minecraft.network.RegistryFriendlyByteBuf)buffer, recipe.primaryFluidOutput.get());
+		FluidStack.OPTIONAL_STREAM_CODEC.encode((net.minecraft.network.RegistryFriendlyByteBuf)buffer, recipe.secondaryFluidOutput.get());
 		buffer.writeInt(recipe.getTotalProcessEnergy());
 		buffer.writeInt(recipe.getTotalProcessTime());
 	}

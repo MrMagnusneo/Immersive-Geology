@@ -32,11 +32,13 @@ import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
 import it.unimi.dsi.fastutil.objects.Object2BooleanOpenHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -250,7 +252,7 @@ public class IGEnergyPipeEntity extends IEBaseBlockEntity implements IEnergyPipe
 
 	}
 
-	public void readCustomNBT(CompoundTag nbt, boolean descPacket) {
+	public void readCustomNBT(CompoundTag nbt, boolean descPacket, HolderLookup.Provider registries) {
 		int[] config = nbt.getIntArray("sideConfig");
 
 		for(int i = 0; i < 6; ++i) {
@@ -287,7 +289,7 @@ public class IGEnergyPipeEntity extends IEBaseBlockEntity implements IEnergyPipe
 
 	}
 
-	public void writeCustomNBT(CompoundTag nbt, boolean descPacket) {
+	public void writeCustomNBT(CompoundTag nbt, boolean descPacket, HolderLookup.Provider registries) {
 		int[] config = new int[6];
 
 		for(int i = 0; i < 6; ++i) {
@@ -549,7 +551,7 @@ public class IGEnergyPipeEntity extends IEBaseBlockEntity implements IEnergyPipe
 
 	}
 
-	public boolean interact(Direction side, Player player, InteractionHand hand, ItemStack heldItem, float hitX, float hitY, float hitZ) {
+	public ItemInteractionResult interact(Direction side, Player player, InteractionHand hand, ItemStack heldItem, float hitX, float hitY, float hitZ) {
 		if (heldItem.isEmpty() && player.isShiftKeyDown() && this.hasCover()) {
 			if (!player.level().isClientSide) {
 				this.dropCover(player);
@@ -559,9 +561,10 @@ public class IGEnergyPipeEntity extends IEBaseBlockEntity implements IEnergyPipe
 				this.markChunkDirty();
 			}
 
-			return true;
+			return ItemInteractionResult.SUCCESS;
 		} else {
-			return !heldItem.isEmpty() && !player.isShiftKeyDown() ? this.setColorOrCoverFrom(heldItem, player) : false;
+			boolean handled = !heldItem.isEmpty() && !player.isShiftKeyDown() && this.setColorOrCoverFrom(heldItem, player);
+			return handled ? ItemInteractionResult.SUCCESS : ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 		}
 	}
 

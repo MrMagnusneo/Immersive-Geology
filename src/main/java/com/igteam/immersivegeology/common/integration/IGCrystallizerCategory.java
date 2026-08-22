@@ -46,14 +46,14 @@ public class IGCrystallizerCategory extends IGRecipeCategory<CrystallizerRecipe>
 		builder.addSlot(RecipeIngredientRole.INPUT, 15, 27)
 				.setFluidRenderer(tankSize, false, 16, 47)
 				.addIngredients(NeoForgeTypes.FLUID_STACK, recipe.fluidIn.getMatchingFluidStacks())
-				.addTooltipCallback(JEIHelper.fluidTooltipCallback);
+				.addRichTooltipCallback(JEIHelper.fluidTooltipCallback);
 
 		if(!recipe.fluidOutput.get().isEmpty())
 		{
 			builder.addSlot(RecipeIngredientRole.OUTPUT, 41, 71)
 					.setFluidRenderer(432, false, 16, 20)
 					.addFluidStack(recipe.fluidOutput.get().getFluid(), recipe.fluidOutput.get().getAmount())
-					.addTooltipCallback(JEIHelper.fluidTooltipCallback);
+					.addRichTooltipCallback(JEIHelper.fluidTooltipCallback);
 		}
 
 		builder.addSlot(RecipeIngredientRole.OUTPUT, 66, 49)

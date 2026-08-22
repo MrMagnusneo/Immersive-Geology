@@ -34,8 +34,8 @@ public class BallmillRecipeSerializer extends LegacyIERecipeSerializer<BallmillR
 	@Override
 	public BallmillRecipe readFromJson(ResourceLocation resourceLocation, JsonObject json, IContext iContext)
 	{
-		IngredientWithSize output = IngredientWithSize.deserialize(GsonHelper.getAsJsonObject(json, "result"));
-		IngredientWithSize input = IngredientWithSize.deserialize(GsonHelper.getAsJsonObject(json, "input"));
+		IngredientWithSize output = IngredientWithSize.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json.get("result")).getOrThrow();
+		IngredientWithSize input = IngredientWithSize.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json.get("input")).getOrThrow();
 		int energy = GsonHelper.getAsInt(json, "energy");
 		int time = GsonHelper.getAsInt(json, "time");
 		return new BallmillRecipe(resourceLocation, input, output, energy, time);
@@ -44,8 +44,8 @@ public class BallmillRecipeSerializer extends LegacyIERecipeSerializer<BallmillR
 	@Override
 	public @Nullable BallmillRecipe fromNetwork(ResourceLocation resourceLocation, FriendlyByteBuf buffer)
 	{
-		IngredientWithSize output = IngredientWithSize.read(buffer);
-		IngredientWithSize input = IngredientWithSize.read(buffer);
+		IngredientWithSize output = IngredientWithSize.STREAM_CODEC.decode((net.minecraft.network.RegistryFriendlyByteBuf)buffer);
+		IngredientWithSize input = IngredientWithSize.STREAM_CODEC.decode((net.minecraft.network.RegistryFriendlyByteBuf)buffer);
 		int energy = buffer.readInt();
 		int time = buffer.readInt();
 		return new BallmillRecipe(resourceLocation, input, output, energy, time);
@@ -54,8 +54,8 @@ public class BallmillRecipeSerializer extends LegacyIERecipeSerializer<BallmillR
 	@Override
 	public void toNetwork(FriendlyByteBuf buffer, BallmillRecipe recipe)
 	{
-		recipe.itemOutput.write(buffer);
-		recipe.itemIn.write(buffer);
+		IngredientWithSize.STREAM_CODEC.encode((net.minecraft.network.RegistryFriendlyByteBuf)buffer, recipe.itemOutput);
+		IngredientWithSize.STREAM_CODEC.encode((net.minecraft.network.RegistryFriendlyByteBuf)buffer, recipe.itemIn);
 		buffer.writeInt(recipe.getTotalProcessEnergy());
 		buffer.writeInt(recipe.getTotalProcessTime());
 	}
