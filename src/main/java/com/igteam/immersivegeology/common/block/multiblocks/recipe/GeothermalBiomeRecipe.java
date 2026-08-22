@@ -14,13 +14,14 @@ import blusunrize.immersiveengineering.api.crafting.cache.CachedRecipeList;
 import blusunrize.immersiveengineering.api.utils.FastEither;
 import com.igteam.immersivegeology.core.registration.IGRecipeTypes;
 import net.minecraft.core.Holder;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
-import net.neoforged.neoforge.registries.ForgeRegistries;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import org.jetbrains.annotations.NotNull;
 
@@ -33,11 +34,11 @@ public class GeothermalBiomeRecipe extends IESerializableRecipe
 {
 	public static DeferredHolder<?, IERecipeSerializer<GeothermalBiomeRecipe>> SERIALIZER;
 	public static final CachedRecipeList<GeothermalBiomeRecipe> RECIPES;
-	public final FastEither<Biome, List<TagKey<Biome>>> biomes;
+	public final FastEither<ResourceLocation, List<TagKey<Biome>>> biomes;
 	private final int min_heat;
 	private final int max_heat;
 
-	public GeothermalBiomeRecipe(ResourceLocation id, Biome biome, int min_heat, int max_heat) {
+	public GeothermalBiomeRecipe(ResourceLocation id, ResourceLocation biome, int min_heat, int max_heat) {
 		super(LAZY_EMPTY, IGRecipeTypes.GEOTHERMAL_EXCHANGER_BIOME, id);
 		this.biomes = FastEither.left(biome);
 		this.min_heat = min_heat;
@@ -51,13 +52,12 @@ public class GeothermalBiomeRecipe extends IESerializableRecipe
 		this.max_heat = max_heat;
 	}
 
-	public List<TagKey<Biome>> getBiomes() {
+	public List<TagKey<Biome>> getBiomes(Level level) {
 		return this.biomes.map(
-				biome -> {
-					Optional<Holder<Biome>> holderOpt = ForgeRegistries.BIOMES.getHolder(biome);
-					return holderOpt.map(biomeHolder -> biomeHolder.getTagKeys()
-							.collect(Collectors.toList())).orElse(Collections.emptyList());
-				},
+				biome -> level.registryAccess().registryOrThrow(Registries.BIOME)
+						.getHolder(ResourceKey.create(Registries.BIOME, biome))
+						.map(holder -> holder.tags().toList())
+						.orElseGet(List::of),
 				Function.identity()
 		);
 	}
@@ -65,7 +65,7 @@ public class GeothermalBiomeRecipe extends IESerializableRecipe
 	public static GeothermalBiomeRecipe findRecipe(Level level, TagKey<Biome> biome)
 	{
 		for(GeothermalBiomeRecipe recipe : RECIPES.getRecipes(level))
-			if(recipe.getBiomes().contains(biome))
+			if(recipe.getBiomes(level).contains(biome))
 				return recipe;
 		return null;
 	}
@@ -83,7 +83,7 @@ public class GeothermalBiomeRecipe extends IESerializableRecipe
 	}
 
 	@Nonnull
-	public ItemStack getResultItem(@NotNull RegistryAccess access) {
+	public ItemStack getResultItem(@NotNull HolderLookup.Provider access) {
 		return ItemStack.EMPTY;
 	}
 

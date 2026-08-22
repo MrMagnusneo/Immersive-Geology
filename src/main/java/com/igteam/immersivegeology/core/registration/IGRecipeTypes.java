@@ -17,7 +17,7 @@ import com.igteam.immersivegeology.core.registration.helper.EmptyRecipe;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeType;
-import net.neoforged.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.DeferredHolder;
 
@@ -57,10 +57,10 @@ public class IGRecipeTypes
 		return new TypeWithClass<>(regObj, type);
 	}
 
-	public static void init()
+	public static void init(IEventBus modEventBus)
 	{
 		IGLib.IG_LOGGER.info("======== Registration of Immersive Geology Recipe Types ========");
-		REGISTER.register(FMLJavaModLoadingContext.get().getModEventBus());
+		REGISTER.register(modEventBus);
 		IGLib.IG_LOGGER.info("Finished");
 	}
 }

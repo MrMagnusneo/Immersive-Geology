@@ -19,7 +19,7 @@ import com.igteam.immersivegeology.core.material.GeologyMaterial;
 import com.igteam.immersivegeology.core.material.data.enums.MineralEnum;
 import com.igteam.immersivegeology.core.registration.IGRecipeTypes;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -46,7 +46,7 @@ public class IGGeoRecipe extends IESerializableRecipe implements IJEIRecipe
 	}
 
 	@Override
-	public @NotNull ItemStack getResultItem(RegistryAccess registryAccess)
+	public @NotNull ItemStack getResultItem(HolderLookup.Provider registryAccess)
 	{
 		return material.getOreIcon();
 	}

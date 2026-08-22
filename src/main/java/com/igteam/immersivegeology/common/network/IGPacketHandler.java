@@ -1,64 +1,37 @@
 package com.igteam.immersivegeology.common.network;
 
-import blusunrize.immersiveengineering.common.network.IMessage;
-import blusunrize.immersiveengineering.common.network.MessageMagnetEquip;
 import com.igteam.immersivegeology.common.network.msg.MessageSCRFail;
 import com.igteam.immersivegeology.core.lib.IGLib;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.network.NetworkDirection;
-import net.neoforged.neoforge.network.NetworkEvent;
-import net.neoforged.neoforge.network.NetworkRegistry;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.network.PacketDistributor;
-import net.neoforged.neoforge.network.simple.SimpleChannel;
-
-import javax.annotation.Nonnull;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
+import net.neoforged.neoforge.server.ServerLifecycleHooks;
 
 public class IGPacketHandler
 {
 	public static final String NET_VERSION = "1";
-	public static final SimpleChannel INSTANCE = NetworkRegistry.ChannelBuilder
-			.named(new ResourceLocation(IGLib.MODID, "main"))
-			.networkProtocolVersion(() -> NET_VERSION)
-			.serverAcceptedVersions(NET_VERSION::equals)
-			.clientAcceptedVersions(NET_VERSION::equals)
-			.simpleChannel();
 
-	private final Set<Class<?>> knownPacketTypes = new HashSet();
-	private int messageId = 0;
-
-	private static final IGPacketHandler handler = new IGPacketHandler();
-
-	public static void initialize()
+	public static void initialize(IEventBus modEventBus)
 	{
-		handler.registerMessage(MessageSCRFail.class, MessageSCRFail::new);
+		modEventBus.addListener(IGPacketHandler::register);
 	}
 
-	private <T extends IMessage> void registerMessage(Class<T> packetType, Function<FriendlyByteBuf, T> decoder) {
-		this.registerMessage(packetType, decoder, Optional.empty());
-	}
-
-	private <T extends IMessage> void registerMessage(Class<T> packetType, Function<FriendlyByteBuf, T> decoder, NetworkDirection direction) {
-		this.registerMessage(packetType, decoder, Optional.of(direction));
-	}
-
-	private <T extends IMessage> void registerMessage(Class<T> packetType, Function<FriendlyByteBuf, T> decoder, Optional<NetworkDirection> direction) {
-		if (!this.knownPacketTypes.add(packetType)) {
-			throw new IllegalStateException("Duplicate packet type: " + packetType.getName());
-		} else {
-			INSTANCE.registerMessage(this.messageId++, packetType, IMessage::toBytes, decoder, (t, ctx) -> {
-				t.process(ctx);
-				((NetworkEvent.Context)ctx.get()).setPacketHandled(true);
-			}, direction);
-		}
+	private static void register(RegisterPayloadHandlersEvent event)
+	{
+		PayloadRegistrar registrar = event.registrar(NET_VERSION);
+		registrar.playToServer(
+				MessageSCRFail.TYPE,
+				MessageSCRFail.STREAM_CODEC,
+				MessageSCRFail::process
+		);
 	}
 
 	/**
@@ -67,18 +40,18 @@ public class IGPacketHandler
 	 * @param player  The {@link Player} to send to
 	 * @param message The message to send
 	 */
-	public static <MSG> void sendToPlayer(Player player, @Nonnull MSG message){
+	public static void sendToPlayer(Player player, CustomPacketPayload message){
 		if(message != null && player instanceof ServerPlayer serverPlayer){
-			INSTANCE.send(PacketDistributor.PLAYER.with(() -> serverPlayer), message);
+			PacketDistributor.sendToPlayer(serverPlayer, message);
 		}
 	}
 
 	/** Client -> Server */
-	public static <MSG> void sendToServer(MSG message){
+	public static void sendToServer(CustomPacketPayload message){
 		if(message == null)
 			return;
 
-		INSTANCE.send(PacketDistributor.SERVER.noArg(), message);
+		PacketDistributor.sendToServer(message);
 	}
 
 	/**
@@ -88,17 +61,22 @@ public class IGPacketHandler
 	 * Server -> Client
 	 * </pre>
 	 */
-	public static <MSG> void sendToDimension(ResourceKey<Level> dim, MSG message){
-		if(message == null)
+	public static void sendToDimension(ResourceKey<Level> dim, CustomPacketPayload message){
+		if(dim == null || message == null)
 			return;
 
-		INSTANCE.send(PacketDistributor.DIMENSION.with(() -> dim), message);
+		MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
+		if(server == null)
+			return;
+		ServerLevel level = server.getLevel(dim);
+		if(level != null)
+			PacketDistributor.sendToPlayersInDimension(level, message);
 	}
 
-	public static <MSG> void sendAll(MSG message){
+	public static void sendAll(CustomPacketPayload message){
 		if(message == null)
 			return;
 
-		INSTANCE.send(PacketDistributor.ALL.noArg(), message);
+		PacketDistributor.sendToAllPlayers(message);
 	}
 }

@@ -36,7 +36,7 @@ public class IndustrialSluiceRecipeSerializer extends LegacyIERecipeSerializer<I
 	@Override
 	public IndustrialSluiceRecipe readFromJson(ResourceLocation resourceLocation, JsonObject json, IContext iContext)
 	{
-		Ingredient input = Ingredient.fromJson(GsonHelper.getAsJsonObject(json, "input"));
+		Ingredient input = Ingredient.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, GsonHelper.getAsJsonObject(json, "input")).getOrThrow();
 
 		Lazy<ItemStack> primary = readOutput(json.get("result"));
 
@@ -70,7 +70,7 @@ public class IndustrialSluiceRecipeSerializer extends LegacyIERecipeSerializer<I
 
 		NonNullList<StackWithChance> byproducts = readByproducts(buffer);
 
-		Ingredient input = Ingredient.fromNetwork(buffer);
+		Ingredient input = Ingredient.CONTENTS_STREAM_CODEC.decode((net.minecraft.network.RegistryFriendlyByteBuf) buffer);
 		int time = buffer.readInt();
 		int water = buffer.readInt();
 		int energy = buffer.readInt();
@@ -107,7 +107,7 @@ public class IndustrialSluiceRecipeSerializer extends LegacyIERecipeSerializer<I
 	{
 		writeLazyStack(buffer, recipe.itemOutput);
 		writeByproducts(buffer, recipe);
-		recipe.itemIn.toNetwork(buffer);
+		Ingredient.CONTENTS_STREAM_CODEC.encode((net.minecraft.network.RegistryFriendlyByteBuf) buffer, recipe.itemIn);
 		buffer.writeInt(recipe.getTotalProcessTime());
 		buffer.writeInt(recipe.getTotalProcessWater());
 		buffer.writeInt(recipe.getTotalProcessEnergy());

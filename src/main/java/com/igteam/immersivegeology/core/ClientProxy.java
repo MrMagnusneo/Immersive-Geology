@@ -21,10 +21,15 @@ import net.minecraft.world.level.Level;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.EventBusSubscriber.Bus;
+import net.neoforged.bus.api.IEventBus;
 
 @EventBusSubscriber(value = Dist.CLIENT, modid = IGLib.MODID, bus = Bus.MOD)
 public class ClientProxy extends CommonProxy
 {
+	public ClientProxy(IEventBus modEventBus)
+	{
+		super(modEventBus);
+	}
 
 	@Override
 	public void reinitializeGUI()
@@ -38,7 +43,7 @@ public class ClientProxy extends CommonProxy
 	public void modConstruction()
 	{
 		super.modConstruction();
-		IEOBJCallbacks.register(new ResourceLocation(IGLib.MODID, "energy_pipe"), EnergyPipeCallback.INSTANCE);
+		IEOBJCallbacks.register(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "energy_pipe"), EnergyPipeCallback.INSTANCE);
 	}
 
 	@Override

@@ -81,10 +81,10 @@ public abstract class IGRecipeMethod
 		{
 			int count = PATH_COUNT.get(s)+1;
 			PATH_COUNT.put(s, count);
-			return new ResourceLocation(IGLib.MODID, s+count);
+			return ResourceLocation.fromNamespaceAndPath(IGLib.MODID, s+count);
 		}
 		PATH_COUNT.put(s, 1);
-		return new ResourceLocation(IGLib.MODID, s);
+		return ResourceLocation.fromNamespaceAndPath(IGLib.MODID, s);
 	}
 
 	public void clearRecipePath(){
@@ -121,7 +121,7 @@ public abstract class IGRecipeMethod
 		fluid.draw(graphics);
 		if(mx > x && (x+w) > mx && my > y && (y+h) > my)
 		{
-			graphics.renderTooltip(Minecraft.getInstance().font, tank.getFluid().getDisplayName(), mx,my);
+			graphics.renderTooltip(Minecraft.getInstance().font, tank.getFluid().getHoverName(), mx,my);
 		}
 	}
 
@@ -135,7 +135,7 @@ public abstract class IGRecipeMethod
 		fluid.draw(graphics);
 		if(mx > x && (x+w) > mx && my > y && (y+h) > my)
 		{
-			graphics.renderTooltip(Minecraft.getInstance().font, tank.getFluid().getDisplayName(), mx,my);
+			graphics.renderTooltip(Minecraft.getInstance().font, tank.getFluid().getHoverName(), mx,my);
 		}
 	}
 
@@ -147,7 +147,7 @@ public abstract class IGRecipeMethod
 		fluid.draw(graphics);
 		if(mx > x && (x+w) > mx && my > y && (y+h) > my)
 		{
-			graphics.renderTooltip(Minecraft.getInstance().font, tank.getFluid().getDisplayName(), mx,my);
+			graphics.renderTooltip(Minecraft.getInstance().font, tank.getFluid().getHoverName(), mx,my);
 		}
 	}
 
@@ -156,7 +156,7 @@ public abstract class IGRecipeMethod
 		graphics.renderItem(stack, x, y, mx, my);
 		if(mx > x&&(x+16) > mx && my > y&&(y+16) > my)
 		{
-			graphics.renderTooltip(Minecraft.getInstance().font, stack.getDisplayName(), x, y);
+			graphics.renderTooltip(Minecraft.getInstance().font, stack.getHoverName(), x, y);
 		}
 	}
 

@@ -10,13 +10,12 @@ package com.igteam.immersivegeology.common.item;
 
 import blusunrize.immersiveengineering.api.ApiUtils;
 import blusunrize.immersiveengineering.api.multiblocks.BlockMatcher;
+import blusunrize.immersiveengineering.api.multiblocks.MultiblockAdvancementTrigger;
 import blusunrize.immersiveengineering.api.multiblocks.MultiblockHandler;
 import blusunrize.immersiveengineering.api.multiblocks.MultiblockHandler.IMultiblock;
 import blusunrize.immersiveengineering.api.multiblocks.TemplateMultiblock;
 import blusunrize.immersiveengineering.api.utils.DirectionUtils;
 import blusunrize.immersiveengineering.common.blocks.multiblocks.blockimpl.MultiblockLevel;
-import blusunrize.immersiveengineering.common.util.ItemNBTHelper;
-import blusunrize.immersiveengineering.common.util.advancements.IEAdvancements;
 import com.google.common.collect.ImmutableList;
 import com.igteam.immersivegeology.common.block.multiblocks.IGTemplateMultiblock;
 import com.igteam.immersivegeology.core.lib.IGLib;
@@ -27,14 +26,18 @@ import com.igteam.immersivegeology.core.material.helper.material.MaterialTexture
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
@@ -60,6 +63,7 @@ import java.util.function.Supplier;
 
 public class IGMBFormationItem extends IGGenericItem
 {
+	private static final MultiblockAdvancementTrigger MULTIBLOCK_ADVANCEMENT = new MultiblockAdvancementTrigger();
 	BiPredicate<IMultiblock, MaterialInterface<?>> validPredicate = (multiblock, material) -> material.canFormMB(multiblock);
 	public IGMBFormationItem(ItemCategoryFlags flag, MaterialInterface<?> material, int max_durability)
 	{
@@ -90,18 +94,19 @@ public class IGMBFormationItem extends IGGenericItem
 		BlockPos pos = context.getClickedPos();
 		Player player = context.getPlayer();
 		Direction side = context.getClickedFace();
+		CompoundTag customData = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
 		List<ResourceLocation> permittedMultiblocks = null;
 		List<ResourceLocation> interdictedMultiblocks = null;
-		if(ItemNBTHelper.hasKey(stack, "multiblockPermission"))
+		if(customData.contains("multiblockPermission", Tag.TAG_LIST))
 		{
-			ListTag list = stack.getOrCreateTag().getList("multiblockPermission", Tag.TAG_STRING);
+			ListTag list = customData.getList("multiblockPermission", Tag.TAG_STRING);
 			permittedMultiblocks = parseMultiblockNames(list, player, "permission");
 			if(permittedMultiblocks==null)
 				return InteractionResult.FAIL;
 		}
-		if(ItemNBTHelper.hasKey(stack, "multiblockInterdiction"))
+		if(customData.contains("multiblockInterdiction", Tag.TAG_LIST))
 		{
-			ListTag list = stack.getOrCreateTag().getList("multiblockInterdiction", Tag.TAG_STRING);
+			ListTag list = customData.getList("multiblockInterdiction", Tag.TAG_STRING);
 			interdictedMultiblocks = parseMultiblockNames(list, player, "interdiction");
 			if(interdictedMultiblocks==null)
 				return InteractionResult.FAIL;
@@ -134,11 +139,11 @@ public class IGMBFormationItem extends IGGenericItem
 					if(mb.createStructure(world, pos, multiblockSide, player))
 					{
 						if(player instanceof ServerPlayer sPlayer)
-							IEAdvancements.TRIGGER_MULTIBLOCK.trigger(sPlayer, mb, stack);
+							MULTIBLOCK_ADVANCEMENT.trigger(sPlayer, mb, stack);
 
 
-						stack.hurtAndBreak(1, player, (p) -> {
-						});
+						if(player != null)
+							stack.hurtAndBreak(1, player, EquipmentSlot.MAINHAND);
 						return InteractionResult.SUCCESS;
 					}
 				} else if(player!=null)

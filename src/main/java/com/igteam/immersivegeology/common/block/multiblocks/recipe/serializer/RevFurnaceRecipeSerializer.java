@@ -37,7 +37,7 @@ public class RevFurnaceRecipeSerializer extends LegacyIERecipeSerializer<RevFurn
 	public RevFurnaceRecipe readFromJson(ResourceLocation resourceLocation, JsonObject json, IContext iContext)
 	{
 		Lazy<ItemStack> output = readOutput(json.get("result"));
-		Ingredient input = Ingredient.fromJson(GsonHelper.getAsJsonObject(json, "input"));
+		Ingredient input = Ingredient.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, GsonHelper.getAsJsonObject(json, "input")).getOrThrow();
 		int waste_amount = GsonHelper.getAsInt(json, "waste");
 		int time = GsonHelper.getAsInt(json, "time");
 		return new RevFurnaceRecipe(resourceLocation, new IngredientWithSize(input), output, waste_amount, time);

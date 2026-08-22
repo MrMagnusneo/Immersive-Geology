@@ -39,15 +39,18 @@ import com.igteam.immersivegeology.core.material.data.enums.ChemicalEnum;
 import com.igteam.immersivegeology.core.material.helper.flags.BlockCategoryFlags;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.Fluid;
@@ -231,7 +234,7 @@ public class PelletizerLogic implements ISkinnableMultiblockLogic<State>, IServe
 
     @Nullable
     @Override
-    public List<Component> getOverlayText(State state, Player player, boolean b)
+    public List<Component> getOverlayText(State state, BlockPos pos, BlockHitResult hit, Player player, boolean b)
     {
         if(state == null) return null;
         if(!state.tank.getFluid().getFluid().equals(ChemicalEnum.BindingAgent.getFluid(BlockCategoryFlags.FLUID)))
@@ -289,11 +292,11 @@ public class PelletizerLogic implements ISkinnableMultiblockLogic<State>, IServe
         }
 
         @Override
-        public void readSaveNBT(CompoundTag nbt){
-            this.tank.readFromNBT(nbt.getCompound("tank"));
-            this.energy.deserializeNBT(nbt.get("energy"));
-            this.processor.fromNBT(nbt.get("processor"), MultiblockProcessInWorld::new);
-            this.inventory.deserializeNBT(nbt.getCompound("inventory"));
+        public void readSaveNBT(CompoundTag nbt, HolderLookup.Provider provider){
+            this.tank.readFromNBT(provider, nbt.getCompound("tank"));
+            this.energy.deserializeNBT(provider, nbt.getCompound("energy"));
+            this.processor.fromNBT(nbt.getList("processor", Tag.TAG_COMPOUND), MultiblockProcessInWorld::new, provider);
+            this.inventory.deserializeNBT(provider, nbt.getCompound("inventory"));
         }
 
         @Override
@@ -303,24 +306,24 @@ public class PelletizerLogic implements ISkinnableMultiblockLogic<State>, IServe
         }
 
         @Override
-        public void writeSaveNBT(CompoundTag nbt){
-            nbt.put("tank", this.tank.writeToNBT(new CompoundTag()));
-            nbt.put("energy", energy.serializeNBT());
-            nbt.put("processor", processor.toNBT());
-            nbt.put("inventory", inventory.serializeNBT());
+        public void writeSaveNBT(CompoundTag nbt, HolderLookup.Provider provider){
+            nbt.put("tank", this.tank.writeToNBT(provider, new CompoundTag()));
+            nbt.put("energy", energy.serializeNBT(provider));
+            nbt.put("processor", processor.toNBT(provider));
+            nbt.put("inventory", inventory.serializeNBT(provider));
         }
 
         @Override
-        public void writeSyncNBT(CompoundTag nbt)
+        public void writeSyncNBT(CompoundTag nbt, HolderLookup.Provider provider)
         {
-            writeSaveNBT(nbt);
+            writeSaveNBT(nbt, provider);
             nbt.putBoolean("renderActive", renderAsActive);
         }
 
         @Override
-        public void readSyncNBT(CompoundTag nbt)
+        public void readSyncNBT(CompoundTag nbt, HolderLookup.Provider provider)
         {
-            readSaveNBT(nbt);
+            readSaveNBT(nbt, provider);
             renderAsActive = nbt.getBoolean("renderActive");
         }
 
@@ -344,13 +347,6 @@ public class PelletizerLogic implements ISkinnableMultiblockLogic<State>, IServe
             return this.processor.getQueue();
         }
 
-        @Override
-        public void invalidate(@NotNull IMultiblockContext<?> ctx)
-        {
-            this.energyCap.get(ctx).invalidate();
-            this.fInputCap.get(ctx).invalidate();
-            this.insertionHandler.get(ctx).invalidate();
-        }
     }
 
 }

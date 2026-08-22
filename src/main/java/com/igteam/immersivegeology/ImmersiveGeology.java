@@ -1,6 +1,5 @@
 package com.igteam.immersivegeology;
 
-import blusunrize.immersiveengineering.api.excavator.MineralMix;
 import blusunrize.immersiveengineering.api.multiblocks.TemplateMultiblock;
 import com.igteam.immersivegeology.client.IGClientRenderHandler;
 import com.igteam.immersivegeology.client.IGOverlayHandler;
@@ -22,26 +21,22 @@ import com.igteam.immersivegeology.core.material.helper.flags.IFlagType;
 import com.igteam.immersivegeology.core.material.helper.flags.ItemCategoryFlags;
 import com.igteam.immersivegeology.core.material.helper.material.MaterialInterface;
 import com.igteam.immersivegeology.core.registration.IGContent;
-import com.igteam.immersivegeology.core.registration.IGMultiblockProvider;
 import com.igteam.immersivegeology.core.registration.IGRecipeSerializers;
 import com.igteam.immersivegeology.core.registration.IGRegistrationHolder;
 import com.mojang.datafixers.util.Pair;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.repository.BuiltInPackSource;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.InterModComms;
-import net.neoforged.fml.ModLoadingContext;
+import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig.Type;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.fml.event.lifecycle.InterModEnqueueEvent;
-import net.neoforged.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.neoforged.fml.loading.FMLLoader;
 import org.jetbrains.annotations.NotNull;
 
@@ -52,14 +47,12 @@ import java.util.function.BiPredicate;
 @Mod(IGLib.MODID)
 public class ImmersiveGeology {
 
-    public static CommonProxy proxy = Util.make(() ->
-    {
-        if(FMLLoader.getDist().isClient()) return new ClientProxy();
-        return new CommonProxy();
-    });
+    public static CommonProxy proxy;
 
-    public ImmersiveGeology() {
-        IEventBus modEventBus =  FMLJavaModLoadingContext.get().getModEventBus();
+    public ImmersiveGeology(ModContainer container, IEventBus modEventBus) {
+        proxy = FMLLoader.getDist().isClient()
+                ? new ClientProxy(modEventBus)
+                : new CommonProxy(modEventBus);
         IGLib.IG_LOGGER.info("======== Starting Immersive Geology ========");
         modEventBus.addListener(this::setup);
         modEventBus.addListener(this::clientSetup);
@@ -76,15 +69,15 @@ public class ImmersiveGeology {
         NeoForge.EVENT_BUS.register(new IGWorldSubscription());
 
         IGLib.IG_LOGGER.info("- Client Configuration Registration");
-        ModLoadingContext.get().registerConfig(Type.CLIENT, IGClientConfig.CONFIG_SPEC);
+        container.registerConfig(Type.CLIENT, IGClientConfig.CONFIG_SPEC);
 
         IGLib.IG_LOGGER.info("- Server Configuration Registration");
-        ModLoadingContext.get().registerConfig(Type.SERVER, IGServerConfig.CONFIG_SPEC);
+        container.registerConfig(Type.SERVER, IGServerConfig.CONFIG_SPEC);
 
         IGRegistrationHolder.addRegistersToEventBus(modEventBus);
 
         IGLib.IG_LOGGER.info("- Network Packet Handler Registration");
-        IGPacketHandler.initialize();
+        IGPacketHandler.initialize(modEventBus);
 
         proxy.modConstruction();
     }
@@ -167,36 +160,36 @@ public class ImmersiveGeology {
 
     @NotNull
     private static ResourceLocation getResourceLocationTest(IFlagType<?> pattern, GeologyMaterial base) {
-        ResourceLocation test = new ResourceLocation(IGLib.MODID, "textures/" + (pattern instanceof ItemCategoryFlags ? "item" : "block") + "/colored/" + base.getName() + "/" + pattern.getName() + ".png");
+        ResourceLocation test = ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "textures/" + (pattern instanceof ItemCategoryFlags ? "item" : "block") + "/colored/" + base.getName() + "/" + pattern.getName() + ".png");
         if (pattern.equals(BlockCategoryFlags.STAIRS))
         {
-            test =  new ResourceLocation(IGLib.MODID, "textures/" + (pattern instanceof ItemCategoryFlags ? "item" : "block") + "/colored/" + base.getName() + "/" + BlockCategoryFlags.STORAGE_BLOCK.getName() + ".png");
+            test =  ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "textures/" + (pattern instanceof ItemCategoryFlags ? "item" : "block") + "/colored/" + base.getName() + "/" + BlockCategoryFlags.STORAGE_BLOCK.getName() + ".png");
         }
 
         if (pattern.equals(BlockCategoryFlags.FENCE))
         {
-            test =  new ResourceLocation(IGLib.MODID, "textures/" + (pattern instanceof ItemCategoryFlags ? "item" : "block") + "/colored/" + base.getName() + "/" + BlockCategoryFlags.STORAGE_BLOCK.getName() + ".png");
+            test =  ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "textures/" + (pattern instanceof ItemCategoryFlags ? "item" : "block") + "/colored/" + base.getName() + "/" + BlockCategoryFlags.STORAGE_BLOCK.getName() + ".png");
         }
 
         if (pattern.equals(BlockCategoryFlags.SLAB))
         {
-            test =  new ResourceLocation(IGLib.MODID, "textures/" + (pattern instanceof ItemCategoryFlags ? "item" : "block") + "/colored/" + base.getName() + "/" + BlockCategoryFlags.STORAGE_BLOCK.getName() + ".png");
+            test =  ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "textures/" + (pattern instanceof ItemCategoryFlags ? "item" : "block") + "/colored/" + base.getName() + "/" + BlockCategoryFlags.STORAGE_BLOCK.getName() + ".png");
         }
 
         if (pattern.equals(BlockCategoryFlags.SHEETMETAL_SLAB))
         {
-            test =  new ResourceLocation(IGLib.MODID, "textures/" + (pattern instanceof ItemCategoryFlags ? "item" : "block") + "/colored/" + base.getName() + "/" + BlockCategoryFlags.SHEETMETAL_BLOCK.getName() + ".png");
+            test =  ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "textures/" + (pattern instanceof ItemCategoryFlags ? "item" : "block") + "/colored/" + base.getName() + "/" + BlockCategoryFlags.SHEETMETAL_BLOCK.getName() + ".png");
         }
 
         if (pattern.equals(BlockCategoryFlags.SHEETMETAL_STAIRS))
         {
-            test =  new ResourceLocation(IGLib.MODID, "textures/" + (pattern instanceof ItemCategoryFlags ? "item" : "block") + "/colored/" + base.getName() + "/" + BlockCategoryFlags.SHEETMETAL_BLOCK.getName() + ".png");
+            test =  ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "textures/" + (pattern instanceof ItemCategoryFlags ? "item" : "block") + "/colored/" + base.getName() + "/" + BlockCategoryFlags.SHEETMETAL_BLOCK.getName() + ".png");
         }
 
         if(pattern.equals(ItemCategoryFlags.NORMAL_ORE) || pattern.equals(ItemCategoryFlags.RICH_ORE) || pattern.equals(ItemCategoryFlags.POOR_ORE))
         {
             OreRichness richness = pattern.equals(ItemCategoryFlags.NORMAL_ORE) ? OreRichness.NORMAL : (pattern.equals(ItemCategoryFlags.RICH_ORE) ? OreRichness.RICH : OreRichness.POOR);
-            test = new ResourceLocation(IGLib.MODID, "textures/item/colored/raw_ore/"+base.getName().toLowerCase()+"/"+richness.getSanitizedName() + ".png");
+            test = ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "textures/item/colored/raw_ore/"+base.getName().toLowerCase()+"/"+richness.getSanitizedName() + ".png");
         }
         return test;
     }

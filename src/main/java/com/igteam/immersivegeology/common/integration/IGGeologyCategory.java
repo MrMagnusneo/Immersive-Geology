@@ -48,7 +48,7 @@ public class IGGeologyCategory extends IGRecipeCategory<IGGeoRecipe>
 	public IGGeologyCategory(IGuiHelper helper)
 	{
 		super(helper, JEIRecipeTypes.GEOHINT, "block.immersivegeology.geohint");
-		ResourceLocation background = new ResourceLocation("minecraft", "textures/gui/light_dirt_background.png");
+		ResourceLocation background = ResourceLocation.fromNamespaceAndPath("minecraft", "textures/gui/light_dirt_background.png");
 		IDrawableStatic back = guiHelper.drawableBuilder(background, 0, 0, 180, 192).setTextureSize(16,16).build();
 		setBackground(back);
 		setIcon(new ItemStack(MineralEnum.Unobtania.getOreBlock(StoneEnum.MCStone, OreRichness.NORMAL).asIGItem()));

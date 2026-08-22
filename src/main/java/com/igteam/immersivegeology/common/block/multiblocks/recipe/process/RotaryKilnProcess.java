@@ -16,6 +16,7 @@ import blusunrize.immersiveengineering.common.blocks.multiblocks.process.Process
 import blusunrize.immersiveengineering.common.blocks.multiblocks.process.ProcessContext.ProcessContextInMachine;
 import com.igteam.immersivegeology.common.block.multiblocks.logic.RotaryKilnLogic;
 import com.igteam.immersivegeology.common.block.multiblocks.recipe.RotaryKilnRecipe;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -33,13 +34,19 @@ public class RotaryKilnProcess extends MultiblockProcessInMachine<RotaryKilnReci
 		this.slot = data.getInt("slot_index");
 	}
 
+	public RotaryKilnProcess(BiFunction<Level, ResourceLocation, RotaryKilnRecipe> getRecipe,
+			CompoundTag data, HolderLookup.Provider registries) {
+		this(getRecipe, data);
+	}
+
     public RotaryKilnProcess(RotaryKilnRecipe recipe, int slot) {
 		super(recipe);
 		this.slot = slot;
 	}
 
-	public void writeExtraDataToNBT(CompoundTag nbt) {
-		super.writeExtraDataToNBT(nbt);
+	@Override
+	public void writeExtraDataToNBT(CompoundTag nbt, HolderLookup.Provider registries) {
+		super.writeExtraDataToNBT(nbt, registries);
 		nbt.putInt("slot_index", slot);
 	}
 

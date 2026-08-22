@@ -38,6 +38,7 @@ import com.igteam.immersivegeology.common.block.multiblocks.logic.SmallChemicalR
 import com.igteam.immersivegeology.common.block.multiblocks.logic.helper.BasicChemicalProcessor;
 import com.igteam.immersivegeology.common.block.multiblocks.logic.helper.IGMultiblockState;
 import com.igteam.immersivegeology.common.block.multiblocks.logic.helper.ISkinnableMultiblockLogic;
+import com.igteam.immersivegeology.common.block.multiblocks.logic.helper.IRemovalAwareMultiblockState;
 import com.igteam.immersivegeology.common.block.multiblocks.part.SmallChemicalReactorPart;
 import com.igteam.immersivegeology.common.block.multiblocks.recipe.BasicChemicalRecipe;
 import com.igteam.immersivegeology.common.block.multiblocks.recipe.ChemicalRecipe;
@@ -49,6 +50,7 @@ import com.igteam.immersivegeology.core.material.data.enums.MetalEnum;
 import com.igteam.immersivegeology.core.material.data.enums.MiscEnum;
 import com.igteam.immersivegeology.core.material.helper.flags.BlockCategoryFlags;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -282,7 +284,7 @@ public class SmallChemicalReactorLogic implements ISkinnableMultiblockLogic<Stat
         return SmallChemicalReactorShape.GETTER;
     }
 
-    public static class State implements IGMultiblockState, ProcessContext.ProcessContextInMachine<BasicChemicalRecipe> {
+    public static class State implements IGMultiblockState, IRemovalAwareMultiblockState, ProcessContext.ProcessContextInMachine<BasicChemicalRecipe> {
         public final AveragingEnergyStorage energy = new AveragingEnergyStorage(ENERGY_CAPACITY);
         public float damage;
         private boolean isInvalidated = false;
@@ -342,28 +344,28 @@ public class SmallChemicalReactorLogic implements ISkinnableMultiblockLogic<Stat
         }
 
         @Override
-        public void readSaveNBT(CompoundTag nbt){
-            this.energy.deserializeNBT(nbt.get("energy"));
-            this.tanks.readNBT(nbt.getCompound("tanks"));
-            this.inventory.deserializeNBT(nbt.getCompound("inventory"));
-            this.processor.fromNBT(nbt.get("processor"), MultiblockProcessInMachine::new);
+        public void readSaveNBT(CompoundTag nbt, HolderLookup.Provider provider){
+            this.energy.deserializeNBT(provider, nbt.getCompound("energy"));
+            this.tanks.readNBT(nbt.getCompound("tanks"), provider);
+            this.inventory.deserializeNBT(provider, nbt.getCompound("inventory"));
+            this.processor.fromNBT(nbt.getList("processor", Tag.TAG_COMPOUND), MultiblockProcessInMachine::new, provider);
             this.damage = nbt.getFloat("damage");
             this.isInvalidated = nbt.getBoolean("invalid");
         }
 
         @Override
-        public void writeSaveNBT(CompoundTag nbt){
-            nbt.put("energy", this.energy.serializeNBT());
-            nbt.put("tanks", this.tanks.toNBT());
-            nbt.put("processor", this.processor.toNBT());
-            nbt.put("inventory", this.inventory.serializeNBT());
+        public void writeSaveNBT(CompoundTag nbt, HolderLookup.Provider provider){
+            nbt.put("energy", this.energy.serializeNBT(provider));
+            nbt.put("tanks", this.tanks.toNBT(provider));
+            nbt.put("processor", this.processor.toNBT(provider));
+            nbt.put("inventory", this.inventory.serializeNBT(provider));
             nbt.putFloat("damage", this.damage);
             nbt.putBoolean("invalid", this.isInvalidated);
         }
 
         public void clearProcessor()
         {
-            this.processor.fromNBT(dummy.toNBT(), MultiblockProcessInMachine::new);
+            this.processor.getQueue().clear();
         }
 
         @Override
@@ -405,7 +407,7 @@ public class SmallChemicalReactorLogic implements ISkinnableMultiblockLogic<Stat
 		}
 
         @Override
-        public void invalidate(@NotNull IMultiblockContext<?> ctx)
+        public void onMultiblockPartRemoved(@NotNull IMultiblockContext<?> ctx)
         {
             if(!isInvalidated)
             {
@@ -420,13 +422,6 @@ public class SmallChemicalReactorLogic implements ISkinnableMultiblockLogic<Stat
                 }
                 isInvalidated = true;
             }
-
-            this.energyCap.get(ctx).invalidate();
-            this.inputCapBack.get(ctx).invalidate();
-            this.inputCapFront.get(ctx).invalidate();
-            this.outputHandler.get(ctx).invalidate();
-            this.itemInputCap.get(ctx).invalidate();
-            this.outputCap.get(ctx).invalidate();
         }
     }
 
@@ -446,20 +441,20 @@ public class SmallChemicalReactorLogic implements ISkinnableMultiblockLogic<Stat
             this.output = output;
         }
 
-        public Tag toNBT()
+        public Tag toNBT(HolderLookup.Provider provider)
         {
             CompoundTag tag = new CompoundTag();
-            tag.put("leftIn", this.leftInput.writeToNBT(new CompoundTag()));
-            tag.put("rightIn", this.rightInput.writeToNBT(new CompoundTag()));
-            tag.put("out", this.output.writeToNBT(new CompoundTag()));
+            tag.put("leftIn", this.leftInput.writeToNBT(provider, new CompoundTag()));
+            tag.put("rightIn", this.rightInput.writeToNBT(provider, new CompoundTag()));
+            tag.put("out", this.output.writeToNBT(provider, new CompoundTag()));
             return tag;
         }
 
-        public void readNBT(CompoundTag tag)
+        public void readNBT(CompoundTag tag, HolderLookup.Provider provider)
         {
-            this.leftInput.readFromNBT(tag.getCompound("leftIn"));
-            this.rightInput.readFromNBT(tag.getCompound("rightIn"));
-            this.output.readFromNBT(tag.getCompound("out"));
+            this.leftInput.readFromNBT(provider, tag.getCompound("leftIn"));
+            this.rightInput.readFromNBT(provider, tag.getCompound("rightIn"));
+            this.output.readFromNBT(provider, tag.getCompound("out"));
         }
 
         public FluidTank leftInput()

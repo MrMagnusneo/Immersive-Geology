@@ -30,7 +30,7 @@ import java.util.function.Predicate;
 @JeiPlugin
 public class JEIIntegration implements IModPlugin
 {
-	private static final ResourceLocation ID = new ResourceLocation(IGLib.MODID, "main");
+	private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "main");
 	@Override
 	public ResourceLocation getPluginUid()
 	{

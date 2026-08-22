@@ -24,7 +24,9 @@ import com.igteam.immersivegeology.core.registration.IGMenuTypes;
 import com.igteam.immersivegeology.core.registration.IGRegistrationHolder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
@@ -33,6 +35,7 @@ import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -91,12 +94,13 @@ public class IGCrateEntity extends RandomizableContainerBlockEntity implements I
 		return new IGCrateMenu(IGMenuTypes.CRATE.get(), pContainerId, pInventory, this);
 	}
 
-	public void load(CompoundTag nbt) {
-		super.load(nbt);
-		this.loadIEData(nbt);
+	@Override
+	protected void loadAdditional(CompoundTag nbt, HolderLookup.Provider registries) {
+		super.loadAdditional(nbt, registries);
+		this.loadIEData(nbt, registries);
 	}
 
-	private void loadIEData(CompoundTag nbt) {
+	private void loadIEData(CompoundTag nbt, HolderLookup.Provider registries) {
 		if (nbt.contains("enchantments", 9)) {
 			this.enchantments = nbt.getList("enchantments", 10);
 		}
@@ -106,19 +110,20 @@ public class IGCrateEntity extends RandomizableContainerBlockEntity implements I
 		}
 
 		if (!this.tryLoadLootTable(nbt)) {
-			ContainerHelper.loadAllItems(nbt, this.inventory);
+			ContainerHelper.loadAllItems(nbt, this.inventory, registries);
 		}
 
 	}
 
-	protected void saveAdditional(CompoundTag nbt) {
-		super.saveAdditional(nbt);
+	@Override
+	protected void saveAdditional(CompoundTag nbt, HolderLookup.Provider registries) {
+		super.saveAdditional(nbt, registries);
 		if (this.enchantments != null && this.enchantments.size() > 0) {
 			nbt.put("enchantments", this.enchantments);
 		}
 
 		if (!this.trySaveLootTable(nbt)) {
-			ContainerHelper.saveAllItems(nbt, this.inventory);
+			ContainerHelper.saveAllItems(nbt, this.inventory, registries);
 		}
 	}
 
@@ -150,19 +155,18 @@ public class IGCrateEntity extends RandomizableContainerBlockEntity implements I
 	public void getBlockEntityDrop(LootContext context, Consumer<ItemStack> drop) {
 		ItemStack stack = new ItemStack(this.getBlockState().getBlock(), 1);
 		CompoundTag tag = new CompoundTag();
-		ContainerHelper.saveAllItems(tag, this.inventory, false);
-		if (!tag.isEmpty()) {
-			stack.setTag(tag);
-		}
+		ContainerHelper.saveAllItems(tag, this.inventory, false, context.getLevel().registryAccess());
 
 		Component customName = this.getCustomName();
 		if (customName != null) {
-			stack.setHoverName(customName);
+			stack.set(DataComponents.CUSTOM_NAME, customName);
 		}
 
 		if (this.enchantments != null && this.enchantments.size() > 0) {
-			stack.getOrCreateTag().put("ench", this.enchantments);
+			tag.put("ench", this.enchantments);
 		}
+		if (!tag.isEmpty())
+			stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
 
 		drop.accept(stack);
 	}
@@ -172,13 +176,15 @@ public class IGCrateEntity extends RandomizableContainerBlockEntity implements I
 	}
 
 	public void onBEPlaced(ItemStack stack) {
-		if (stack.hasTag()) {
-			this.loadIEData(stack.getOrCreateTag());
-			if (stack.hasCustomHoverName()) {
+		if (stack.has(DataComponents.CUSTOM_DATA) && level != null) {
+			CompoundTag customData = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+			this.loadIEData(customData, level.registryAccess());
+			if (stack.has(DataComponents.CUSTOM_NAME)) {
 				this.setCustomName(stack.getHoverName());
 			}
 
-			this.enchantments = stack.getEnchantmentTags();
+			if(customData.contains("ench", 9))
+				this.enchantments = customData.getList("ench", 10);
 		}
 
 	}

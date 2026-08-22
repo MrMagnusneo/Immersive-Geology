@@ -28,6 +28,10 @@ base.archivesName = 'ImmersiveGeology'
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs.addAll(['-Xmaxerrs', '500'])
+}
+
 tasks.withType(Jar).configureEach {
     archiveVersion.set(fullVersion)
     zip64 = true
@@ -169,6 +173,13 @@ dependencies {
 
     implementation "curse.maven:${version_ie_curse}"
     implementation "blusunrize.immersiveengineering:ImmersiveEngineering:${version_ie_full}:datagen"
+
+    jarJar(implementation('malte0811:DualCodecs')) {
+        version {
+            strictly '[2.0.1,3)'
+            prefer '2.0.1'
+        }
+    }
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.4'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.11.4'

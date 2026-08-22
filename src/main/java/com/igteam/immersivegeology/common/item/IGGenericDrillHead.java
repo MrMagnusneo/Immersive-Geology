@@ -21,12 +21,14 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -91,12 +93,8 @@ public class IGGenericDrillHead extends IGGenericItem implements IDrillHead
 	}
 
 	public int getHeadDamage(ItemStack head) {
-		if (head.hasTag()) {
-			CompoundTag nbt = head.getOrCreateTag();
-			return nbt.contains("headDamage", 3) ? nbt.getInt("headDamage") : nbt.getInt("Damage");
-		} else {
-			return 0;
-		}
+		CompoundTag customData = head.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+		return customData.contains("headDamage", 3) ? customData.getInt("headDamage") : head.getDamageValue();
 	}
 
 	public int getMaximumHeadDamage(ItemStack head) {
@@ -108,9 +106,12 @@ public class IGGenericDrillHead extends IGGenericItem implements IDrillHead
 	}
 
 	public static void setHeadDamage(ItemStack head, int totalDamage) {
-		CompoundTag nbt = head.getOrCreateTag();
-		nbt.remove("headDamage");
-		nbt.putInt("Damage", totalDamage);
+		CompoundTag customData = head.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+		if(customData.contains("headDamage")) {
+			customData.remove("headDamage");
+			head.set(DataComponents.CUSTOM_DATA, CustomData.of(customData));
+		}
+		head.setDamageValue(totalDamage);
 	}
 
 	public ResourceLocation getDrillTexture(ItemStack drill, ItemStack head) {

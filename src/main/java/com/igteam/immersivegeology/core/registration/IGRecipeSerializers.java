@@ -21,6 +21,7 @@ import com.igteam.immersivegeology.core.lib.IGLib;
 import com.igteam.immersivegeology.core.registration.helper.EmptyRecipe;
 import com.igteam.immersivegeology.core.registration.helper.EmptySerializer;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -65,7 +66,7 @@ public class IGRecipeSerializers
 		EMPTY_SERIALIZER = RECIPE_SERIALIZERS.register("empty", EmptySerializer::new);
 	}
 
-	private static <T extends Recipe<?>> Supplier<SimpleRecipeSerializer<T>> special(Function<ResourceLocation, T> create)
+	private static <T extends Recipe<?>> Supplier<SimpleRecipeSerializer<T>> special(Function<CraftingBookCategory, T> create)
 	{
 		return () -> new SimpleRecipeSerializer<>(create);
 	}

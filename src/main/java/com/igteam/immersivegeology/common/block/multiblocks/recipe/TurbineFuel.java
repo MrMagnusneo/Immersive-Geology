@@ -15,7 +15,7 @@ import blusunrize.immersiveengineering.api.crafting.cache.CachedRecipeList;
 import blusunrize.immersiveengineering.api.utils.FastEither;
 import blusunrize.immersiveengineering.api.utils.TagUtils;
 import com.igteam.immersivegeology.core.registration.IGRecipeTypes;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -81,7 +81,7 @@ public class TurbineFuel extends IESerializableRecipe
 	}
 
 	@Nonnull
-	public ItemStack getResultItem(@NotNull RegistryAccess access) {
+	public ItemStack getResultItem(@NotNull HolderLookup.Provider access) {
 		return ItemStack.EMPTY;
 	}
 

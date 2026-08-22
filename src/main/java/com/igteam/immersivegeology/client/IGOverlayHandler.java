@@ -69,7 +69,7 @@ public class IGOverlayHandler
 						BlockEntity tileEntity = player.level().getBlockEntity(pos);
 						if((tileEntity instanceof IMultiblockBE<?> multiblock))
 						{
-							renderMultiblockOverlay(multiblock, hammer, transform, scaledWidth, scaledHeight);
+								renderMultiblockOverlay(multiblock, hammer, graphics, scaledWidth, scaledHeight);
 						}
 					}
 				}
@@ -78,7 +78,7 @@ public class IGOverlayHandler
 	}
 
 	private <S extends IMultiblockState> void renderMultiblockOverlay(
-			IMultiblockBE<S> be, boolean hammer, PoseStack transform, int scaledWidth, int scaledHeight
+			IMultiblockBE<S> be, boolean hammer, GuiGraphics graphics, int scaledWidth, int scaledHeight
 	)
 	{
 		final IMultiblockBEHelper<S> helper = be.getHelper();
@@ -87,6 +87,6 @@ public class IGOverlayHandler
 		final List<Component> overlayText = overlayHandler.getOverlayText(helper.getState(), ClientUtils.mc().player, be.getHelper());
 		if(overlayText==null)
 			return;
-		BlockOverlayUtils.drawBlockOverlayText(transform, overlayText, scaledWidth, scaledHeight);
+		BlockOverlayUtils.drawBlockOverlayText(graphics, overlayText, scaledWidth, scaledHeight);
 	}
 }

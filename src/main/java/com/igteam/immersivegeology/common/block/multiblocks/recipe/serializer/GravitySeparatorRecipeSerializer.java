@@ -38,7 +38,7 @@ public class GravitySeparatorRecipeSerializer extends LegacyIERecipeSerializer<G
 		Lazy<ItemStack> output = readOutput(json.get("result"));
 		Lazy<ItemStack> byproduct = readOutput(json.get("byproduct"));
 		float chance = GsonHelper.getAsFloat(json, "byproduct_chance");
-		Ingredient input = Ingredient.fromJson(GsonHelper.getAsJsonObject(json, "input"));
+		Ingredient input = Ingredient.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, GsonHelper.getAsJsonObject(json, "input")).getOrThrow();
 		int time = GsonHelper.getAsInt(json, "time");
 		int water = GsonHelper.getAsInt(json, "water");
 		return new GravitySeparatorRecipe(resourceLocation, input, output, byproduct, chance, water, time);
@@ -51,7 +51,7 @@ public class GravitySeparatorRecipeSerializer extends LegacyIERecipeSerializer<G
 		Lazy<ItemStack> output = readLazyStack(buffer);
 		Lazy<ItemStack> byproduct = readLazyStack(buffer);
 		float chance = buffer.readFloat();
-		Ingredient input = Ingredient.fromNetwork(buffer);
+		Ingredient input = Ingredient.CONTENTS_STREAM_CODEC.decode((net.minecraft.network.RegistryFriendlyByteBuf) buffer);
 		int time = buffer.readInt();
 		int water = buffer.readInt();
 		return new GravitySeparatorRecipe(resourceLocation, input, output, byproduct, chance, water, time);
@@ -64,7 +64,7 @@ public class GravitySeparatorRecipeSerializer extends LegacyIERecipeSerializer<G
 		writeLazyStack(buffer, recipe.itemOutput);
 		writeLazyStack(buffer, recipe.itemByproduct);
 		buffer.writeFloat(recipe.getChance());
-		recipe.itemIn.toNetwork(buffer);
+		Ingredient.CONTENTS_STREAM_CODEC.encode((net.minecraft.network.RegistryFriendlyByteBuf) buffer, recipe.itemIn);
 		buffer.writeInt(recipe.getTotalProcessTime());
 		buffer.writeInt(recipe.getTotalProcessWater());
 	}

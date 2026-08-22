@@ -68,8 +68,8 @@ public class BasicChemicalRecipeSerializer extends LegacyIERecipeSerializer<Basi
 	public @Nullable BasicChemicalRecipe fromNetwork(ResourceLocation resourceLocation, FriendlyByteBuf buffer)
 	{
 		
-		ItemStack output = buffer.readItem();
-		FluidStack fluidOut = FluidStack.readFromPacket(buffer);
+		ItemStack output = ItemStack.OPTIONAL_STREAM_CODEC.decode((net.minecraft.network.RegistryFriendlyByteBuf) buffer);
+		FluidStack fluidOut = FluidStack.OPTIONAL_STREAM_CODEC.decode((net.minecraft.network.RegistryFriendlyByteBuf) buffer);
 		IngredientWithSize itemInput = IngredientWithSize.read(buffer);
 		HashSet<FluidTagInput> fluidSet = new HashSet<>();
 		int fluid_input_size = buffer.readInt();
@@ -87,8 +87,8 @@ public class BasicChemicalRecipeSerializer extends LegacyIERecipeSerializer<Basi
 	@Override
 	public void toNetwork(FriendlyByteBuf buffer, BasicChemicalRecipe recipe)
 	{
-		buffer.writeItemStack(recipe.itemOutput, false);
-		recipe.fluidOutput.writeToPacket(buffer);
+		ItemStack.OPTIONAL_STREAM_CODEC.encode((net.minecraft.network.RegistryFriendlyByteBuf) buffer, recipe.itemOutput);
+		FluidStack.OPTIONAL_STREAM_CODEC.encode((net.minecraft.network.RegistryFriendlyByteBuf) buffer, recipe.fluidOutput);
 		recipe.itemInput.write(buffer);
 		buffer.writeInt(recipe.fluidIn.size());
 		recipe.fluidIn.forEach(f -> f.write(buffer));

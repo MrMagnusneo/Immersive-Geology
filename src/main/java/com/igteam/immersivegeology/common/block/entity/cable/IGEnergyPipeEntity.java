@@ -60,7 +60,6 @@ import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.event.level.LevelEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.common.EventBusSubscriber.Bus;
 import net.minecraft.core.registries.BuiltInRegistries;
 
 import javax.annotation.Nonnull;
@@ -69,10 +68,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
-@EventBusSubscriber(
-		modid = "immersivegeology",
-		bus = Bus.FORGE
-)
+@EventBusSubscriber(modid = "immersivegeology")
 public class IGEnergyPipeEntity extends IEBaseBlockEntity implements IEnergyPipe, IEBlockInterfaces.IColouredBE, IEBlockInterfaces.IPlayerInteraction, IEBlockInterfaces.IHammerInteraction, IEBlockInterfaces.IPlacementInteraction, IEBlockInterfaces.ISelectionBounds, IEBlockInterfaces.ICollisionBounds, IEBlockInterfaces.IAdditionalDrops {
 	static WorldMap<BlockPos, Set<IGEnergyPipeEntity.DirectionalEnergyOutput>> indirectConnections = new WorldMap();
 	public static ArrayList<Predicate<Block>> validPipeCovers = new ArrayList();

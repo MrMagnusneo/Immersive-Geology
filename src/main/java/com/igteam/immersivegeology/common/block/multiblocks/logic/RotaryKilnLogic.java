@@ -37,7 +37,9 @@ import com.igteam.immersivegeology.core.lib.IGLib;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -352,14 +354,14 @@ public class RotaryKilnLogic implements ISkinnableMultiblockLogic<State>, IServe
         }
 
         @Override
-        public void writeSaveNBT(CompoundTag nbt){
-            nbt.put("energy_lv", energy_lv.serializeNBT());
-            nbt.put("energy_mv", energy_mv.serializeNBT());
-            nbt.put("energy_hv", energy_hv.serializeNBT());
-            nbt.put("energy", total_energy.serializeNBT());
-            nbt.put("processor", processor.toNBT());
+        public void writeSaveNBT(CompoundTag nbt, HolderLookup.Provider provider){
+            nbt.put("energy_lv", energy_lv.serializeNBT(provider));
+            nbt.put("energy_mv", energy_mv.serializeNBT(provider));
+            nbt.put("energy_hv", energy_hv.serializeNBT(provider));
+            nbt.put("energy", total_energy.serializeNBT(provider));
+            nbt.put("processor", processor.toNBT(provider));
             nbt.putFloat("tube_rotation", tube_rotation);
-            nbt.put("inventory", inventory.serializeNBT());
+            nbt.put("inventory", inventory.serializeNBT(provider));
             nbt.putBoolean("is_active", isActive);
 
             nbt.putFloat("target_heat", targetHeat);
@@ -376,14 +378,14 @@ public class RotaryKilnLogic implements ISkinnableMultiblockLogic<State>, IServe
         }
 
         @Override
-        public void readSaveNBT(CompoundTag nbt){
-            energy_lv.deserializeNBT(nbt.get("energy_lv"));
-            energy_mv.deserializeNBT(nbt.get("energy_mv"));
-            energy_hv.deserializeNBT(nbt.get("energy_hv"));
-            total_energy.deserializeNBT(nbt.get("energy"));
+        public void readSaveNBT(CompoundTag nbt, HolderLookup.Provider provider){
+            energy_lv.deserializeNBT(provider, nbt.getCompound("energy_lv"));
+            energy_mv.deserializeNBT(provider, nbt.getCompound("energy_mv"));
+            energy_hv.deserializeNBT(provider, nbt.getCompound("energy_hv"));
+            total_energy.deserializeNBT(provider, nbt.getCompound("energy"));
             this.tube_rotation = nbt.getFloat("tube_rotation");
-            this.inventory.deserializeNBT(nbt.getCompound("inventory"));
-            this.processor.fromNBT(nbt.get("processor"), RotaryKilnProcess::new);
+            this.inventory.deserializeNBT(provider, nbt.getCompound("inventory"));
+            this.processor.fromNBT(nbt.getList("processor", Tag.TAG_COMPOUND), RotaryKilnProcess::new, provider);
             this.isActive = nbt.getBoolean("is_active");
             this.targetHeat = nbt.getFloat("target_heat");
             this.heatLevel = nbt.getFloat("heat");
@@ -399,15 +401,15 @@ public class RotaryKilnLogic implements ISkinnableMultiblockLogic<State>, IServe
         }
 
         @Override
-        public void writeSyncNBT(CompoundTag nbt)
+        public void writeSyncNBT(CompoundTag nbt, HolderLookup.Provider provider)
         {
-            writeSaveNBT(nbt);
+            writeSaveNBT(nbt, provider);
         }
 
         @Override
-        public void readSyncNBT(CompoundTag nbt)
+        public void readSyncNBT(CompoundTag nbt, HolderLookup.Provider provider)
         {
-            readSaveNBT(nbt);
+            readSaveNBT(nbt, provider);
         }
 
         public float getHeat()
@@ -491,12 +493,5 @@ public class RotaryKilnLogic implements ISkinnableMultiblockLogic<State>, IServe
             this.heatLevel = v;
         }
 
-        @Override
-        public void invalidate(@NotNull IMultiblockContext<?> ctx)
-        {
-            this.energyCap.get(ctx).invalidate();
-            this.outputHandler.get(ctx).invalidate();
-            this.itemInputCap.get(ctx).invalidate();
-        }
     }
 }

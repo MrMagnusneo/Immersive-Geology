@@ -33,20 +33,20 @@ public class BloomeryFuelSerializer extends LegacyIERecipeSerializer<BloomeryFue
 	}
 
 	public BloomeryFuel readFromJson(ResourceLocation recipeId, JsonObject json, ICondition.IContext context) {
-		Ingredient input = Ingredient.fromJson(json.getAsJsonObject("input"));
+		Ingredient input = Ingredient.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json.getAsJsonObject("input")).getOrThrow();
 		int time = GsonHelper.getAsInt(json, "time", 1200);
 		return new BloomeryFuel(recipeId, input, time);
 	}
 
 	@Nullable
 	public BloomeryFuel fromNetwork(ResourceLocation recipeId, FriendlyByteBuf buffer) {
-		Ingredient input = Ingredient.fromNetwork(buffer);
+		Ingredient input = Ingredient.CONTENTS_STREAM_CODEC.decode((net.minecraft.network.RegistryFriendlyByteBuf) buffer);
 		int time = buffer.readInt();
 		return new BloomeryFuel(recipeId, input, time);
 	}
 
 	public void toNetwork(FriendlyByteBuf buffer, BloomeryFuel recipe) {
-		recipe.input.toNetwork(buffer);
+		Ingredient.CONTENTS_STREAM_CODEC.encode((net.minecraft.network.RegistryFriendlyByteBuf) buffer, recipe.input);
 		buffer.writeInt(recipe.burnTime);
 	}
 }

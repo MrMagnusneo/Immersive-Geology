@@ -22,17 +22,17 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 
 public class IGItemGroup extends CreativeModeTab {
-    private static final ResourceLocation GEOLOGIC_BACKGROUND_TEXTURES = new ResourceLocation("immersivegeology", "textures/gui/creative_tabs/backgrounds/geologic.png");
-    private static final ResourceLocation PRODUCT_BACKGROUND_TEXTURES = new ResourceLocation("immersivegeology", "textures/gui/creative_tabs/backgrounds/product.png");
-    private static final ResourceLocation PYROMETALLURGY_BACKGROUND_TEXTURES = new ResourceLocation("immersivegeology", "textures/gui/creative_tabs/backgrounds/pyrometallurgy.png");
-    private static final ResourceLocation HYDROMETALLURGY_BACKGROUND_TEXTURES = new ResourceLocation("immersivegeology", "textures/gui/creative_tabs/backgrounds/hydrometallurgy.png");
-    private static final ResourceLocation STRUCTURAL_BACKGROUND_TEXTURES = new ResourceLocation("immersivegeology", "textures/gui/creative_tabs/backgrounds/structural.png");
+    private static final ResourceLocation GEOLOGIC_BACKGROUND_TEXTURES = ResourceLocation.fromNamespaceAndPath("immersivegeology", "textures/gui/creative_tabs/backgrounds/geologic.png");
+    private static final ResourceLocation PRODUCT_BACKGROUND_TEXTURES = ResourceLocation.fromNamespaceAndPath("immersivegeology", "textures/gui/creative_tabs/backgrounds/product.png");
+    private static final ResourceLocation PYROMETALLURGY_BACKGROUND_TEXTURES = ResourceLocation.fromNamespaceAndPath("immersivegeology", "textures/gui/creative_tabs/backgrounds/pyrometallurgy.png");
+    private static final ResourceLocation HYDROMETALLURGY_BACKGROUND_TEXTURES = ResourceLocation.fromNamespaceAndPath("immersivegeology", "textures/gui/creative_tabs/backgrounds/hydrometallurgy.png");
+    private static final ResourceLocation STRUCTURAL_BACKGROUND_TEXTURES = ResourceLocation.fromNamespaceAndPath("immersivegeology", "textures/gui/creative_tabs/backgrounds/structural.png");
 
-    private static final ResourceLocation GEOLOGIC_TAB_TEXTURES = new ResourceLocation("immersivegeology", "textures/gui/creative_tabs/tabs/geologic.png");
-    private static final ResourceLocation COMPONENT_TAB_TEXTURES = new ResourceLocation("immersivegeology", "textures/gui/creative_tabs/tabs/component.png");
-    private static final ResourceLocation PYRO_TAB_TEXTURES = new ResourceLocation("immersivegeology", "textures/gui/creative_tabs/tabs/pyro.png");
-    private static final ResourceLocation HYDRO_TAB_TEXTURES = new ResourceLocation("immersivegeology", "textures/gui/creative_tabs/tabs/hydro.png");
-    private static final ResourceLocation STRUCTURAL_TAB_TEXTURES = new ResourceLocation("immersivegeology", "textures/gui/creative_tabs/tabs/structural.png");
+    private static final ResourceLocation GEOLOGIC_TAB_TEXTURES = ResourceLocation.fromNamespaceAndPath("immersivegeology", "textures/gui/creative_tabs/tabs/geologic.png");
+    private static final ResourceLocation COMPONENT_TAB_TEXTURES = ResourceLocation.fromNamespaceAndPath("immersivegeology", "textures/gui/creative_tabs/tabs/component.png");
+    private static final ResourceLocation PYRO_TAB_TEXTURES = ResourceLocation.fromNamespaceAndPath("immersivegeology", "textures/gui/creative_tabs/tabs/pyro.png");
+    private static final ResourceLocation HYDRO_TAB_TEXTURES = ResourceLocation.fromNamespaceAndPath("immersivegeology", "textures/gui/creative_tabs/tabs/hydro.png");
+    private static final ResourceLocation STRUCTURAL_TAB_TEXTURES = ResourceLocation.fromNamespaceAndPath("immersivegeology", "textures/gui/creative_tabs/tabs/structural.png");
 
     public static ItemSubGroup selectedGroup = ItemSubGroup.geologic;
 

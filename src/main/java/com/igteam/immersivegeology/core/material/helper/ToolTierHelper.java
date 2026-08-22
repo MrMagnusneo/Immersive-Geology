@@ -17,7 +17,6 @@ import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.Tiers;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.block.Block;
-import net.neoforged.neoforge.common.ForgeHooks;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -69,7 +68,8 @@ public enum ToolTierHelper implements Tier
 		return (Ingredient)this.repairIngredient.get();
 	}
 
-	public @Nullable TagKey<Block> getTag() {
-		return ForgeHooks.getTagFromVanillaTier(Tiers.NETHERITE);
+	@Override
+	public @NotNull TagKey<Block> getIncorrectBlocksForDrops() {
+		return Tiers.NETHERITE.getIncorrectBlocksForDrops();
 	}
 }

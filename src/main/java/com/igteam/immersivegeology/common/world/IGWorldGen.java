@@ -25,7 +25,6 @@ import net.minecraft.world.level.levelgen.heightproviders.HeightProviderType;
 import net.minecraft.world.level.levelgen.placement.*;
 import net.neoforged.neoforge.common.world.BiomeModifier;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -46,28 +45,27 @@ public class IGWorldGen
 
 	public static final TagKey<Biome> SALT_FLATS_BIOMES = TagKey.create(
 			Registries.BIOME,
-			new ResourceLocation(IGLib.MODID, "salt_flats")
+			ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "salt_flats")
 	);
 
 	public static final DeferredRegister<Codec<? extends BiomeModifier>> BIOME_MODIFIER_SERIALIZERS;
 	public static final DeferredHolder<?, Codec<IGOreRemovalModifier>> ORE_MODIFIER_CODEC;
 
-	public static void init()
+	public static void init(IEventBus modEventBus)
 	{
 		IGLib.IG_LOGGER.info("======== Registration of Immersive Geology World Generation ========");
-		IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
 		IGLib.IG_LOGGER.info("- Features");
-		FEATURE_REGISTER.register(bus);
+		FEATURE_REGISTER.register(modEventBus);
 		IGLib.IG_LOGGER.info("- TFC Compat Features");
-		TFC_FEATURE_REGISTER.register(bus);
+		TFC_FEATURE_REGISTER.register(modEventBus);
 		IGLib.IG_LOGGER.info("- Placement");
-		PLACEMENT_REGISTER.register(bus);
+		PLACEMENT_REGISTER.register(modEventBus);
 		IGLib.IG_LOGGER.info("- Height");
-		HEIGHT_REGISTER.register(bus);
+		HEIGHT_REGISTER.register(modEventBus);
 		IGLib.IG_LOGGER.info("- Biome Modifiers");
-		BIOME_MODIFIER_SERIALIZERS.register(bus);
+		BIOME_MODIFIER_SERIALIZERS.register(modEventBus);
 		IGLib.IG_LOGGER.info("- Structure Registration");
-		IGStructureTypes.initialize(bus);
+		IGStructureTypes.initialize(modEventBus);
 		IGLib.IG_LOGGER.info("Finished");
 	}
 

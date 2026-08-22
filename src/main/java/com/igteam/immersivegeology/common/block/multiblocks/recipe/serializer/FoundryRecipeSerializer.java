@@ -16,6 +16,7 @@ import com.google.gson.JsonObject;
 import com.igteam.immersivegeology.common.block.multiblocks.recipe.CrystallizerRecipe;
 import com.igteam.immersivegeology.common.block.multiblocks.recipe.FoundryRecipe;
 import com.igteam.immersivegeology.core.registration.IGMultiblockProvider;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
@@ -25,7 +26,6 @@ import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.common.conditions.ICondition.IContext;
 import net.neoforged.neoforge.common.util.Lazy;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
 
 public class FoundryRecipeSerializer extends LegacyIERecipeSerializer<FoundryRecipe>
@@ -43,7 +43,7 @@ public class FoundryRecipeSerializer extends LegacyIERecipeSerializer<FoundryRec
 		FluidTagInput input = FluidTagInput.deserialize(GsonHelper.getAsJsonObject(json, "input"));
 		int energy = GsonHelper.getAsInt(json, "energy");
 		int time = GsonHelper.getAsInt(json, "time");
-		Item mold = (Item)ForgeRegistries.ITEMS.getValue(new ResourceLocation(GsonHelper.getAsString(json, "mold")));
+		Item mold = BuiltInRegistries.ITEM.get(ResourceLocation.parse(GsonHelper.getAsString(json, "mold")));
 		return new FoundryRecipe(resourceLocation, input, output, mold, energy, time);
 	}
 
@@ -54,7 +54,7 @@ public class FoundryRecipeSerializer extends LegacyIERecipeSerializer<FoundryRec
 		FluidTagInput input = FluidTagInput.read(buffer);
 		int energy = buffer.readInt();
 		int time = buffer.readInt();
-		Item mold = (Item)buffer.readRegistryIdSafe(Item.class);
+		Item mold = BuiltInRegistries.ITEM.get(buffer.readResourceLocation());
 		return new FoundryRecipe(resourceLocation, input, output, mold, energy, time);
 	}
 
@@ -65,6 +65,6 @@ public class FoundryRecipeSerializer extends LegacyIERecipeSerializer<FoundryRec
 		recipe.fluidIn.write(buffer);
 		buffer.writeInt(recipe.getTotalProcessEnergy());
 		buffer.writeInt(recipe.getTotalProcessTime());
-		buffer.writeRegistryId(ForgeRegistries.ITEMS, recipe.mold);
+		buffer.writeResourceLocation(BuiltInRegistries.ITEM.getKey(recipe.mold));
 	}
 }

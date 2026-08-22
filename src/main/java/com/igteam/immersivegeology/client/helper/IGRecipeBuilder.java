@@ -8,16 +8,16 @@
 
 package com.igteam.immersivegeology.client.helper;
 
-import blusunrize.immersiveengineering.api.ApiUtils;
 import blusunrize.immersiveengineering.api.crafting.FluidTagInput;
 import blusunrize.immersiveengineering.api.crafting.IngredientWithSize;
 import com.google.common.base.Preconditions;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.JsonOps;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.recipes.FinishedRecipe;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
@@ -26,13 +26,11 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.material.Fluid;
-import net.neoforged.neoforge.common.crafting.CraftingHelper;
 import net.neoforged.neoforge.common.conditions.ICondition;
 import net.neoforged.neoforge.fluids.FluidStack;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -73,11 +71,11 @@ public class IGRecipeBuilder<R extends IGRecipeBuilder<R>> implements FinishedRe
 		if (this.conditions == null) {
 			this.conditions = new JsonArray();
 			this.addWriter((jsonObject) -> {
-				jsonObject.add("conditions", this.conditions);
+				jsonObject.add("neoforge:conditions", this.conditions);
 			});
 		}
 
-		this.conditions.add(CraftingHelper.serialize(condition));
+		this.conditions.add(serialize(ICondition.CODEC, condition));
 		return (R)this;
 	}
 
@@ -118,8 +116,8 @@ public class IGRecipeBuilder<R extends IGRecipeBuilder<R>> implements FinishedRe
 	}
 
 	public R addResult(Ingredient ingredient) {
-		return this.resultArray != null ? this.addMultiResult(ingredient.toJson()) : this.addWriter((jsonObject) -> {
-			jsonObject.add("result", ingredient.toJson());
+		return this.resultArray != null ? this.addMultiResult(serialize(Ingredient.CODEC, ingredient)) : this.addWriter((jsonObject) -> {
+			jsonObject.add("result", serialize(Ingredient.CODEC, ingredient));
 		});
 	}
 
@@ -150,7 +148,7 @@ public class IGRecipeBuilder<R extends IGRecipeBuilder<R>> implements FinishedRe
 	}
 
 	public R addMultiInput(Ingredient ingredient) {
-		return this.addMultiInput(ingredient.toJson());
+		return this.addMultiInput(serialize(Ingredient.CODEC, ingredient));
 	}
 
 	public R addMultiInput(IngredientWithSize ingredient) {
@@ -185,17 +183,7 @@ public class IGRecipeBuilder<R extends IGRecipeBuilder<R>> implements FinishedRe
 	}
 
 	public JsonObject serializeItemStack(ItemStack stack) {
-		JsonObject obj = new JsonObject();
-		obj.addProperty("item", BuiltInRegistries.ITEM.getKey(stack.getItem()).toString());
-		if (stack.getCount() > 1) {
-			obj.addProperty("count", stack.getCount());
-		}
-
-		if (stack.hasTag()) {
-			obj.addProperty("nbt", stack.getTag().toString());
-		}
-
-		return obj;
+		return serialize(ItemStack.CODEC, stack).getAsJsonObject();
 	}
 
 	protected R addSimpleItem(String key, ItemLike item) {
@@ -229,7 +217,7 @@ public class IGRecipeBuilder<R extends IGRecipeBuilder<R>> implements FinishedRe
 
 	public R addIngredient(String key, Ingredient ingredient) {
 		return this.addWriter((jsonObject) -> {
-			jsonObject.add(key, ingredient.toJson());
+			jsonObject.add(key, serialize(Ingredient.CODEC, ingredient));
 		});
 	}
 
@@ -241,7 +229,7 @@ public class IGRecipeBuilder<R extends IGRecipeBuilder<R>> implements FinishedRe
 
 	public R addFluid(String key, FluidStack fluidStack) {
 		return this.addWriter((jsonObject) -> {
-			jsonObject.add(key, ApiUtils.jsonSerializeFluidStack(fluidStack));
+			jsonObject.add(key, serialize(FluidStack.CODEC, fluidStack));
 		});
 	}
 
@@ -260,21 +248,17 @@ public class IGRecipeBuilder<R extends IGRecipeBuilder<R>> implements FinishedRe
 	}
 
 	public R addFluidTag(String key, TagKey<Fluid> fluidTag, int amount) {
-		return this.addFluidTag(key, new FluidTagInput(fluidTag, amount, (CompoundTag)null));
+		return this.addFluidTag(key, new FluidTagInput(fluidTag, amount));
 	}
 
 	public R addFluidTag(TagKey<Fluid> fluidTag, int amount) {
-		return this.addFluidTag("fluid", new FluidTagInput(fluidTag, amount, (CompoundTag)null));
+		return this.addFluidTag("fluid", new FluidTagInput(fluidTag, amount));
 	}
 
 	public void serializeRecipeData(JsonObject jsonObject) {
-		Iterator var2 = this.writerFunctions.iterator();
-
-		while(var2.hasNext()) {
-			Consumer<JsonObject> writer = (Consumer)var2.next();
+		for(Consumer<JsonObject> writer : this.writerFunctions) {
 			writer.accept(jsonObject);
 		}
-
 	}
 
 	public ResourceLocation getId() {
@@ -301,17 +285,17 @@ public class IGRecipeBuilder<R extends IGRecipeBuilder<R>> implements FinishedRe
 		jsonObject.add("output", ingredient.serialize());
 		if (conditions.length > 0) {
 			JsonArray conditionArray = new JsonArray();
-			ICondition[] var5 = conditions;
-			int var6 = conditions.length;
-
-			for(int var7 = 0; var7 < var6; ++var7) {
-				ICondition condition = var5[var7];
-				conditionArray.add(CraftingHelper.serialize(condition));
+			for(ICondition condition : conditions) {
+				conditionArray.add(serialize(ICondition.CODEC, condition));
 			}
 
 			jsonObject.add("conditions", conditionArray);
 		}
 
 		return jsonObject;
+	}
+
+	private static <T> JsonElement serialize(Codec<T> codec, T value) {
+		return codec.encodeStart(JsonOps.INSTANCE, value).getOrThrow();
 	}
 }

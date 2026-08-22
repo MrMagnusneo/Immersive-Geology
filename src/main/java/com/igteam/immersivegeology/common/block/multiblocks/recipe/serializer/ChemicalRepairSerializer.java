@@ -32,20 +32,20 @@ public class ChemicalRepairSerializer extends LegacyIERecipeSerializer<ChemicalR
 	}
 
 	public ChemicalRepairRecipe readFromJson(ResourceLocation recipeId, JsonObject json, ICondition.IContext context) {
-		Ingredient input = Ingredient.fromJson(json.getAsJsonObject("input"));
+		Ingredient input = Ingredient.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json.getAsJsonObject("input")).getOrThrow();
 		int time = GsonHelper.getAsInt(json, "time", 10);
 		return new ChemicalRepairRecipe(recipeId, input, time);
 	}
 
 	@Nullable
 	public ChemicalRepairRecipe fromNetwork(ResourceLocation recipeId, FriendlyByteBuf buffer) {
-		Ingredient input = Ingredient.fromNetwork(buffer);
+		Ingredient input = Ingredient.CONTENTS_STREAM_CODEC.decode((net.minecraft.network.RegistryFriendlyByteBuf) buffer);
 		int time = buffer.readInt();
 		return new ChemicalRepairRecipe(recipeId, input, time);
 	}
 
 	public void toNetwork(FriendlyByteBuf buffer, ChemicalRepairRecipe recipe) {
-		recipe.input.toNetwork(buffer);
+		Ingredient.CONTENTS_STREAM_CODEC.encode((net.minecraft.network.RegistryFriendlyByteBuf) buffer, recipe.input);
 		buffer.writeInt(recipe.burnTime);
 	}
 }

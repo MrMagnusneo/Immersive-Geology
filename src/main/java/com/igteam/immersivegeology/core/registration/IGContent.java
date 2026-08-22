@@ -51,7 +51,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.data.ForgeRecipeProvider;
 import org.jetbrains.annotations.Nullable;
 
 import java.text.DecimalFormat;
@@ -149,7 +148,7 @@ public class IGContent {
     {
         ManualInstance instance = ManualHelper.getManual();
 
-        instance.registerSpecialElement(new ResourceLocation(IGLib.MODID, "recipe_overview"), s ->
+        instance.registerSpecialElement(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "recipe_overview"), s ->
         {
             String mineral_name = GsonHelper.getAsString(s, "mineral");
             GeologyMaterial material = MineralEnum.valueOf(mineral_name).instance();
@@ -157,13 +156,13 @@ public class IGContent {
             return new IGRecipeOverview(instance, material, priority);
         });
 
-        InnerNode<ResourceLocation, ManualEntry> parent_category = instance.getRoot().getOrCreateSubnode(new ResourceLocation(IGLib.MODID, "main"), 99);
+        InnerNode<ResourceLocation, ManualEntry> parent_category = instance.getRoot().getOrCreateSubnode(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "main"), 99);
 
         ManualEntry.ManualEntryBuilder builder = new ManualEntry.ManualEntryBuilder(ManualHelper.getManual());
-        builder.readFromFile(new ResourceLocation(IGLib.MODID, "intro"));
+        builder.readFromFile(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "intro"));
         instance.addEntry(parent_category, builder.create());
 
-        InnerNode<ResourceLocation, ManualEntry> multiblock_category = parent_category.getOrCreateSubnode(new ResourceLocation(IGLib.MODID, "ig_multiblocks"), 0);
+        InnerNode<ResourceLocation, ManualEntry> multiblock_category = parent_category.getOrCreateSubnode(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "ig_multiblocks"), 0);
         multiblockEntry(instance, multiblock_category, "crystallizer");
         multiblockEntry(instance, multiblock_category, "coredrill");
         multiblockEntry(instance, multiblock_category, "gravity_separator");
@@ -180,16 +179,16 @@ public class IGContent {
         multiblockEntry(instance, multiblock_category, "small_chemical_reactor");
 
         // Build the manual entry for the contributors
-        builder.readFromFile(new ResourceLocation(IGLib.MODID, "getting_started"));
+        builder.readFromFile(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "getting_started"));
         instance.addEntry(parent_category, builder.create());
 
-        builder.readFromFile(new ResourceLocation(IGLib.MODID, "bug_bounty_contributors"));
+        builder.readFromFile(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "bug_bounty_contributors"));
         instance.addEntry(parent_category, builder.create());
-        InnerNode<ResourceLocation, ManualEntry> geology = parent_category.getOrCreateSubnode(new ResourceLocation(IGLib.MODID, "ig_geology"), 2);
+        InnerNode<ResourceLocation, ManualEntry> geology = parent_category.getOrCreateSubnode(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "ig_geology"), 2);
 
-        InnerNode<ResourceLocation, ManualEntry> overworld = geology.getOrCreateSubnode(new ResourceLocation(IGLib.MODID, "overworld"), 0);
-        InnerNode<ResourceLocation, ManualEntry> nether = geology.getOrCreateSubnode(new ResourceLocation(IGLib.MODID, "nether"), 1);
-        InnerNode<ResourceLocation, ManualEntry> the_end = geology.getOrCreateSubnode(new ResourceLocation(IGLib.MODID, "the_end"), 2);
+        InnerNode<ResourceLocation, ManualEntry> overworld = geology.getOrCreateSubnode(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "overworld"), 0);
+        InnerNode<ResourceLocation, ManualEntry> nether = geology.getOrCreateSubnode(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "nether"), 1);
+        InnerNode<ResourceLocation, ManualEntry> the_end = geology.getOrCreateSubnode(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "the_end"), 2);
 
         List<MaterialInterface<?>> materials = IGLib.getGeneratedMaterials();
         for(MaterialInterface<?> mineral : materials)
@@ -199,13 +198,13 @@ public class IGContent {
             if(mineral.instance().acceptableStoneType(StoneEnum.MCEndStone)) mineralTreeEntry(instance, the_end, mineral);
         }
 
-//        InnerNode<ResourceLocation, ManualEntry> chemical_entries = processing_chains.getOrCreateSubnode(new ResourceLocation(IGLib.MODID, "ig_chemical_chains"), 3);
+//        InnerNode<ResourceLocation, ManualEntry> chemical_entries = processing_chains.getOrCreateSubnode(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "ig_chemical_chains"), 3);
     }
 
     private static void mineralTreeEntry(ManualInstance instance, InnerNode<ResourceLocation, ManualEntry> category, MaterialInterface<?> material)
     {
         ManualEntry.ManualEntryBuilder mineral = new ManualEntry.ManualEntryBuilder(ManualHelper.getManual());
-        mineral.setLocation(new ResourceLocation(IGLib.MODID, material.getName()));
+        mineral.setLocation(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, material.getName()));
         mineral.setContent(() -> createMineralContent(material));
 
         instance.addEntry(category, mineral.create());
@@ -214,7 +213,7 @@ public class IGContent {
     private static void metalTreeEntry(ManualInstance instance, InnerNode<ResourceLocation, ManualEntry> category, MaterialInterface<?> material)
     {
         ManualEntry.ManualEntryBuilder mineral = new ManualEntry.ManualEntryBuilder(ManualHelper.getManual());
-        mineral.setLocation(new ResourceLocation(IGLib.MODID, material.getName()));
+        mineral.setLocation(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, material.getName()));
         mineral.setContent(() -> createMineralContent(material));
 
         instance.addEntry(category, mineral.create());
@@ -223,7 +222,7 @@ public class IGContent {
     private static void chemicalTreeEntry(ManualInstance instance, InnerNode<ResourceLocation, ManualEntry> category, MaterialInterface<?> material)
     {
         ManualEntry.ManualEntryBuilder mineral = new ManualEntry.ManualEntryBuilder(ManualHelper.getManual());
-        mineral.setLocation(new ResourceLocation(IGLib.MODID, material.getName()));
+        mineral.setLocation(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, material.getName()));
         mineral.setContent(() -> createMineralContent(material));
 
         instance.addEntry(category, mineral.create());
@@ -402,13 +401,13 @@ public class IGContent {
 
     private static void multiblockEntry(ManualInstance instance, InnerNode<ResourceLocation, ManualEntry> category, String id){
         ManualEntry.ManualEntryBuilder multiblock = new ManualEntry.ManualEntryBuilder(ManualHelper.getManual());
-        multiblock.readFromFile(new ResourceLocation(IGLib.MODID, id));
+        multiblock.readFromFile(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, id));
         instance.addEntry(category, multiblock.create());
     }
 
     private static void multiblockRotaryKilnEntry(ManualInstance instance, InnerNode<ResourceLocation, ManualEntry> category, String id){
         ManualEntry.ManualEntryBuilder multiblock = new ManualEntry.ManualEntryBuilder(ManualHelper.getManual());
-        multiblock.readFromFile(new ResourceLocation(IGLib.MODID, id));
+        multiblock.readFromFile(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, id));
         multiblock.addSpecialElement(new SpecialElementData("list", 0, new ManualElementTable(instance, formatBasicTable(getEnergyRates(), "fe/t"), true)));
         instance.addEntry(category, multiblock.create());
     }

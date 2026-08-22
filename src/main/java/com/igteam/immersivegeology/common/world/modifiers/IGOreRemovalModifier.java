@@ -46,7 +46,7 @@ public record IGOreRemovalModifier() implements BiomeModifier
 		if (phase == Phase.REMOVE)
 		{
 			boolean canLog = isDebugLogEnabled.get();
-			if(holder.getTagKeys().anyMatch(((b) ->
+			if(holder.tags().anyMatch(((b) ->
 			{
 				if(getBlacklistedBiomes().contains(b.location()))
 				{

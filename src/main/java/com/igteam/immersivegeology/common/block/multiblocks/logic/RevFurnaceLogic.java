@@ -60,6 +60,7 @@ import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.SmokeParticle;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.ParticleTypes;
@@ -69,6 +70,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.ParticleUtils;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -153,7 +155,7 @@ public class RevFurnaceLogic implements IMultiblockLogic<RevFurnaceLogic.State>,
                 final ItemStack nextStack = state.inventory.getStackInSlot(j);
                 if(nextStack.isEmpty())
                     continue;
-                ItemStack stack = ItemHandlerHelper.copyStackWithSize(nextStack, 1);
+                ItemStack stack = nextStack.copyWithCount(1);
                 stack = ItemHandlerHelper.insertItem(outputHandlerLeft, stack, false);
                 if(stack.isEmpty())
                     nextStack.shrink(1);
@@ -166,7 +168,7 @@ public class RevFurnaceLogic implements IMultiblockLogic<RevFurnaceLogic.State>,
                 final ItemStack nextStack = state.inventory.getStackInSlot(j);
                 if(nextStack.isEmpty())
                     continue;
-                ItemStack stack = ItemHandlerHelper.copyStackWithSize(nextStack, 1);
+                ItemStack stack = nextStack.copyWithCount(1);
                 stack = ItemHandlerHelper.insertItem(outputHandlerRight, stack, false);
                 if(stack.isEmpty())
                     nextStack.shrink(1);
@@ -226,7 +228,7 @@ public class RevFurnaceLogic implements IMultiblockLogic<RevFurnaceLogic.State>,
 
     @Nullable
     @Override
-    public List<Component> getOverlayText(State state, Player player, boolean b)
+    public List<Component> getOverlayText(State state, BlockPos pos, BlockHitResult hit, Player player, boolean b)
     {
         if(Utils.isFluidRelatedItemStack(player.getItemInHand(InteractionHand.MAIN_HAND)))
             return List.of(TextUtils.formatFluidStack(state.tank.getFluid()));
@@ -359,35 +361,35 @@ public class RevFurnaceLogic implements IMultiblockLogic<RevFurnaceLogic.State>,
         }
 
         @Override
-        public void writeSaveNBT(CompoundTag nbt)
+        public void writeSaveNBT(CompoundTag nbt, HolderLookup.Provider provider)
         {
-            nbt.put("tank", tank.writeToNBT(new CompoundTag()));
-            nbt.put("inventory", inventory.serializeNBT());
+            nbt.put("tank", tank.writeToNBT(provider, new CompoundTag()));
+            nbt.put("inventory", inventory.serializeNBT(provider));
             nbt.put("furnace", furnace.toNBT());
             nbt.putBoolean("active_left", active_left);
             nbt.putBoolean("active_right", active_right);
         }
 
         @Override
-        public void readSaveNBT(CompoundTag nbt)
+        public void readSaveNBT(CompoundTag nbt, HolderLookup.Provider provider)
         {
-            inventory.deserializeNBT(nbt.getCompound("inventory"));
+            inventory.deserializeNBT(provider, nbt.getCompound("inventory"));
             furnace.readNBT(nbt.getCompound("furnace"));
-            tank.readFromNBT(nbt.getCompound("tank"));
+            tank.readFromNBT(provider, nbt.getCompound("tank"));
             active_left = nbt.getBoolean("active_left");
             active_right = nbt.getBoolean("active_right");
         }
 
         @Override
-        public void readSyncNBT(CompoundTag nbt)
+        public void readSyncNBT(CompoundTag nbt, HolderLookup.Provider provider)
         {
-            readSaveNBT(nbt);
+            readSaveNBT(nbt, provider);
         }
 
         @Override
-        public void writeSyncNBT(CompoundTag nbt)
+        public void writeSyncNBT(CompoundTag nbt, HolderLookup.Provider provider)
         {
-            writeSaveNBT(nbt);
+            writeSaveNBT(nbt, provider);
         }
 
         public boolean isActive(int furnaceIndex)
@@ -481,14 +483,5 @@ public class RevFurnaceLogic implements IMultiblockLogic<RevFurnaceLogic.State>,
             return this.tank;
 		}
 
-        @Override
-        public void invalidate(@NotNull IMultiblockContext<?> ctx)
-        {
-            this.outputHandlerRight.get(ctx).invalidate();
-            this.outputHandlerLeft.get(ctx).invalidate();
-            this.fluidCap.get(ctx).invalidate();
-            this.invCapLeft.get(ctx).invalidate();
-            this.invCapRight.get(ctx).invalidate();
-        }
     }
 }

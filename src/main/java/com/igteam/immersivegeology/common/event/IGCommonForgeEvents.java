@@ -35,8 +35,7 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
-import net.minecraft.world.level.saveddata.maps.MapDecoration;
-import net.minecraft.world.level.saveddata.maps.MapDecoration.Type;
+import net.minecraft.world.level.saveddata.maps.MapDecorationTypes;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.neoforged.neoforge.event.LootTableLoadEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
@@ -137,8 +136,7 @@ public class IGCommonForgeEvents
 		{
 			if(stack.getItem() instanceof MapItem)
 			{
-				Integer mapId = MapItem.getMapId(stack);
-				MapItemSavedData data = MapItem.getSavedData(mapId, level);
+				MapItemSavedData data = MapItem.getSavedData(stack, level);
 				if(data!=null)
 				{
 					int scale_mult = 1 + Byte.toUnsignedInt(data.scale);
@@ -154,26 +152,10 @@ public class IGCommonForgeEvents
 							Holder<Biome> biomeHolder = serverLevel.getBiome(chunkPos.getWorldPosition());
 							if(isCustomOreFeaturePresent(biomeHolder, chunkPos, serverLevel.getSeed()))
 							{
-								byte bx = (byte)x;
-								byte bz = (byte)z;
-								AtomicBoolean hasInstance = new AtomicBoolean(false);
-								ArrayList<MapDecoration> decorations = new ArrayList<>();
-								data.getDecorations().forEach(d ->
-								{
-									if(d.getX()==bx&&d.getY()==bz&&d.getRot()==br&&d.getType()==Type.RED_X)
-									{
-										hasInstance.set(true);
-									}
-									if(!d.getType().equals(Type.PLAYER)) decorations.add(d);
-								});
-
-								if(!hasInstance.get())
-								{
-									decorations.add(new MapDecoration(Type.RED_X, bx, bz, br, Component.empty()));
-									data.addClientSideDecorations(decorations);
-									level.setMapData(MapItem.makeKey(mapId), data);
-									data.tickCarriedBy(player, stack);
-								}
+								BlockPos markerPosition = chunkPos.getWorldPosition();
+								String markerId = "immersivegeology_vein_" + x + "_" + z;
+								MapItemSavedData.addTargetDecoration(stack, markerPosition, markerId, MapDecorationTypes.RED_X);
+								data.tickCarriedBy(player, stack);
 							}
 						}
 					}

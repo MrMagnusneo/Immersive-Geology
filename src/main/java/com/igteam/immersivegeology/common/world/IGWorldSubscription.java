@@ -125,7 +125,7 @@ public class IGWorldSubscription
 			replaceState = isNether ? netherStone : null;
 		}
 		Holder<Biome> holder = level.getBiome(chunk.getPos().getWorldPosition());
-		if(holder.getTagKeys().anyMatch(((b) ->
+		if(holder.tags().anyMatch(((b) ->
 		{
 			if(getBlacklistedBiomes().contains(b.location()))
 			{
