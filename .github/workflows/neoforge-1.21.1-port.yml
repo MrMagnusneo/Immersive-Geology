@@ -40,5 +40,24 @@ jobs:
           python3 -m unittest discover -s scripts/tests -v
           python3 scripts/content_manifest.py --compare-root forge-baseline --allow-content-changes --replacements src/test/resources/neoforge-1.21.1-content-replacements.json
 
-      - name: Compile NeoForge port
-        run: ./gradlew --no-daemon --stacktrace compileJava
+      - name: Build gameplay JAR and compile every source set
+        run: ./gradlew --no-daemon --stacktrace clean build datagenClasses gametestClasses
+
+      - name: Verify packaged NeoForge gameplay JAR
+        shell: bash
+        run: |
+          mapfile -t jars < <(find build/libs -maxdepth 1 -type f -name 'ImmersiveGeology-*.jar' ! -name '*-sources.jar' ! -name '*-datagen.jar')
+          if [[ "${#jars[@]}" -ne 1 ]]; then
+            echo "Expected exactly one gameplay JAR, found ${#jars[@]}"
+            exit 1
+          fi
+          unzip -l "${jars[0]}" | grep -F 'META-INF/neoforge.mods.toml'
+          unzip -l "${jars[0]}" | grep -F 'com/igteam/immersivegeology/ImmersiveGeology.class'
+          echo "GAMEPLAY_JAR=${jars[0]}" >> "$GITHUB_ENV"
+
+      - name: Upload NeoForge gameplay JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: immersive-geology-neoforge-1.21.1
+          path: ${{ env.GAMEPLAY_JAR }}
+          if-no-files-found: error
