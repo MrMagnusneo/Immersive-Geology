@@ -29,7 +29,7 @@ import net.minecraft.core.HolderSet.Named;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
-import net.minecraft.data.worldgen.BootstapContext;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -41,8 +41,8 @@ import net.minecraft.world.level.levelgen.placement.*;
 import net.neoforged.neoforge.common.data.DatapackBuiltinEntriesProvider;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.common.world.BiomeModifier;
-import net.neoforged.neoforge.common.world.ForgeBiomeModifiers.AddFeaturesBiomeModifier;
-import net.neoforged.neoforge.registries.ForgeRegistries.Keys;
+import net.neoforged.neoforge.common.world.NeoForgeBiomeModifiers.AddFeaturesBiomeModifier;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import net.neoforged.neoforge.registries.holdersets.AnyHolderSet;
 import org.jetbrains.annotations.NotNull;
 
@@ -94,10 +94,10 @@ public class IGWorldGenerationProvider
 	) {
 		registryBuilder.add(Registries.CONFIGURED_FEATURE, ctx -> bootstrapConfiguredFeatures(ctx, oreFeatures, evaporateFeatures));
 		registryBuilder.add(Registries.PLACED_FEATURE, ctx -> bootstrapPlacedFeatures(ctx, oreFeatures, evaporateFeatures));
-		registryBuilder.add(Keys.BIOME_MODIFIERS, ctx -> bootstrapBiomeModifiers(ctx, oreFeatures, evaporateFeatures));
+		registryBuilder.add(NeoForgeRegistries.Keys.BIOME_MODIFIERS, ctx -> bootstrapBiomeModifiers(ctx, oreFeatures, evaporateFeatures));
 	}
 
-	private static void bootstrapConfiguredFeatures(BootstapContext<ConfiguredFeature<?, ?>> ctx, Map<IWorldGenConfig, FeatureRegistration> oreFeatures, Map<IWorldGenConfig, FeatureRegistration> evaporiteFeatures)
+	private static void bootstrapConfiguredFeatures(BootstrapContext<ConfiguredFeature<?, ?>> ctx, Map<IWorldGenConfig, FeatureRegistration> oreFeatures, Map<IWorldGenConfig, FeatureRegistration> evaporiteFeatures)
 	{
 		for(final Entry<IWorldGenConfig, FeatureRegistration> entry : oreFeatures.entrySet())
 		{
@@ -119,7 +119,7 @@ public class IGWorldGenerationProvider
 		}
 	}
 
-	private static void bootstrapPlacedFeatures(BootstapContext<PlacedFeature> ctx, Map<IWorldGenConfig, FeatureRegistration> oreFeatures,  Map<IWorldGenConfig, FeatureRegistration> evaporateFeatures) {
+	private static void bootstrapPlacedFeatures(BootstrapContext<PlacedFeature> ctx, Map<IWorldGenConfig, FeatureRegistration> oreFeatures,  Map<IWorldGenConfig, FeatureRegistration> evaporateFeatures) {
 		// Register all placed features for the ores
 		IGLib.IG_LOGGER.info("Starting Placement Registration");
 		for (final Entry<IWorldGenConfig, FeatureRegistration> entry : oreFeatures.entrySet()) {
@@ -144,7 +144,7 @@ public class IGWorldGenerationProvider
 		}
 	}
 
-	private static void bootstrapBiomeModifiers(BootstapContext<BiomeModifier> ctx, Map<IWorldGenConfig, FeatureRegistration> oreFeatures, Map<IWorldGenConfig, FeatureRegistration> evaporateFeatures) {
+	private static void bootstrapBiomeModifiers(BootstrapContext<BiomeModifier> ctx, Map<IWorldGenConfig, FeatureRegistration> oreFeatures, Map<IWorldGenConfig, FeatureRegistration> evaporateFeatures) {
 		final HolderGetter<Biome> biomeReg = ctx.lookup(Registries.BIOME);
 		// Register all biome modifiers for the features
 		for (final FeatureRegistration entry : oreFeatures.values())
@@ -161,7 +161,7 @@ public class IGWorldGenerationProvider
 			final AddFeaturesBiomeModifier modifier = new AddFeaturesBiomeModifier(
 					biomes, HolderSet.direct(entry.placed), Decoration.UNDERGROUND_ORES
 			);
-			ResourceKey<BiomeModifier> key = ResourceKey.create(Keys.BIOME_MODIFIERS, entry.name);
+			ResourceKey<BiomeModifier> key = ResourceKey.create(NeoForgeRegistries.Keys.BIOME_MODIFIERS, entry.name);
 			ctx.register(key, modifier);
 		}
 		// Register all biome modifiers for the features
@@ -179,7 +179,7 @@ public class IGWorldGenerationProvider
 			final AddFeaturesBiomeModifier modifier = new AddFeaturesBiomeModifier(
 					biomes, HolderSet.direct(entry.placed), Decoration.SURFACE_STRUCTURES
 			);
-			ResourceKey<BiomeModifier> key = ResourceKey.create(Keys.BIOME_MODIFIERS, entry.name);
+			ResourceKey<BiomeModifier> key = ResourceKey.create(NeoForgeRegistries.Keys.BIOME_MODIFIERS, entry.name);
 			ctx.register(key, modifier);
 		}
 	}
@@ -197,7 +197,7 @@ public class IGWorldGenerationProvider
 			this.inBiomes = null;
 		}
 
-		private void registerConfigured(BootstapContext<ConfiguredFeature<?, ?>> ctx, ConfiguredFeature<?, ?> configured) {
+		private void registerConfigured(BootstrapContext<ConfiguredFeature<?, ?>> ctx, ConfiguredFeature<?, ?> configured) {
 			if (configured != null) {
 				this.configured = ctx.register(ResourceKey.create(Registries.CONFIGURED_FEATURE, this.name), configured);
 			} else {
@@ -205,7 +205,7 @@ public class IGWorldGenerationProvider
 			}
 		}
 
-		private void registerPlaced(BootstapContext<PlacedFeature> ctx, List<PlacementModifier> placement) {
+		private void registerPlaced(BootstrapContext<PlacedFeature> ctx, List<PlacementModifier> placement) {
 			if (placement != null) {
 				this.placed = ctx.register(ResourceKey.create(Registries.PLACED_FEATURE, this.name), new PlacedFeature(configured, placement));
 			} else {

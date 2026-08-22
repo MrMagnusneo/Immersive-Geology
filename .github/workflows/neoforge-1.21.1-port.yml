@@ -16,6 +16,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        verification: [1, 2, 3]
     steps:
       - name: Checkout port
         uses: actions/checkout@v4
@@ -58,7 +62,7 @@ jobs:
       - name: Upload NeoForge gameplay JAR
         uses: actions/upload-artifact@v4
         with:
-          name: immersive-geology-neoforge-1.21.1
+          name: immersive-geology-neoforge-1.21.1-verification-${{ matrix.verification }}
           path: ${{ env.GAMEPLAY_JAR }}
           if-no-files-found: error
 
