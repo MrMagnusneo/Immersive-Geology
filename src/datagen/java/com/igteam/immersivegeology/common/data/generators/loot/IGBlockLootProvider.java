@@ -64,7 +64,7 @@ public class IGBlockLootProvider implements LootTableSubProvider
 	private BiConsumer<ResourceLocation, LootTable.Builder> out;
 
 	private ResourceLocation toTableLoc(ResourceLocation in) {
-		return new ResourceLocation(in.getNamespace(), "blocks/" + in.getPath());
+		return ResourceLocation.fromNamespaceAndPath(in.getNamespace(), "blocks/" + in.getPath());
 	}
 
 	@Override

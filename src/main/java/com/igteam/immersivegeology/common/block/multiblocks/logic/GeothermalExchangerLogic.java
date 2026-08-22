@@ -422,7 +422,7 @@ public class GeothermalExchangerLogic implements IMultiblockLogic<GeothermalExch
 
             Supplier<Level> getLevel = context.levelSupplier();
 
-            biome_cache = new LazyGetter<>((b) -> getLevel.get().getBiome(b).getTagKeys().toList());
+            biome_cache = new LazyGetter<>((b) -> getLevel.get().getBiome(b).tags().toList());
 
             heatHelper = new GeothermalHeatHelper(getLevel);
             this.cachedRecipe = CachedRecipe.cached(GeothermalExchangerRecipe::findRecipe, getLevel, this.water_tank::getFluid);

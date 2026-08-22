@@ -111,9 +111,9 @@ public class IGRecipes extends RecipeProvider
 	{
 		IGLib.IG_LOGGER.info("- Basic Recipe Registration");
 
-		CoreDrillRecipeBuilder.builder(MetalEnum.MoltenMantle.getFluid(BlockCategoryFlags.FLUID)).addInput(new FluidTagInput(FluidTags.WATER, 1)).build(consumer, new ResourceLocation(IGLib.MODID, "basic_coredrill"));
+		CoreDrillRecipeBuilder.builder(MetalEnum.MoltenMantle.getFluid(BlockCategoryFlags.FLUID)).addInput(new FluidTagInput(FluidTags.WATER, 1)).build(consumer, ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "basic_coredrill"));
 
-		ChemicalRepairBuilder.builder(MetalEnum.StainlessSteel.getItem(ItemCategoryFlags.PLATE)).setTime(10).build(consumer, new ResourceLocation(IGLib.MODID, "stainless_steel_plate"));
+		ChemicalRepairBuilder.builder(MetalEnum.StainlessSteel.getItem(ItemCategoryFlags.PLATE)).setTime(10).build(consumer, ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "stainless_steel_plate"));
 
 		SpecialRecipeBuilder.special(IGRecipeSerializers.IG_REPAIR_SERIALIZER.get()).save(consumer, IGLib.MODID+":ig_item_repair");
 
@@ -210,7 +210,7 @@ public class IGRecipes extends RecipeProvider
 
 		RotaryKilnRecipeBuilder.builder(MetalEnum.TungstenCarbide.getItem(ItemCategoryFlags.INGOT))
 				.addInput(MetalEnum.TungstenCarbide.getItemTag(ItemCategoryFlags.POWDER)).setTime(1200).setHeat(RotaryKilnLogic.EHV_HEAT_CAP)
-				.build(consumer, new ResourceLocation("calcination/synthesis_tungstencarbide"));
+				.build(consumer, ResourceLocation.parse("calcination/synthesis_tungstencarbide"));
 
 		Item ehv_cable = MiscEnum.Cable.getBlock(BlockCategoryFlags.ENERGY_PIPE).asItem();
 		ShapedRecipeBuilder.shaped(RecipeCategory.TRANSPORTATION, ehv_cable, 2)
@@ -224,13 +224,13 @@ public class IGRecipes extends RecipeProvider
 				.save(consumer, ig("craft_ehv_cable"));
 
 		BottlingMachineRecipeBuilder.builder(MiscEnum.EHVInsulation.getItem(ItemCategoryFlags.PLATE))
-				.addResult(Molds.MOLD_PLATE).addInput(new ItemLike[]{Molds.MOLD_PLATE}).addFluidTag(MiscEnum.EHVInsulation.getFluidTag(), 250).build(consumer, new ResourceLocation(IGLib.MODID, "bottling/duroplast_plate"));
+				.addResult(Molds.MOLD_PLATE).addInput(new ItemLike[]{Molds.MOLD_PLATE}).addFluidTag(MiscEnum.EHVInsulation.getFluidTag(), 250).build(consumer, ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "bottling/duroplast_plate"));
 
 		BlueprintCraftingRecipeBuilder ehv_blueprint = BlueprintCraftingRecipeBuilder.builder("electronics", new ItemStack(ehv_cable,4));
 		ehv_blueprint.addMultiInput(IngredientWithSize.of(new ItemStack(IEBlocks.Metals.STORAGE.get(EnumMetals.ELECTRUM))));
 		ehv_blueprint.addMultiInput(IngredientWithSize.of(MiscEnum.EHVInsulation.getStack(ItemCategoryFlags.PLATE, 4)));
 		ehv_blueprint.addMultiInput(IngredientWithSize.of(MetalEnum.TungstenCarbide.getStack(ItemCategoryFlags.WIRE, 4)));
-		ehv_blueprint.build(consumer, new ResourceLocation(IGLib.MODID, "electronics/ehv_cable"));
+		ehv_blueprint.build(consumer, ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "electronics/ehv_cable"));
 
 		// Bronze Plate
 		Item bronze_plate = MetalEnum.Bronze.getItem(ItemCategoryFlags.PLATE);
@@ -352,15 +352,15 @@ public class IGRecipes extends RecipeProvider
 			}
 			if(metal.hasFlag(ItemCategoryFlags.PLATE) && !metal.instance().hasExistingFlag(ItemCategoryFlags.PLATE) && plates_and_rods_to_register.contains(metal))
 			{
-				MetalPressRecipeBuilder.builder(Molds.MOLD_PLATE, metal.getItemTag(ItemCategoryFlags.PLATE), 1).addInput(metal.getItemTag(ItemCategoryFlags.INGOT)).setEnergy(2400).build(consumer, new ResourceLocation(IGLib.MODID, "metal_press/ingot_to_plate_"+metal.getName()));
+				MetalPressRecipeBuilder.builder(Molds.MOLD_PLATE, metal.getItemTag(ItemCategoryFlags.PLATE), 1).addInput(metal.getItemTag(ItemCategoryFlags.INGOT)).setEnergy(2400).build(consumer, ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "metal_press/ingot_to_plate_"+metal.getName()));
 			}
 			if(metal.hasFlag(ItemCategoryFlags.WIRE) && !metal.instance().hasExistingFlag(ItemCategoryFlags.WIRE) && wires_to_register.contains(metal))
 			{
-				MetalPressRecipeBuilder.builder(Molds.MOLD_WIRE, metal.getItemTag(ItemCategoryFlags.WIRE), 2).addInput(metal.getItemTag(ItemCategoryFlags.INGOT)).setEnergy(2400).build(consumer, new ResourceLocation(IGLib.MODID, "metal_press/ingot_to_wire_"+metal.getName()));
+				MetalPressRecipeBuilder.builder(Molds.MOLD_WIRE, metal.getItemTag(ItemCategoryFlags.WIRE), 2).addInput(metal.getItemTag(ItemCategoryFlags.INGOT)).setEnergy(2400).build(consumer, ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "metal_press/ingot_to_wire_"+metal.getName()));
 			}
 			if(metal.hasFlag(ItemCategoryFlags.ROD) && !metal.instance().hasExistingFlag(ItemCategoryFlags.ROD) && plates_and_rods_to_register.contains(metal))
 			{
-				MetalPressRecipeBuilder.builder(Molds.MOLD_ROD, metal.getItemTag(ItemCategoryFlags.ROD), 2).addInput(metal.getItemTag(ItemCategoryFlags.INGOT)).setEnergy(2400).build(consumer, new ResourceLocation(IGLib.MODID, "metal_press/ingot_to_rod_"+metal.getName()));
+				MetalPressRecipeBuilder.builder(Molds.MOLD_ROD, metal.getItemTag(ItemCategoryFlags.ROD), 2).addInput(metal.getItemTag(ItemCategoryFlags.INGOT)).setEnergy(2400).build(consumer, ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "metal_press/ingot_to_rod_"+metal.getName()));
 			}
 			if(metal.hasFlag(BlockCategoryFlags.FENCE))
 			{
@@ -404,7 +404,7 @@ public class IGRecipes extends RecipeProvider
 				.addOre(MineralEnum.Magnetite.getItemTag(ItemCategoryFlags.NORMAL_ORE), 0.05f)
 				.setWeight(15).setFailchance(0.1f)
 				.setBackground(ForgeRegistries.BLOCKS.getKey(Blocks.DEEPSLATE))
-				.build(consumer, new ResourceLocation(IGLib.MODID, "mineral/chromite_magnetite_mix"));
+				.build(consumer, ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "mineral/chromite_magnetite_mix"));
 
 		MineralMixBuilder.builder(nether).addNetherSpoils()
 				.addOre(Items.MAGMA_BLOCK, 0.5f)
@@ -413,7 +413,7 @@ public class IGRecipes extends RecipeProvider
 				.addOre(MineralEnum.Ilmenite.getItemTag(ItemCategoryFlags.NORMAL_ORE), 0.025f)
 				.setWeight(15).setFailchance(0.05f)
 				.setBackground(ForgeRegistries.BLOCKS.getKey(Blocks.MAGMA_BLOCK))
-				.build(consumer, new ResourceLocation(IGLib.MODID, "mineral/volcanic_tube"));
+				.build(consumer, ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "mineral/volcanic_tube"));
 
 		MineralMixBuilder.builder(nether).addNetherSpoils()
 				.addOre(MineralEnum.Millerite.getItemTag(ItemCategoryFlags.POOR_ORE), 0.4f)  // NiS
@@ -422,7 +422,7 @@ public class IGRecipes extends RecipeProvider
 				.addOre(sulfur, 0.2f)
 				.setWeight(14).setFailchance(0.15f)
 				.setBackground(ForgeRegistries.BLOCKS.getKey(Blocks.NETHERRACK))
-				.build(consumer, new ResourceLocation(IGLib.MODID, "mineral/magmatic_sulfide_complex"));
+				.build(consumer, ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "mineral/magmatic_sulfide_complex"));
 
 		MineralMixBuilder.builder(nether).addNetherSpoils()
 				.addOre(MineralEnum.Magnetite.getItemTag(ItemCategoryFlags.POOR_ORE), 0.35f)
@@ -432,7 +432,7 @@ public class IGRecipes extends RecipeProvider
 				.addOre(MineralEnum.Vanadinite.getItemTag(ItemCategoryFlags.POOR_ORE), 0.05f)
 				.setWeight(11).setFailchance(0.1f)
 				.setBackground(ForgeRegistries.BLOCKS.getKey(Blocks.BLACKSTONE))
-				.build(consumer, new ResourceLocation(IGLib.MODID, "mineral/titaniferous_magnetite_layer"));
+				.build(consumer, ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "mineral/titaniferous_magnetite_layer"));
 
 		MineralMixBuilder.builder(nether).addNetherSpoils()
 				.addOre(sulfur, 0.55f)
@@ -442,7 +442,7 @@ public class IGRecipes extends RecipeProvider
 				.addOre(MineralEnum.Gypsum.getItemTag(ItemCategoryFlags.NORMAL_ORE), 0.05f)
 				.setWeight(25).setFailchance(0.2f)
 				.setBackground(ForgeRegistries.BLOCKS.getKey(Blocks.MAGMA_BLOCK))
-				.build(consumer, new ResourceLocation(IGLib.MODID, "mineral/fumarolic_sulfur_deposit"));
+				.build(consumer, ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "mineral/fumarolic_sulfur_deposit"));
 
 		MineralMixBuilder.builder(nether).addNetherSpoils()
 				.addOre(MineralEnum.Molybdenite.getItemTag(ItemCategoryFlags.POOR_ORE), 0.25f)
@@ -452,7 +452,7 @@ public class IGRecipes extends RecipeProvider
 				.addOre(MineralEnum.Zircon.getItemTag(ItemCategoryFlags.NORMAL_ORE), 0.05f)
 				.setWeight(8).setFailchance(0.25f)
 				.setBackground(ForgeRegistries.BLOCKS.getKey(Blocks.BASALT))
-				.build(consumer, new ResourceLocation(IGLib.MODID, "mineral/basaltic_pegmatite"));
+				.build(consumer, ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "mineral/basaltic_pegmatite"));
 
 		MineralMixBuilder.builder(overworld).addSeabedSpoils()
 				.addOre(MineralEnum.Carnallite.getItemTag(ItemCategoryFlags.SEDIMENT), 0.45f)
@@ -462,7 +462,7 @@ public class IGRecipes extends RecipeProvider
 				.addOre(MineralEnum.Rocksalt.getItemTag(ItemCategoryFlags.CRYSTAL), 0.05f)
 				.setWeight(6).setFailchance(0.15f)
 				.setBackground(ForgeRegistries.BLOCKS.getKey(Blocks.SAND))
-				.build(consumer, new ResourceLocation(IGLib.MODID, "mineral/carnallitic_salt_tube"));
+				.build(consumer, ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "mineral/carnallitic_salt_tube"));
 
 		MineralMixBuilder.builder(nether).addNetherSpoils()
 				.addOre(Items.OBSIDIAN, 0.45f)
@@ -471,7 +471,7 @@ public class IGRecipes extends RecipeProvider
 				.addOre(MineralEnum.Ilmenite.getItemTag(ItemCategoryFlags.NORMAL_ORE), 0.05f)
 				.setWeight(10).setFailchance(0.1f)
 				.setBackground(ForgeRegistries.BLOCKS.getKey(Blocks.OBSIDIAN))
-				.build(consumer, new ResourceLocation(IGLib.MODID, "mineral/obsidian_contact_zone"));
+				.build(consumer, ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "mineral/obsidian_contact_zone"));
 
 		MineralMixBuilder.builder(overworld).addOverworldSpoils()
 				.addOre(MineralEnum.Gypsum.getItemTag(ItemCategoryFlags.POOR_ORE), 0.35f)
@@ -479,7 +479,7 @@ public class IGRecipes extends RecipeProvider
 				.addOre(Blocks.CALCITE, 0.20f)
 				.setWeight(12).setFailchance(0.15f)
 				.setBackground(ForgeRegistries.BLOCKS.getKey(Blocks.CALCITE))
-				.build(consumer, new ResourceLocation(IGLib.MODID, "mineral/carbonate_cave_deposit"));
+				.build(consumer, ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "mineral/carbonate_cave_deposit"));
 
 		MineralMixBuilder.builder(overworld).addOverworldSpoils()
 				.addOre(MineralEnum.Lignite.getItemTag(ItemCategoryFlags.NORMAL_ORE), 0.35f)
@@ -487,21 +487,21 @@ public class IGRecipes extends RecipeProvider
 				.addOre(MineralEnum.Pyrite.getItemTag(ItemCategoryFlags.POOR_ORE), 0.05f)
 				.setWeight(14).setFailchance(0.25f)
 				.setBackground(ForgeRegistries.BLOCKS.getKey(Blocks.COBBLESTONE))
-				.build(consumer, new ResourceLocation(IGLib.MODID, "mineral/coal_seam"));
+				.build(consumer, ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "mineral/coal_seam"));
 
 		MineralMixBuilder.builder(overworld).addSeabedSpoils()
 				.addOre(MineralEnum.Uraninite.getItemTag(ItemCategoryFlags.POOR_ORE), 0.15f)
 				.addOre(Blocks.QUARTZ_BLOCK, 0.05f)
 				.setWeight(7).setFailchance(0.25f)
 				.setBackground(ForgeRegistries.BLOCKS.getKey(Blocks.SANDSTONE))
-				.build(consumer, new ResourceLocation(IGLib.MODID, "mineral/sandstone_deposit"));
+				.build(consumer, ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "mineral/sandstone_deposit"));
 
 		MineralMixBuilder.builder(overworld).addOverworldSpoils()
 				.addOre(MineralEnum.Cobaltite.getItemTag(ItemCategoryFlags.POOR_ORE), 0.15f)
 				.addOre(MineralEnum.Bauxite.getItemTag(ItemCategoryFlags.POOR_ORE), 0.05f)
 				.setWeight(12).setFailchance(0.25f)
 				.setBackground(ForgeRegistries.BLOCKS.getKey(Blocks.STONE))
-				.build(consumer, new ResourceLocation(IGLib.MODID, "mineral/contact_metamorphic_deposit"));
+				.build(consumer, ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "mineral/contact_metamorphic_deposit"));
 
 		MineralMixBuilder.builder(nether).addNetherSpoils()
 				.addOre(MineralEnum.Pyrolusite.getItemTag(ItemCategoryFlags.POOR_ORE), 0.25f)
@@ -511,7 +511,7 @@ public class IGRecipes extends RecipeProvider
 				.addOre(Metals.NUGGETS.get(EnumMetals.ELECTRUM), 0.015f)
 				.setWeight(12).setFailchance(0.25f)
 				.setBackground(ForgeRegistries.BLOCKS.getKey(Blocks.BASALT))
-				.build(consumer, new ResourceLocation(IGLib.MODID, "mineral/skarn_deposit"));
+				.build(consumer, ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "mineral/skarn_deposit"));
 
 		MineralMixBuilder.builder(overworld).addOverworldSpoils()
 				.addOre(MineralEnum.Apatite.getItemTag(ItemCategoryFlags.POOR_ORE), 0.25f)
@@ -522,7 +522,7 @@ public class IGRecipes extends RecipeProvider
 				.addOre(Items.BONE_MEAL, 0.075f)
 				.setWeight(6).setFailchance(0.25f)
 				.setBackground(ForgeRegistries.BLOCKS.getKey(Blocks.GRANITE))
-				.build(consumer, new ResourceLocation(IGLib.MODID, "mineral/phosphate_deposit"));
+				.build(consumer, ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "mineral/phosphate_deposit"));
 	}
 
 	private static final List<MetalEnum> plates_and_rods_to_register = List.of(
@@ -558,20 +558,20 @@ public class IGRecipes extends RecipeProvider
 		Item bronze_work_hammer = MetalEnum.Bronze.getItem(ItemCategoryFlags.HAMMER);
 		Item stainless_work_hammer = MetalEnum.StainlessSteel.getItem(ItemCategoryFlags.HAMMER);
 
-		GeothermalConversionRecipeBuilder.builder(Blocks.LAVA, 1100, null, Pair.of(Blocks.MAGMA_BLOCK, 900)).build(consumer, new ResourceLocation(IGLib.MODID, "geoconvert/lava"));
-		GeothermalConversionRecipeBuilder.builder(Blocks.MAGMA_BLOCK, 900, Pair.of(Blocks.LAVA, 1173), Pair.of(Blocks.BASALT, 300)).build(consumer, new ResourceLocation(IGLib.MODID, "geoconvert/magma"));
-		GeothermalConversionRecipeBuilder.builder(Blocks.BASALT, 300, Pair.of(Blocks.MAGMA_BLOCK, 920), null).build(consumer, new ResourceLocation(IGLib.MODID, "geoconvert/basalt"));
-		GeothermalBiomeRecipeBuilder.fromTags(900, 4000, BiomeTags.IS_NETHER).build(consumer, new ResourceLocation(IGLib.MODID, "geobiome/is_nether"));
-		GeothermalBiomeRecipeBuilder.fromTags(100, 2000, Tags.Biomes.IS_COLD_OVERWORLD).build(consumer, new ResourceLocation(IGLib.MODID, "geobiome/is_cold"));
+		GeothermalConversionRecipeBuilder.builder(Blocks.LAVA, 1100, null, Pair.of(Blocks.MAGMA_BLOCK, 900)).build(consumer, ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "geoconvert/lava"));
+		GeothermalConversionRecipeBuilder.builder(Blocks.MAGMA_BLOCK, 900, Pair.of(Blocks.LAVA, 1173), Pair.of(Blocks.BASALT, 300)).build(consumer, ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "geoconvert/magma"));
+		GeothermalConversionRecipeBuilder.builder(Blocks.BASALT, 300, Pair.of(Blocks.MAGMA_BLOCK, 920), null).build(consumer, ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "geoconvert/basalt"));
+		GeothermalBiomeRecipeBuilder.fromTags(900, 4000, BiomeTags.IS_NETHER).build(consumer, ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "geobiome/is_nether"));
+		GeothermalBiomeRecipeBuilder.fromTags(100, 2000, Tags.Biomes.IS_COLD_OVERWORLD).build(consumer, ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "geobiome/is_cold"));
 
-		TurbineFuelBuilder.builder(MiscEnum.Steam.getFluidTag(BlockCategoryFlags.FLUID), 0.25f, 2, 33).build(consumer, new ResourceLocation(IGLib.MODID, "turbine_fuel/steam"));
-		TurbineFuelBuilder.builder(MiscEnum.HighPressureSteam.getFluidTag(BlockCategoryFlags.FLUID), 0.5f, 8, 25).build(consumer, new ResourceLocation(IGLib.MODID, "turbine_fuel/hpsteam"));
+		TurbineFuelBuilder.builder(MiscEnum.Steam.getFluidTag(BlockCategoryFlags.FLUID), 0.25f, 2, 33).build(consumer, ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "turbine_fuel/steam"));
+		TurbineFuelBuilder.builder(MiscEnum.HighPressureSteam.getFluidTag(BlockCategoryFlags.FLUID), 0.5f, 8, 25).build(consumer, ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "turbine_fuel/hpsteam"));
 
 		for(MaterialInterface<?> material : IGLib.getGeologyMaterials())
 		{
 			if(material.hasFlag(BlockCategoryFlags.ORE_BLOCK))
 			{
-				IGGeoHintBuilder.builder(material.instance()).build(consumer, new ResourceLocation(IGLib.MODID, "geohint/" + material.getName().toLowerCase()));
+				IGGeoHintBuilder.builder(material.instance()).build(consumer, ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "geohint/" + material.getName().toLowerCase()));
 			}
 			if(material.hasFlag(ItemCategoryFlags.CRUSHED_ORE) && material.hasFlag(ItemCategoryFlags.DIRTY_CRUSHED_ORE)) {
 				if(move_material_raw_to_crush.contains(material))
@@ -602,11 +602,11 @@ public class IGRecipes extends RecipeProvider
 					if(ore.equals(ItemCategoryFlags.RICH_ORE))
 						builder.addSecondary(material.getStack(ItemCategoryFlags.DIRTY_CRUSHED_ORE, 1), chance/2);
 
-					builder.addInput(material.getItemTag(ore)).setTime(time).setEnergy(energy).build(consumer, new ResourceLocation(IGLib.MODID, "crusher/"+material.getName().toLowerCase()+"_"+ore.getName().toLowerCase()+"_to_dirty_crushed"));
+					builder.addInput(material.getItemTag(ore)).setTime(time).setEnergy(energy).build(consumer, ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "crusher/"+material.getName().toLowerCase()+"_"+ore.getName().toLowerCase()+"_to_dirty_crushed"));
 
 				}
 				ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, material.getItem(ItemCategoryFlags.CRUSHED_ORE)).requires(material.getItem(ItemCategoryFlags.DIRTY_CRUSHED_ORE)).requires(material.getItem(ItemCategoryFlags.DIRTY_CRUSHED_ORE)).unlockedBy("has_stone_work_hammer", InventoryChangeTrigger.TriggerInstance.hasItems(stone_work_hammer)).save(consumer, ig("wash_dirty_crushed_" + material.getName().toLowerCase()));
-				//GravitySeparatorRecipeBuilder.builder(material.getItemTag(ItemCategoryFlags.CRUSHED_ORE)).setChance(0.5f).setByproduct(Items.GRAVEL).setTime(100).setWater(100).addInput(material.getItemTag(ItemCategoryFlags.DIRTY_CRUSHED_ORE)).build(consumer, new ResourceLocation(IGLib.MODID, "gravityseparator/dirty_crushed_"+ material.getName() + "_to_crushed"));
+				//GravitySeparatorRecipeBuilder.builder(material.getItemTag(ItemCategoryFlags.CRUSHED_ORE)).setChance(0.5f).setByproduct(Items.GRAVEL).setTime(100).setWater(100).addInput(material.getItemTag(ItemCategoryFlags.DIRTY_CRUSHED_ORE)).build(consumer, ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "gravityseparator/dirty_crushed_"+ material.getName() + "_to_crushed"));
 			}
 
 			if(material instanceof MetalEnum)
@@ -652,7 +652,7 @@ public class IGRecipes extends RecipeProvider
 		BlueprintCraftingRecipeBuilder.builder("components", MetalEnum.Hastelloy.getStack(ItemCategoryFlags.MECHANICAL_COMPONENT))
 				.addInput(new IngredientWithSize(MetalEnum.Hastelloy.getItemTag(ItemCategoryFlags.PLATE), 2))
 				.addInput(new IngredientWithSize(IETags.getTagsFor(EnumMetals.ELECTRUM).ingot))
-				.build(consumer, new ResourceLocation(IGLib.MODID, "blueprint/component_hastelloy"));
+				.build(consumer, ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "blueprint/component_hastelloy"));
 
 		ShapedRecipeBuilder.shaped(RecipeCategory.BUILDING_BLOCKS, MetalEnum.Hastelloy.getBlock(BlockCategoryFlags.ENGINEERING_BLOCK), 4)
 				.unlockedBy("has_hastelloy_component", InventoryChangeTrigger.TriggerInstance.hasItems(MetalEnum.Hastelloy.getItem(ItemCategoryFlags.MECHANICAL_COMPONENT)))
@@ -662,7 +662,7 @@ public class IGRecipes extends RecipeProvider
 		BlueprintCraftingRecipeBuilder.builder("components", MetalEnum.Tungsten.getStack(ItemCategoryFlags.MECHANICAL_COMPONENT))
 				.addInput(new IngredientWithSize(MetalEnum.Tungsten.getItemTag(ItemCategoryFlags.PLATE), 2))
 				.addInput(new IngredientWithSize(IETags.getTagsFor(EnumMetals.COPPER).ingot))
-				.build(consumer, new ResourceLocation(IGLib.MODID, "blueprint/component_tungsten"));
+				.build(consumer, ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "blueprint/component_tungsten"));
 
 		ShapedRecipeBuilder.shaped(RecipeCategory.BUILDING_BLOCKS, MetalEnum.Tungsten.getBlock(BlockCategoryFlags.ENGINEERING_BLOCK), 4)
 				.unlockedBy("has_tungsten_component", InventoryChangeTrigger.TriggerInstance.hasItems(MetalEnum.Tungsten.getItem(ItemCategoryFlags.MECHANICAL_COMPONENT)))
@@ -674,7 +674,7 @@ public class IGRecipes extends RecipeProvider
 		BloomeryFuelBuilder.builder(Items.COAL).setTime(BASE_COAL_TIME).build(consumer, IGLib.rl("bloomery/bloomery_fuel_coal"));
 
 		CokeOvenRecipeBuilder.builder(Ingredients.COAL_COKE.asItem()).setOil(500).addInput(MineralEnum.Lignite.getItem(ItemCategoryFlags.INGOT))
-				.setTime(1800).build(consumer, new ResourceLocation(IGLib.MODID, "coking/lignite_brick_to_coal_coke"));
+				.setTime(1800).build(consumer, ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "coking/lignite_brick_to_coal_coke"));
 
 		// Helper method to register mineral fuels for bloomery with different qualities
 		registerMineralBloomeryFuels(consumer, MineralEnum.Lignite, BASE_LIGNITE_TIME);
@@ -748,21 +748,21 @@ public class IGRecipes extends RecipeProvider
 				.setOil(500)
 				.addInput(mineral.getItem(ItemCategoryFlags.NORMAL_ORE))
 				.setTime(1800)
-				.build(consumer, new ResourceLocation(IGLib.MODID, "coking/normal_" + mineralName + "_to_coke"));
+				.build(consumer, ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "coking/normal_" + mineralName + "_to_coke"));
 
 		CokeOvenRecipeBuilder.builder(IETags.getItemTag(IETags.coalCokeBlock), 1)
 				.addInput(mineral.getBlock(BlockCategoryFlags.STORAGE_BLOCK))
 				.setOil(5000).setTime(16200)
-				.build(consumer, new ResourceLocation(IGLib.MODID, "coking/normal_block_" + mineralName + "_to_coke"));
+				.build(consumer, ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "coking/normal_block_" + mineralName + "_to_coke"));
 	}
 
 	private ResourceLocation ig(String crafting)
 	{
-		return new ResourceLocation(IGLib.MODID, "crafting/" + crafting);
+		return ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "crafting/" + crafting);
 	}
 
 	private ResourceLocation igRL(String crafting)
 	{
-		return new ResourceLocation(IGLib.MODID, "crafting/" + crafting);
+		return ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "crafting/" + crafting);
 	}
 }

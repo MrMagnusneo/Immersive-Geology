@@ -74,7 +74,7 @@ public class IGAtlasProvider implements DataProvider {
 		scaffolding_textures.add("block/greyscale/scaffolding/scaffolding_top_grate_top");
 		scaffolding_textures.add("block/greyscale/scaffolding/scaffolding_top_wooden_top");
 
-		IGPaletteKey key = new IGPaletteKey(new ResourceLocation(IGLib.MODID, "palette/palette_key"), new ResourceLocation(IGLib.MODID, "palette/palettes"));
+		IGPaletteKey key = new IGPaletteKey(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "palette/palette_key"), ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "palette/palettes"));
 		addDirectorySource(sourcesArray,"item", "item/");
 		addDirectorySource(sourcesArray,"block", "block/");
 		key.addTextureData(textures);

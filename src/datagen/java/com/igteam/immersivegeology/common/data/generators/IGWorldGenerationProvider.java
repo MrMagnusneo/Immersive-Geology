@@ -193,7 +193,7 @@ public class IGWorldGenerationProvider
 		private boolean isSedimentaryFeature = false;
 		
 		private FeatureRegistration(ResourceLocation name, Optional<TagKey<Biome>> optional) {
-			this.name = name != null ? name : new ResourceLocation("default:feature_name");
+			this.name = name != null ? name : ResourceLocation.parse("default:feature_name");
 			this.inBiomes = null;
 		}
 
