@@ -40,8 +40,8 @@ jobs:
           python3 -m unittest discover -s scripts/tests -v
           python3 scripts/content_manifest.py --compare-root forge-baseline --allow-content-changes --replacements src/test/resources/neoforge-1.21.1-content-replacements.json
 
-      - name: Build gameplay JAR and compile every source set
-        run: ./gradlew --no-daemon --stacktrace clean build datagenClasses gametestClasses
+      - name: Build gameplay JAR and compile game tests
+        run: ./gradlew --no-daemon --stacktrace clean build gametestClasses
 
       - name: Verify packaged NeoForge gameplay JAR
         shell: bash
@@ -61,3 +61,6 @@ jobs:
           name: immersive-geology-neoforge-1.21.1
           path: ${{ env.GAMEPLAY_JAR }}
           if-no-files-found: error
+
+      - name: Compile complete data-generation source set
+        run: ./gradlew --no-daemon --stacktrace datagenClasses

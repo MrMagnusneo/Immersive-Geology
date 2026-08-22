@@ -13,6 +13,7 @@ import com.igteam.immersivegeology.common.event.IGCommonForgeEvents;
 import com.igteam.immersivegeology.common.loot.IGLootModifier;
 import com.igteam.immersivegeology.core.lib.IGLib;
 import net.minecraft.data.PackOutput;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
@@ -21,13 +22,14 @@ import net.neoforged.neoforge.common.data.GlobalLootModifierProvider;
 import net.neoforged.neoforge.common.loot.LootTableIdCondition;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public class IGLootModifierProvider extends GlobalLootModifierProvider
 {
 
-	public IGLootModifierProvider(PackOutput output)
+	public IGLootModifierProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> registries)
 	{
-		super(output, IGLib.MODID);
+		super(output, registries, IGLib.MODID);
 	}
 
 	@Override

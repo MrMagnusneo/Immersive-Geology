@@ -76,7 +76,7 @@ public class TFCCollapseRecipeBuilder extends IGRecipeBuilder<TFCCollapseRecipeB
 		recipeObject.addProperty("copy_input", true);
 
 		// Add the ingredient property (from the builder method)
-		recipeObject.addProperty("ingredient", result.toJson().getAsJsonObject().get("item").getAsString());
+		recipeObject.addProperty("ingredient", Ingredient.CODEC.encodeStart(com.mojang.serialization.JsonOps.INSTANCE, result).getOrThrow().getAsJsonObject().get("item").getAsString());
 
 		// Add the "recipe" object into the recipes array
 		JsonObject conditionObject = new JsonObject();

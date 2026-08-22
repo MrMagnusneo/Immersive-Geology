@@ -76,7 +76,7 @@ public class IGBlockLootProvider implements LootTableSubProvider
 	{
 		HolderLookup.RegistryLookup<Enchantment> enchantments = registries.lookupOrThrow(Registries.ENCHANTMENT);
 		this.silkTouch = enchantments.getOrThrow(Enchantments.SILK_TOUCH);
-		this.blockFortune = enchantments.getOrThrow(Enchantments.BLOCK_FORTUNE);
+		this.blockFortune = enchantments.getOrThrow(Enchantments.FORTUNE);
 		this.HAS_SILK = new EnchantmentPredicate(silkTouch, MinMaxBounds.Ints.atLeast(1));
 	}
 
