@@ -277,7 +277,7 @@ public class IGBlockLootProvider implements LootTableSubProvider
 
 	private void registerOre(Supplier<Block> ore, ItemStack rawOre) {
 		LootPool.Builder pool_builder = LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F));
-		pool_builder.add((LootItem.lootTableItem(rawOre.getItem())
+		pool_builder.add(LootItem.lootTableItem(rawOre.getItem())
 				.when(MatchTool.toolMatches(silkTouchPredicate()))
 				.otherwise(LootItem.lootTableItem(rawOre.getItem()).apply(SetItemCountFunction.setCount(ConstantValue.exactly(rawOre.getCount()))).apply(ApplyBonusCount.addOreBonusCount(blockFortune))
 						.apply(ApplyExplosionDecay.explosionDecay())));
@@ -289,7 +289,7 @@ public class IGBlockLootProvider implements LootTableSubProvider
 
 	private void registerOreSpecial(Supplier<Block> ore, ItemStack rawOre, List<Pair<ItemStack, Float>> extras) {
 		LootPool.Builder pool_builder = LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F));
-		pool_builder.add((LootItem.lootTableItem(rawOre.getItem())
+		pool_builder.add(LootItem.lootTableItem(rawOre.getItem())
 				.when(MatchTool.toolMatches(silkTouchPredicate()))
 				.otherwise(LootItem.lootTableItem(rawOre.getItem()).apply(SetItemCountFunction.setCount(ConstantValue.exactly(rawOre.getCount()))).apply(ApplyBonusCount.addOreBonusCount(blockFortune))
 						.apply(ApplyExplosionDecay.explosionDecay())));
