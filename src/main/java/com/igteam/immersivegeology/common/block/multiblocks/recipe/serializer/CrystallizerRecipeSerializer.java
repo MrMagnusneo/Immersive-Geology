@@ -24,13 +24,13 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.ShapedRecipe;
-import net.neoforged.neoforge.common.crafting.conditions.ICondition.IContext;
+import net.neoforged.neoforge.common.conditions.ICondition.IContext;
 import net.neoforged.neoforge.common.util.JsonUtils;
 import net.neoforged.neoforge.common.util.Lazy;
 import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.Nullable;
 
-public class CrystallizerRecipeSerializer extends IERecipeSerializer<CrystallizerRecipe>
+public class CrystallizerRecipeSerializer extends LegacyIERecipeSerializer<CrystallizerRecipe>
 {
 	@Override
 	public ItemStack getIcon()

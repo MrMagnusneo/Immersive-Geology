@@ -10,7 +10,7 @@ package com.igteam.immersivegeology.common.block.multiblocks.recipe.serializer;
 
 import blusunrize.immersiveengineering.api.ApiUtils;
 import blusunrize.immersiveengineering.api.crafting.FluidTagInput;
-import blusunrize.immersiveengineering.api.crafting.IERecipeSerializer;
+import com.igteam.immersivegeology.common.recipe.LegacyIERecipeSerializer;
 import blusunrize.immersiveengineering.common.network.PacketUtils;
 import com.google.common.base.Preconditions;
 import com.google.gson.JsonObject;
@@ -24,14 +24,14 @@ import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.neoforged.neoforge.common.crafting.conditions.ICondition.IContext;
+import net.neoforged.neoforge.common.conditions.ICondition.IContext;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public class GeothermalConversionRecipeSerializer extends IERecipeSerializer<GeothermalConversionRecipe>
+public class GeothermalConversionRecipeSerializer extends LegacyIERecipeSerializer<GeothermalConversionRecipe>
 {
 	@Override
 	public ItemStack getIcon()

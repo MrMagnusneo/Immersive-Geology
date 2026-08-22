@@ -27,7 +27,7 @@ import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.common.crafting.CraftingHelper;
-import net.neoforged.neoforge.common.crafting.conditions.ICondition;
+import net.neoforged.neoforge.common.conditions.ICondition;
 import net.neoforged.neoforge.fluids.FluidStack;
 
 import javax.annotation.Nullable;
@@ -63,13 +63,13 @@ public class IGRecipeBuilder<R extends IGRecipeBuilder<R>> implements FinishedRe
 		out.accept(this);
 	}
 
-	public IGRecipeBuilder<R> addWriter(Consumer<JsonObject> writer) {
+	public R addWriter(Consumer<JsonObject> writer) {
 		Preconditions.checkArgument(this.id == null, "This recipe has already been finalized");
 		this.writerFunctions.add(writer);
-		return this;
+		return (R)this;
 	}
 
-	public IGRecipeBuilder<R> addCondition(ICondition condition) {
+	public R addCondition(ICondition condition) {
 		if (this.conditions == null) {
 			this.conditions = new JsonArray();
 			this.addWriter((jsonObject) -> {
@@ -78,22 +78,22 @@ public class IGRecipeBuilder<R extends IGRecipeBuilder<R>> implements FinishedRe
 		}
 
 		this.conditions.add(CraftingHelper.serialize(condition));
-		return this;
+		return (R)this;
 	}
 
-	public IGRecipeBuilder<R>  setTime(int time) {
+	public R setTime(int time) {
 		return this.addWriter((jsonObject) -> {
 			jsonObject.addProperty("time", time);
 		});
 	}
 
-	public IGRecipeBuilder<R>  setEnergy(int energy) {
+	public R setEnergy(int energy) {
 		return this.addWriter((jsonObject) -> {
 			jsonObject.addProperty("energy", energy);
 		});
 	}
 
-	public IGRecipeBuilder<R>  setMultipleResults(int maxResultCount) {
+	public R setMultipleResults(int maxResultCount) {
 		this.resultArray = new JsonArray();
 		this.maxResultCount = maxResultCount;
 		return this.addWriter((jsonObject) -> {
@@ -101,35 +101,35 @@ public class IGRecipeBuilder<R extends IGRecipeBuilder<R>> implements FinishedRe
 		});
 	}
 
-	public IGRecipeBuilder<R>  addMultiResult(JsonElement obj) {
+	public R addMultiResult(JsonElement obj) {
 		Preconditions.checkArgument(this.maxResultCount > 1, "This recipe does not support multiple results");
 		Preconditions.checkArgument(this.resultCount < this.maxResultCount, "Recipe can only have " + this.maxResultCount + " results");
 		this.resultArray.add(obj);
 		++this.resultCount;
-		return this;
+		return (R)this;
 	}
 
-	public IGRecipeBuilder<R> addResult(ItemLike itemProvider) {
+	public R addResult(ItemLike itemProvider) {
 		return this.addResult(new ItemStack(itemProvider));
 	}
 
-	public IGRecipeBuilder<R>  addResult(ItemStack itemStack) {
+	public R addResult(ItemStack itemStack) {
 		return this.resultArray != null ? this.addMultiResult(this.serializeItemStack(itemStack)) : this.addItem("result", itemStack);
 	}
 
-	public IGRecipeBuilder<R>  addResult(Ingredient ingredient) {
+	public R addResult(Ingredient ingredient) {
 		return this.resultArray != null ? this.addMultiResult(ingredient.toJson()) : this.addWriter((jsonObject) -> {
 			jsonObject.add("result", ingredient.toJson());
 		});
 	}
 
-	public IGRecipeBuilder<R>  addResult(IngredientWithSize ingredientWithSize) {
+	public R addResult(IngredientWithSize ingredientWithSize) {
 		return this.resultArray != null ? this.addMultiResult(ingredientWithSize.serialize()) : this.addWriter((jsonObject) -> {
 			jsonObject.add("result", ingredientWithSize.serialize());
 		});
 	}
 
-	public IGRecipeBuilder<R>  setUseInputArray(int maxInputCount, String key) {
+	public R setUseInputArray(int maxInputCount, String key) {
 		this.inputArray = new JsonArray();
 		this.maxInputCount = maxInputCount;
 		return this.addWriter((jsonObject) -> {
@@ -137,23 +137,23 @@ public class IGRecipeBuilder<R extends IGRecipeBuilder<R>> implements FinishedRe
 		});
 	}
 
-	public IGRecipeBuilder<R>  setUseInputArray(int maxInputCount) {
+	public R setUseInputArray(int maxInputCount) {
 		return this.setUseInputArray(maxInputCount, "inputs");
 	}
 
-	public IGRecipeBuilder<R>  addMultiInput(JsonElement obj) {
+	public R addMultiInput(JsonElement obj) {
 		Preconditions.checkArgument(this.maxInputCount > 1, "This recipe does not support multiple inputs");
 		Preconditions.checkArgument(this.inputCount < this.maxInputCount, "Recipe can only have " + this.maxInputCount + " inputs");
 		this.inputArray.add(obj);
 		++this.inputCount;
-		return this;
+		return (R)this;
 	}
 
-	public IGRecipeBuilder<R>  addMultiInput(Ingredient ingredient) {
+	public R addMultiInput(Ingredient ingredient) {
 		return this.addMultiInput(ingredient.toJson());
 	}
 
-	public IGRecipeBuilder<R>  addMultiInput(IngredientWithSize ingredient) {
+	public R addMultiInput(IngredientWithSize ingredient) {
 		return this.addMultiInput(ingredient.serialize());
 	}
 
@@ -164,23 +164,23 @@ public class IGRecipeBuilder<R extends IGRecipeBuilder<R>> implements FinishedRe
 		return key;
 	}
 
-	public IGRecipeBuilder<R>  addInput(ItemLike... itemProviders) {
+	public R addInput(ItemLike... itemProviders) {
 		return this.inputArray != null ? this.addMultiInput(Ingredient.of(itemProviders)) : this.addIngredient(this.generateSafeInputKey(), itemProviders);
 	}
 
-	public IGRecipeBuilder<R>  addInput(ItemStack... itemStacks) {
+	public R addInput(ItemStack... itemStacks) {
 		return this.inputArray != null ? this.addMultiInput(Ingredient.of(itemStacks)) : this.addIngredient(this.generateSafeInputKey(), itemStacks);
 	}
 
-	public IGRecipeBuilder<R>  addInput(TagKey<Item> tag) {
+	public R addInput(TagKey<Item> tag) {
 		return this.inputArray != null ? this.addMultiInput(Ingredient.of(tag)) : this.addIngredient(this.generateSafeInputKey(), tag);
 	}
 
-	public IGRecipeBuilder<R>  addInput(Ingredient input) {
+	public R addInput(Ingredient input) {
 		return this.inputArray != null ? this.addMultiInput(input) : this.addIngredient(this.generateSafeInputKey(), input);
 	}
 
-	public IGRecipeBuilder<R>  addInput(IngredientWithSize input) {
+	public R addInput(IngredientWithSize input) {
 		return this.inputArray != null ? this.addMultiInput(input) : this.addIngredient(this.generateSafeInputKey(), input);
 	}
 
@@ -198,72 +198,72 @@ public class IGRecipeBuilder<R extends IGRecipeBuilder<R>> implements FinishedRe
 		return obj;
 	}
 
-	protected IGRecipeBuilder<R>  addSimpleItem(String key, ItemLike item) {
+	protected R addSimpleItem(String key, ItemLike item) {
 		return this.addWriter((json) -> {
 			json.addProperty(key, BuiltInRegistries.ITEM.getKey(item.asItem()).toString());
 		});
 	}
 
-	public IGRecipeBuilder<R>  addItem(String key, ItemLike item) {
+	public R addItem(String key, ItemLike item) {
 		return this.addItem(key, new ItemStack(item));
 	}
 
-	public IGRecipeBuilder<R>  addItem(String key, ItemStack stack) {
+	public R addItem(String key, ItemStack stack) {
 		Preconditions.checkArgument(!stack.isEmpty(), "May not add empty ItemStack to recipe");
 		return this.addWriter((jsonObject) -> {
 			jsonObject.add(key, this.serializeItemStack(stack));
 		});
 	}
 
-	public IGRecipeBuilder<R>  addIngredient(String key, ItemLike... itemProviders) {
+	public R addIngredient(String key, ItemLike... itemProviders) {
 		return this.addIngredient(key, Ingredient.of(itemProviders));
 	}
 
-	public IGRecipeBuilder<R>  addIngredient(String key, ItemStack... itemStacks) {
+	public R addIngredient(String key, ItemStack... itemStacks) {
 		return this.addIngredient(key, Ingredient.of(itemStacks));
 	}
 
-	public IGRecipeBuilder<R>  addIngredient(String key, TagKey<Item> tag) {
+	public R addIngredient(String key, TagKey<Item> tag) {
 		return this.addIngredient(key, Ingredient.of(tag));
 	}
 
-	public IGRecipeBuilder<R>  addIngredient(String key, Ingredient ingredient) {
+	public R addIngredient(String key, Ingredient ingredient) {
 		return this.addWriter((jsonObject) -> {
 			jsonObject.add(key, ingredient.toJson());
 		});
 	}
 
-	public IGRecipeBuilder<R>  addIngredient(String key, IngredientWithSize ingredient) {
+	public R addIngredient(String key, IngredientWithSize ingredient) {
 		return this.addWriter((jsonObject) -> {
 			jsonObject.add(key, ingredient.serialize());
 		});
 	}
 
-	public IGRecipeBuilder<R>  addFluid(String key, FluidStack fluidStack) {
+	public R addFluid(String key, FluidStack fluidStack) {
 		return this.addWriter((jsonObject) -> {
 			jsonObject.add(key, ApiUtils.jsonSerializeFluidStack(fluidStack));
 		});
 	}
 
-	public IGRecipeBuilder<R>  addFluid(FluidStack fluidStack) {
+	public R addFluid(FluidStack fluidStack) {
 		return this.addFluid("fluid", fluidStack);
 	}
 
-	public IGRecipeBuilder<R>  addFluid(Fluid fluid, int amount) {
+	public R addFluid(Fluid fluid, int amount) {
 		return this.addFluid("fluid", new FluidStack(fluid, amount));
 	}
 
-	public IGRecipeBuilder<R>  addFluidTag(String key, FluidTagInput fluidTag) {
+	public R addFluidTag(String key, FluidTagInput fluidTag) {
 		return this.addWriter((jsonObject) -> {
 			jsonObject.add(key, fluidTag.serialize());
 		});
 	}
 
-	public IGRecipeBuilder<R>  addFluidTag(String key, TagKey<Fluid> fluidTag, int amount) {
+	public R addFluidTag(String key, TagKey<Fluid> fluidTag, int amount) {
 		return this.addFluidTag(key, new FluidTagInput(fluidTag, amount, (CompoundTag)null));
 	}
 
-	public IGRecipeBuilder<R>  addFluidTag(TagKey<Fluid> fluidTag, int amount) {
+	public R addFluidTag(TagKey<Fluid> fluidTag, int amount) {
 		return this.addFluidTag("fluid", new FluidTagInput(fluidTag, amount, (CompoundTag)null));
 	}
 

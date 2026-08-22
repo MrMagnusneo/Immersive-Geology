@@ -8,7 +8,7 @@
 
 package com.igteam.immersivegeology.common.block.multiblocks.recipe.serializer;
 
-import blusunrize.immersiveengineering.api.crafting.IERecipeSerializer;
+import com.igteam.immersivegeology.common.recipe.LegacyIERecipeSerializer;
 import blusunrize.immersiveengineering.common.network.PacketUtils;
 import com.google.gson.JsonObject;
 import com.igteam.immersivegeology.common.block.multiblocks.recipe.TurbineFuel;
@@ -19,7 +19,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.Fluid;
-import net.neoforged.neoforge.common.crafting.conditions.ICondition.IContext;
+import net.neoforged.neoforge.common.conditions.ICondition.IContext;
 import net.neoforged.neoforge.registries.ForgeRegistries;
 
 import javax.annotation.Nonnull;
@@ -29,7 +29,7 @@ import java.util.List;
 
 import static com.igteam.immersivegeology.common.block.multiblocks.recipe.builder.TurbineFuelBuilder.*;
 
-public class TurbineFuelSerializer extends IERecipeSerializer<TurbineFuel>
+public class TurbineFuelSerializer extends LegacyIERecipeSerializer<TurbineFuel>
 {
 	@Override
 	public ItemStack getIcon()
