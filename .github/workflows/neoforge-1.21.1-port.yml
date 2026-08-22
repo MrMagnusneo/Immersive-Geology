@@ -41,7 +41,7 @@ jobs:
           python3 scripts/content_manifest.py --compare-root forge-baseline --allow-content-changes --replacements src/test/resources/neoforge-1.21.1-content-replacements.json
 
       - name: Build gameplay JAR and compile game tests
-        run: ./gradlew --no-daemon --stacktrace clean build gametestClasses
+        run: ./gradlew --no-daemon --stacktrace clean jar gametestClasses test
 
       - name: Verify packaged NeoForge gameplay JAR
         shell: bash
