@@ -425,7 +425,12 @@ public class GeothermalExchangerLogic implements IMultiblockLogic<GeothermalExch
             biome_cache = new LazyGetter<>((b) -> getLevel.get().getBiome(b).tags().toList());
 
             heatHelper = new GeothermalHeatHelper(getLevel);
-            this.cachedRecipe = CachedRecipe.cached(GeothermalExchangerRecipe::findRecipe, getLevel, this.water_tank::getFluid);
+            Supplier<net.minecraft.world.item.crafting.RecipeHolder<GeothermalExchangerRecipe>> cachedRecipeHolder =
+                    CachedRecipe.cached(GeothermalExchangerRecipe::findRecipe, getLevel, this.water_tank::getFluid);
+            this.cachedRecipe = () -> {
+                net.minecraft.world.item.crafting.RecipeHolder<GeothermalExchangerRecipe> holder = cachedRecipeHolder.get();
+                return holder == null ? null : holder.value();
+            };
             this.processor = new MultiblockProcessor<>(
                     1, 0, 1, context.getMarkDirtyRunnable(), GeothermalExchangerRecipe.RECIPES::getById
             );
