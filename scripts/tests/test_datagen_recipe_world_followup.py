@@ -21,6 +21,10 @@ class DatagenRecipeFollowupTest(unittest.TestCase):
             ".setBackground(",
             "MineralMixBuilder.builder(overworld)",
             "MineralMixBuilder.builder(nether)",
+            "MixerRecipeBuilder.builder(ChemicalEnum",
+            "CrusherRecipeBuilder.builder(material",
+            "builder.addInput(material.getItemTag(ore))",
+            "BlastFurnaceFuelBuilder",
         )
         for symbol in removed_api:
             with self.subTest(symbol=symbol):
@@ -30,6 +34,7 @@ class DatagenRecipeFollowupTest(unittest.TestCase):
             "blusunrize.immersiveengineering.data.recipes.builder.*", source
         )
         self.assertIn("new ThermoelectricSource(", source)
+        self.assertIn("new BlastFurnaceFuel(", source)
 
 
 if __name__ == "__main__":

@@ -17,7 +17,8 @@ class DatagenWorldFollowupTest(unittest.TestCase):
         self.assertNotIn("common.world.ForgeBiomeModifiers", self.source)
         self.assertNotIn("registries.ForgeRegistries.Keys", self.source)
         self.assertGreaterEqual(self.source.count("BootstrapContext<"), 5)
-        self.assertIn("NeoForgeBiomeModifiers.AddFeaturesBiomeModifier", self.source)
+        self.assertNotIn("NeoForgeBiomeModifiers", self.source)
+        self.assertIn("BiomeModifiers.AddFeaturesBiomeModifier", self.source)
         self.assertIn("NeoForgeRegistries.Keys.BIOME_MODIFIERS", self.source)
 
     def test_ore_and_evaporite_generation_paths_remain_registered(self):

@@ -10,6 +10,7 @@ package com.igteam.immersivegeology.common.data.generators;
 
 import blusunrize.immersiveengineering.api.EnumMetals;
 import blusunrize.immersiveengineering.api.IETags;
+import blusunrize.immersiveengineering.api.crafting.BlastFurnaceFuel;
 import blusunrize.immersiveengineering.api.crafting.FluidTagInput;
 import blusunrize.immersiveengineering.api.crafting.IngredientWithSize;
 import blusunrize.immersiveengineering.api.energy.ThermoelectricSource;
@@ -126,7 +127,13 @@ public class IGRecipes extends RecipeProvider
 		ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, binding_agent_flask).requires(Items.WATER_BUCKET).requires(Items.BUCKET)
 				.requires(Items.CLAY_BALL).requires(Items.CLAY_BALL).requires(Items.CLAY_BALL).unlockedBy("has_clay", InventoryChangeTrigger.TriggerInstance.hasItems(Items.CLAY_BALL)).save(consumer, ig("craft_blinding_fluid"));
 
-		MixerRecipeBuilder.builder(ChemicalEnum.BindingAgent.getFluid(BlockCategoryFlags.FLUID), 500).addFluidTag(FluidTags.WATER, 500).addInput(IETags.clay).addInput(Items.CHARCOAL).setEnergy(3200).build(consumer, igRL("mixer/binding_agent"));
+		MixerRecipeBuilder.builder()
+				.output(ChemicalEnum.BindingAgent.getFluid(BlockCategoryFlags.FLUID), 500)
+				.fluidInput(FluidTags.WATER, 500)
+				.input(IETags.clay)
+				.input(Items.CHARCOAL)
+				.setEnergy(3200)
+				.build(consumer, igRL("mixer/binding_agent"));
 		Item bronze_ingot = MetalEnum.Bronze.getItem(ItemCategoryFlags.INGOT);
 
 		// Bronze Hammer
@@ -599,18 +606,18 @@ public class IGRecipes extends RecipeProvider
 					if(!material.hasFlag(ore)) continue;
 					float chance = 0.33f;
 					int nerfed_amount = ore.equals(ItemCategoryFlags.POOR_ORE)?1: (ore.equals(ItemCategoryFlags.NORMAL_ORE)?2: 3);
-					int time = 100;
 					int energy = 6000;
 					ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, material.getItem(ItemCategoryFlags.DIRTY_CRUSHED_ORE), nerfed_amount).requires(material.getItemTag(ore)).requires(material.getItemTag(ore)).requires(ItemCategoryFlags.HAMMER.getCategoryTag()).unlockedBy("has_work_hammer", InventoryChangeTrigger.TriggerInstance.hasItems(stone_work_hammer)).save(consumer, ig("crush_"+material.getName().toLowerCase()+"_"+ore.getName().toLowerCase()+"_with_work_hammer"));
 
-					CrusherRecipeBuilder builder = CrusherRecipeBuilder.builder(material.getStack(ItemCategoryFlags.DIRTY_CRUSHED_ORE, 1));
-					builder.addSecondary(material.getStack(ItemCategoryFlags.DIRTY_CRUSHED_ORE, 1), chance);
+					CrusherRecipeBuilder builder = CrusherRecipeBuilder.builder()
+							.output(material.getStack(ItemCategoryFlags.DIRTY_CRUSHED_ORE, 1));
+					builder.addSecondary(IngredientWithSize.of(material.getStack(ItemCategoryFlags.DIRTY_CRUSHED_ORE, 1)), chance);
 					if(ore.equals(ItemCategoryFlags.NORMAL_ORE)||ore.equals(ItemCategoryFlags.RICH_ORE))
-						builder.addSecondary(material.getStack(ItemCategoryFlags.DIRTY_CRUSHED_ORE, 1), chance/2);
+						builder.addSecondary(IngredientWithSize.of(material.getStack(ItemCategoryFlags.DIRTY_CRUSHED_ORE, 1)), chance/2);
 					if(ore.equals(ItemCategoryFlags.RICH_ORE))
-						builder.addSecondary(material.getStack(ItemCategoryFlags.DIRTY_CRUSHED_ORE, 1), chance/2);
+						builder.addSecondary(IngredientWithSize.of(material.getStack(ItemCategoryFlags.DIRTY_CRUSHED_ORE, 1)), chance/2);
 
-					builder.addInput(material.getItemTag(ore)).setTime(time).setEnergy(energy).build(consumer, ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "crusher/"+material.getName().toLowerCase()+"_"+ore.getName().toLowerCase()+"_to_dirty_crushed"));
+					builder.input(material.getItemTag(ore)).setEnergy(energy).build(consumer, ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "crusher/"+material.getName().toLowerCase()+"_"+ore.getName().toLowerCase()+"_to_dirty_crushed"));
 
 				}
 				ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, material.getItem(ItemCategoryFlags.CRUSHED_ORE)).requires(material.getItem(ItemCategoryFlags.DIRTY_CRUSHED_ORE)).requires(material.getItem(ItemCategoryFlags.DIRTY_CRUSHED_ORE)).unlockedBy("has_stone_work_hammer", InventoryChangeTrigger.TriggerInstance.hasItems(stone_work_hammer)).save(consumer, ig("wash_dirty_crushed_" + material.getName().toLowerCase()));
@@ -732,13 +739,17 @@ public class IGRecipes extends RecipeProvider
 	// Helper method to register blast furnace fuels
 	private void registerBlastFurnaceFuels(LegacyAwareRecipeOutput consumer, MineralEnum mineral, int baseTime) {
 		String mineralName = mineral.getName();
-		BlastFurnaceFuelBuilder.builder(mineral.getItem(ItemCategoryFlags.NORMAL_ORE))
-				.setTime(baseTime * NORMAL_QUALITY_MULTIPLIER)
-				.build(consumer, IGLib.rl("blastfuel/normal_" + mineralName));
+		consumer.accept(
+				IGLib.rl("blastfuel/normal_" + mineralName),
+				new BlastFurnaceFuel(Ingredient.of(mineral.getItem(ItemCategoryFlags.NORMAL_ORE)), baseTime * NORMAL_QUALITY_MULTIPLIER),
+				null
+		);
 
-		BlastFurnaceFuelBuilder.builder(mineral.getBlock(BlockCategoryFlags.STORAGE_BLOCK))
-				.setTime((baseTime * NORMAL_QUALITY_MULTIPLIER) * 10)
-				.build(consumer, IGLib.rl("blastfuel/normal_block_" + mineralName));
+		consumer.accept(
+				IGLib.rl("blastfuel/normal_block_" + mineralName),
+				new BlastFurnaceFuel(Ingredient.of(mineral.getBlock(BlockCategoryFlags.STORAGE_BLOCK)), (baseTime * NORMAL_QUALITY_MULTIPLIER) * 10),
+				null
+		);
 	}
 
 	// Helper method to register torch recipes
