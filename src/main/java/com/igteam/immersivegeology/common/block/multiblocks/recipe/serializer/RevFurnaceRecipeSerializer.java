@@ -8,7 +8,7 @@
 
 package com.igteam.immersivegeology.common.block.multiblocks.recipe.serializer;
 
-import blusunrize.immersiveengineering.api.crafting.FluidTagInput;
+import com.igteam.immersivegeology.common.compat.ie.crafting.FluidTagInput;
 import com.igteam.immersivegeology.common.recipe.LegacyIERecipeSerializer;
 import blusunrize.immersiveengineering.api.crafting.IngredientWithSize;
 import com.google.gson.JsonObject;

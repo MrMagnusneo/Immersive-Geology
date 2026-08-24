@@ -8,7 +8,7 @@
 
 package com.igteam.immersivegeology.common.block.multiblocks.recipe.builder;
 
-import blusunrize.immersiveengineering.api.crafting.builders.IEFinishedRecipe;
+import com.igteam.immersivegeology.common.compat.ie.crafting.builders.IEFinishedRecipe;
 import com.igteam.immersivegeology.common.block.multiblocks.recipe.TurbineFuel;
 import com.igteam.immersivegeology.common.recipe.IGGeoRecipe;
 import com.igteam.immersivegeology.core.lib.IGLib;

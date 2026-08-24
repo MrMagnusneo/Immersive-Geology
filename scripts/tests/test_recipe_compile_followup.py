@@ -6,7 +6,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
 RECIPE_ROOT = ROOT / "src/main/java/com/igteam/immersivegeology/common/block/multiblocks/recipe"
-COMPAT_ROOT = ROOT / "src/main/java/blusunrize/immersiveengineering/api/crafting"
+COMPAT_ROOT = ROOT / "src/main/java/com/igteam/immersivegeology/common/compat/ie/crafting"
 
 
 class RecipeCompileFollowupTest(unittest.TestCase):

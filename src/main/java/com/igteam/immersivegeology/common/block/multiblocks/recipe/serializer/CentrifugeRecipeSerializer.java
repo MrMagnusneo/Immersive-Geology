@@ -9,7 +9,7 @@
 package com.igteam.immersivegeology.common.block.multiblocks.recipe.serializer;
 
 import blusunrize.immersiveengineering.api.ApiUtils;
-import blusunrize.immersiveengineering.api.crafting.FluidTagInput;
+import com.igteam.immersivegeology.common.compat.ie.crafting.FluidTagInput;
 import com.igteam.immersivegeology.common.recipe.LegacyIERecipeSerializer;
 import com.google.gson.JsonObject;
 import com.igteam.immersivegeology.common.block.multiblocks.recipe.CentrifugeRecipe;

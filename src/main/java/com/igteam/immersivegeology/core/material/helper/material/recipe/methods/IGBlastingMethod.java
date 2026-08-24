@@ -9,7 +9,7 @@
 package com.igteam.immersivegeology.core.material.helper.material.recipe.methods;
 
 import blusunrize.immersiveengineering.api.crafting.IngredientWithSize;
-import blusunrize.immersiveengineering.api.crafting.builders.BlastFurnaceRecipeBuilder;
+import com.igteam.immersivegeology.common.compat.ie.crafting.builders.BlastFurnaceRecipeBuilder;
 import blusunrize.immersiveengineering.common.blocks.multiblocks.IEMultiblocks;
 import blusunrize.immersiveengineering.common.register.IEItems.Ingredients;
 import blusunrize.lib.manual.gui.ManualScreen;

@@ -9,7 +9,7 @@
 package com.igteam.immersivegeology.common.block.multiblocks.recipe.builder;
 
 import blusunrize.immersiveengineering.api.crafting.IERecipeSerializer;
-import blusunrize.immersiveengineering.api.crafting.builders.IEFinishedRecipe;
+import com.igteam.immersivegeology.common.compat.ie.crafting.builders.IEFinishedRecipe;
 import com.igteam.immersivegeology.common.block.multiblocks.recipe.GeothermalConversionRecipe;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.core.registries.BuiltInRegistries;

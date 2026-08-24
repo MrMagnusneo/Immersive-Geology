@@ -8,7 +8,7 @@
 
 package com.igteam.immersivegeology.client.helper;
 
-import blusunrize.immersiveengineering.api.crafting.FluidTagInput;
+import com.igteam.immersivegeology.common.compat.ie.crafting.FluidTagInput;
 import blusunrize.immersiveengineering.api.crafting.IngredientWithSize;
 import com.google.common.base.Preconditions;
 import com.google.gson.JsonArray;

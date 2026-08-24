@@ -1,6 +1,6 @@
 package com.igteam.immersivegeology.core.material.data.mineral;
             
-import blusunrize.immersiveengineering.api.crafting.FluidTagInput;
+import com.igteam.immersivegeology.common.compat.ie.crafting.FluidTagInput;
 import blusunrize.immersiveengineering.api.crafting.IngredientWithSize;
 import blusunrize.immersiveengineering.common.register.IEItems;
 import com.igteam.immersivegeology.common.world.features.helper.noise.IGGenerationType;

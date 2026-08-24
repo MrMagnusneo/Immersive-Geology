@@ -8,9 +8,9 @@
 
 package com.igteam.immersivegeology.common.block.multiblocks.recipe.builder;
 
-import blusunrize.immersiveengineering.api.crafting.FluidTagInput;
+import com.igteam.immersivegeology.common.compat.ie.crafting.FluidTagInput;
 import blusunrize.immersiveengineering.api.crafting.IngredientWithSize;
-import blusunrize.immersiveengineering.api.crafting.builders.IEFinishedRecipe;
+import com.igteam.immersivegeology.common.compat.ie.crafting.builders.IEFinishedRecipe;
 import com.igteam.immersivegeology.common.block.multiblocks.recipe.CoreDrillRecipe;
 import com.igteam.immersivegeology.common.block.multiblocks.recipe.CrystallizerRecipe;
 import net.minecraft.tags.TagKey;

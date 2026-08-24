@@ -5,7 +5,7 @@
  * recipe surface is intentionally kept source-compatible while serializers are
  * migrated, and this class delegates matching semantics to the 1.21 registry.
  */
-package blusunrize.immersiveengineering.api.crafting;
+package com.igteam.immersivegeology.common.compat.ie.crafting;
 
 import com.google.common.base.Preconditions;
 import com.google.gson.JsonElement;

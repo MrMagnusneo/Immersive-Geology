@@ -8,7 +8,7 @@
 
 package com.igteam.immersivegeology.core.material.helper.material.recipe.methods;
 
-import blusunrize.immersiveengineering.api.crafting.builders.MixerRecipeBuilder;
+import com.igteam.immersivegeology.common.compat.ie.crafting.builders.MixerRecipeBuilder;
 import blusunrize.immersiveengineering.common.blocks.multiblocks.IEMultiblocks;
 import blusunrize.lib.manual.gui.ManualScreen;
 import com.igteam.immersivegeology.core.material.helper.flags.BlockCategoryFlags;

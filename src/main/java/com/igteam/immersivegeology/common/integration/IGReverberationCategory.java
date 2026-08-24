@@ -8,7 +8,7 @@
 
 package com.igteam.immersivegeology.common.integration;
 
-import blusunrize.immersiveengineering.api.crafting.FluidTagInput;
+import com.igteam.immersivegeology.common.compat.ie.crafting.FluidTagInput;
 import blusunrize.immersiveengineering.common.util.compat.jei.JEIHelper;
 import com.igteam.immersivegeology.common.block.multiblocks.recipe.GravitySeparatorRecipe;
 import com.igteam.immersivegeology.common.block.multiblocks.recipe.RevFurnaceRecipe;

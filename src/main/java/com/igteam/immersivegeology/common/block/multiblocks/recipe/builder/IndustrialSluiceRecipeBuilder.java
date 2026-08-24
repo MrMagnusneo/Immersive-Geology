@@ -10,7 +10,7 @@ package com.igteam.immersivegeology.common.block.multiblocks.recipe.builder;
 
 import blusunrize.immersiveengineering.api.crafting.IngredientWithSize;
 import blusunrize.immersiveengineering.api.crafting.StackWithChance;
-import blusunrize.immersiveengineering.api.crafting.builders.IEFinishedRecipe;
+import com.igteam.immersivegeology.common.compat.ie.crafting.builders.IEFinishedRecipe;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.igteam.immersivegeology.common.block.multiblocks.recipe.IndustrialSluiceRecipe;

@@ -7,12 +7,17 @@ WORKFLOW = ROOT / ".github" / "workflows" / "neoforge-1.21.1-port.yml"
 
 
 class RuntimeValidationWorkflowTest(unittest.TestCase):
-    def test_port_does_not_add_classes_to_minecraft_module_packages(self):
-        split_package = ROOT / "src" / "main" / "java" / "net" / "minecraft"
-        self.assertFalse(
-            split_package.exists(),
-            "compatibility types under net.minecraft create a Java module split-package at runtime",
-        )
+    def test_port_does_not_add_classes_to_dependency_module_packages(self):
+        forbidden_roots = [
+            ROOT / "src" / "main" / "java" / "net" / "minecraft",
+            ROOT / "src" / "main" / "java" / "blusunrize",
+        ]
+        for split_package in forbidden_roots:
+            with self.subTest(path=split_package):
+                self.assertFalse(
+                    split_package.exists(),
+                    "compatibility types in dependency namespaces create Java module split-packages",
+                )
 
     def test_ci_runs_datagen_and_rejects_generated_resource_drift(self):
         workflow = WORKFLOW.read_text(encoding="utf-8")

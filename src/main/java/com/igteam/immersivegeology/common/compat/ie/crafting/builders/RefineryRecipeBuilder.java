@@ -1,6 +1,6 @@
-package blusunrize.immersiveengineering.api.crafting.builders;
+package com.igteam.immersivegeology.common.compat.ie.crafting.builders;
 
-import blusunrize.immersiveengineering.api.crafting.FluidTagInput;
+import com.igteam.immersivegeology.common.compat.ie.crafting.FluidTagInput;
 import blusunrize.immersiveengineering.api.crafting.RefineryRecipe;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;

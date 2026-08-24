@@ -1,4 +1,4 @@
-package blusunrize.immersiveengineering.api.crafting.builders;
+package com.igteam.immersivegeology.common.compat.ie.crafting.builders;
 
 import blusunrize.immersiveengineering.api.crafting.CrusherRecipe;
 import blusunrize.immersiveengineering.api.crafting.IngredientWithSize;

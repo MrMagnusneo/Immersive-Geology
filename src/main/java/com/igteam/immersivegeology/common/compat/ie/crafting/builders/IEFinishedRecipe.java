@@ -1,4 +1,4 @@
-package blusunrize.immersiveengineering.api.crafting.builders;
+package com.igteam.immersivegeology.common.compat.ie.crafting.builders;
 
 import blusunrize.immersiveengineering.api.crafting.IERecipeSerializer;
 import com.igteam.immersivegeology.client.helper.IGRecipeBuilder;

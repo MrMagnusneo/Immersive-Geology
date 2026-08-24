@@ -5,7 +5,7 @@ import unittest
 
 
 ROOT = Path(__file__).resolve().parents[2]
-BUILDERS = ROOT / "src/main/java/blusunrize/immersiveengineering/api/crafting/builders"
+BUILDERS = ROOT / "src/main/java/com/igteam/immersivegeology/common/compat/ie/crafting/builders"
 IG_BUILDER = ROOT / "src/main/java/com/igteam/immersivegeology/client/helper/IGRecipeBuilder.java"
 LEGACY_SERIALIZER = ROOT / "src/main/java/com/igteam/immersivegeology/common/recipe/LegacyIERecipeSerializer.java"
 

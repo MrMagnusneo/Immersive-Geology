@@ -9,8 +9,8 @@
 package com.igteam.immersivegeology.core.material.helper.material.recipe.methods;
 
 import blusunrize.immersiveengineering.api.crafting.IngredientWithSize;
-import blusunrize.immersiveengineering.api.crafting.builders.CrusherRecipeBuilder;
-import blusunrize.immersiveengineering.api.crafting.builders.SqueezerRecipeBuilder;
+import com.igteam.immersivegeology.common.compat.ie.crafting.builders.CrusherRecipeBuilder;
+import com.igteam.immersivegeology.common.compat.ie.crafting.builders.SqueezerRecipeBuilder;
 import blusunrize.immersiveengineering.common.blocks.multiblocks.IEMultiblocks;
 import blusunrize.lib.manual.ManualUtils;
 import blusunrize.lib.manual.gui.ManualScreen;

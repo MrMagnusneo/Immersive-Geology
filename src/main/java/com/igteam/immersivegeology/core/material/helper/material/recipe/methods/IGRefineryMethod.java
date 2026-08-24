@@ -8,8 +8,8 @@
 
 package com.igteam.immersivegeology.core.material.helper.material.recipe.methods;
 
-import blusunrize.immersiveengineering.api.crafting.FluidTagInput;
-import blusunrize.immersiveengineering.api.crafting.builders.RefineryRecipeBuilder;
+import com.igteam.immersivegeology.common.compat.ie.crafting.FluidTagInput;
+import com.igteam.immersivegeology.common.compat.ie.crafting.builders.RefineryRecipeBuilder;
 import com.igteam.immersivegeology.client.menu.IGFluidInfoArea;
 import blusunrize.immersiveengineering.common.blocks.multiblocks.IEMultiblocks;
 import blusunrize.lib.manual.gui.ManualScreen;
