@@ -19,6 +19,25 @@ class RuntimeValidationWorkflowTest(unittest.TestCase):
                     "compatibility types in dependency namespaces create Java module split-packages",
                 )
 
+    def test_fluid_tag_compatibility_type_is_imported_from_mod_namespace(self):
+        source_roots = [ROOT / "src" / "main" / "java", ROOT / "src" / "datagen" / "java"]
+        compatibility_type = (
+            ROOT
+            / "src/main/java/com/igteam/immersivegeology/common/compat/ie/crafting/FluidTagInput.java"
+        )
+        expected_import = (
+            "import com.igteam.immersivegeology.common.compat.ie.crafting.FluidTagInput;"
+        )
+        offenders = []
+        for source_root in source_roots:
+            for path in source_root.rglob("*.java"):
+                if path == compatibility_type:
+                    continue
+                source = path.read_text(encoding="utf-8")
+                if "FluidTagInput" in source and expected_import not in source:
+                    offenders.append(str(path.relative_to(ROOT)))
+        self.assertFalse(offenders, "missing explicit compatibility import:\n" + "\n".join(offenders))
+
     def test_ci_runs_datagen_and_rejects_generated_resource_drift(self):
         workflow = WORKFLOW.read_text(encoding="utf-8")
         self.assertIn("runData", workflow)
