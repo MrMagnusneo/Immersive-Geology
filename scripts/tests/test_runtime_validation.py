@@ -1,3 +1,6 @@
+import gzip
+import re
+import struct
 import unittest
 from pathlib import Path
 
@@ -78,6 +81,46 @@ class RuntimeValidationWorkflowTest(unittest.TestCase):
                 self.assertIn("trackOptionalTexture(", source)
                 self.assertIn('withSuffix("_top")', source)
                 self.assertIn('withSuffix("_side")', source)
+
+    def test_declared_multiblock_sizes_match_structure_templates(self):
+        declarations = {}
+        declaration_pattern = re.compile(
+            r'multiblocks/([^"\)]+)"\),\s*new BlockPos\([^)]*\),\s*'
+            r'new BlockPos\([^)]*\),\s*new BlockPos\(([^)]*)\)',
+            re.DOTALL,
+        )
+        multiblock_sources = (
+            ROOT
+            / "src/main/java/com/igteam/immersivegeology/common/block/multiblocks"
+        )
+        for path in multiblock_sources.glob("*.java"):
+            match = declaration_pattern.search(path.read_text(encoding="utf-8"))
+            if match:
+                declarations[match.group(1)] = tuple(
+                    int(value) for value in re.findall(r"-?\d+", match.group(2))
+                )
+
+        structures = (
+            ROOT
+            / "src/main/resources/data/immersivegeology/structures/multiblocks"
+        )
+        mismatches = []
+        for path in structures.glob("*.nbt"):
+            data = gzip.open(path, "rb").read()
+            offset = 3  # root TAG_Compound and its empty name
+            self.assertEqual(9, data[offset])  # first entry is the size TAG_List
+            offset += 1
+            name_length = struct.unpack(">H", data[offset : offset + 2])[0]
+            offset += 2 + name_length
+            self.assertEqual(3, data[offset])  # TAG_Int list entries
+            offset += 1
+            length = struct.unpack(">i", data[offset : offset + 4])[0]
+            offset += 4
+            template_size = struct.unpack(">" + "i" * length, data[offset : offset + 4 * length])
+            declared_size = declarations.get(path.stem)
+            if template_size != declared_size:
+                mismatches.append(f"{path.stem}: template={template_size}, declared={declared_size}")
+        self.assertFalse(mismatches, "\n".join(mismatches))
 
     def test_ci_runs_datagen_and_rejects_generated_resource_drift(self):
         workflow = WORKFLOW.read_text(encoding="utf-8")
