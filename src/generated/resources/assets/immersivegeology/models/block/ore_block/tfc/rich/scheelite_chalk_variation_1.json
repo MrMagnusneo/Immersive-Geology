@@ -3,6 +3,6 @@
   "textures": {
     "ore": "immersivegeology:palette/block/ore_bearing/layered/rich_1_pristine_scheelite",
     "side": "tfc:block/rock/raw/chalk",
-    "top": "tfc:block/rock/raw/chalk"
+    "top": "tfc:block/rock/raw/chalk_top"
   }
 }

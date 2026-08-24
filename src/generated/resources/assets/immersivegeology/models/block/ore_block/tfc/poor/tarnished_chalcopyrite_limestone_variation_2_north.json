@@ -3,6 +3,6 @@
   "textures": {
     "ore_north": "immersivegeology:palette/block/ore_bearing/layered/poor_2_tarnished_chalcopyrite",
     "side": "tfc:block/rock/raw/limestone",
-    "top": "tfc:block/rock/raw/limestone"
+    "top": "tfc:block/rock/raw/limestone_top"
   }
 }
