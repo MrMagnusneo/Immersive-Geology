@@ -152,7 +152,7 @@ class RuntimeValidationWorkflowTest(unittest.TestCase):
             ROOT
             / "src/main/java/com/igteam/immersivegeology/common/recipe/LegacyIERecipeSerializer.java"
         ).read_text(encoding="utf-8")
-        self.assertIn("sourceJson.put(recipe, json.deepCopy())", serializer)
+        self.assertIn("sourceJson.put(recipe, (JsonObject)json.deepCopy())", serializer)
         self.assertIn("JsonObject original = sourceJson.get(input)", serializer)
 
     def test_tfc_recipe_builder_uses_neoforge_load_conditions(self):

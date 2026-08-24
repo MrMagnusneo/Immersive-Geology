@@ -94,7 +94,7 @@ public abstract class LegacyIERecipeSerializer<R extends Recipe<?>> extends IERe
                             readFromJson(LEGACY_ID, json.getAsJsonObject(), IContext.EMPTY),
                             "Legacy recipe JSON decoder returned null"
                     );
-                    sourceJson.put(recipe, json.deepCopy());
+                    sourceJson.put(recipe, (JsonObject)json.deepCopy());
                     return DataResult.success(recipe);
                 }
                 catch(RuntimeException ex)
