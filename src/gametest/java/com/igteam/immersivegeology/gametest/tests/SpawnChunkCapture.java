@@ -101,7 +101,7 @@ public class SpawnChunkCapture {
 		BlockPos spawnPos = level.getSharedSpawnPos();
 		try {
 			BufferedImage image = generateMapImage(level, spawnPos);
-			saveImage(image, helper, server.getServerDirectory().toFile(), "World Map");
+			saveImage(image, helper, new File("build/gametest-results"), "World Map");
 			helper.succeed();
 		} catch (Exception e) {
 			helper.fail("Error generating map: " + e.getMessage());

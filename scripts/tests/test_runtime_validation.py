@@ -102,7 +102,7 @@ class RuntimeValidationWorkflowTest(unittest.TestCase):
 
         structures = (
             ROOT
-            / "src/main/resources/data/immersivegeology/structures/multiblocks"
+            / "src/main/resources/data/immersivegeology/structure/multiblocks"
         )
         mismatches = []
         for path in structures.glob("*.nbt"):
@@ -146,6 +146,14 @@ class RuntimeValidationWorkflowTest(unittest.TestCase):
         self.assertFalse(
             (ROOT / "src/gametest/resources/data/immersivegeology/structures").exists()
         )
+
+    def test_spawn_map_diagnostic_writes_inside_the_build_directory(self):
+        source = (
+            ROOT
+            / "src/gametest/java/com/igteam/immersivegeology/gametest/tests/SpawnChunkCapture.java"
+        ).read_text(encoding="utf-8")
+        self.assertIn('new File("build/gametest-results")', source)
+        self.assertNotIn("server.getServerDirectory().toFile()", source)
 
     def test_legacy_recipe_codec_preserves_semantic_json_for_datagen(self):
         serializer = (
