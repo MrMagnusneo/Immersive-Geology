@@ -16,6 +16,7 @@ import com.igteam.immersivegeology.core.material.data.enums.MiscEnum;
 import com.igteam.immersivegeology.core.material.data.types.MaterialStone;
 import com.igteam.immersivegeology.core.material.helper.flags.BlockCategoryFlags;
 import com.igteam.immersivegeology.core.material.helper.flags.IFlagType;
+import com.igteam.immersivegeology.core.material.helper.flags.ItemCategoryFlags;
 import com.igteam.immersivegeology.core.material.helper.flags.ModFlags;
 import com.igteam.immersivegeology.core.material.helper.material.MaterialInterface;
 import com.igteam.immersivegeology.core.material.helper.material.MaterialTexture;
@@ -54,6 +55,11 @@ public class IGItemModelProvider extends IGTRSRItemModelProvider
         List<? extends Item> itemList = IGRegistrationHolder.supplyDeferredItems().get();
 
         for (Item item : itemList) {
+            if(item instanceof IGFlagItem i&&i.getFlag()==ItemCategoryFlags.MISC)
+            {
+                // These special items use handcrafted models keyed by their registry names.
+                continue;
+            }
             if(item instanceof IGMultiblockSkinItem<?> skin)
             {
                 generateGenericSkinItem(skin);

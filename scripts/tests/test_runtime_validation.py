@@ -122,6 +122,14 @@ class RuntimeValidationWorkflowTest(unittest.TestCase):
                 mismatches.append(f"{path.stem}: template={template_size}, declared={declared_size}")
         self.assertFalse(mismatches, "\n".join(mismatches))
 
+    def test_handcrafted_misc_item_models_are_not_replaced_by_generic_fallbacks(self):
+        item_models = (
+            ROOT
+            / "src/datagen/java/com/igteam/immersivegeology/common/data/generators/IGItemModelProvider.java"
+        ).read_text(encoding="utf-8")
+        self.assertIn("i.getFlag()==ItemCategoryFlags.MISC", item_models)
+        self.assertIn("continue;", item_models)
+
     def test_ci_runs_datagen_and_rejects_generated_resource_drift(self):
         workflow = WORKFLOW.read_text(encoding="utf-8")
         self.assertIn("runData", workflow)
