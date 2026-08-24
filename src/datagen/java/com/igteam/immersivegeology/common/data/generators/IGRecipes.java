@@ -28,6 +28,7 @@ import com.igteam.immersivegeology.common.block.multiblocks.recipe.GeothermalBio
 import com.igteam.immersivegeology.common.block.multiblocks.recipe.builder.*;
 import com.igteam.immersivegeology.common.data.helper.TFCDatagenCompat;
 import com.igteam.immersivegeology.common.recipe.IGRepairItemRecipe;
+import com.igteam.immersivegeology.client.helper.FinishedRecipe;
 import com.igteam.immersivegeology.core.lib.IGLib;
 import com.igteam.immersivegeology.core.material.data.enums.*;
 import com.igteam.immersivegeology.core.material.data.types.MaterialRadioactiveMetal;
