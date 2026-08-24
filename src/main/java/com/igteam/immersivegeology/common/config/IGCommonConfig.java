@@ -8,12 +8,6 @@
 
 package com.igteam.immersivegeology.common.config;
 
-import com.igteam.immersivegeology.core.lib.IGLib;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.common.EventBusSubscriber.Bus;
-
-@EventBusSubscriber(modid = IGLib.MODID, bus = Bus.MOD)
 public class IGCommonConfig
 {
 

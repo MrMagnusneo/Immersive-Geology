@@ -38,6 +38,19 @@ class RuntimeValidationWorkflowTest(unittest.TestCase):
                     offenders.append(str(path.relative_to(ROOT)))
         self.assertFalse(offenders, "missing explicit compatibility import:\n" + "\n".join(offenders))
 
+    def test_event_bus_subscribers_have_listener_methods(self):
+        offenders = []
+        source_root = ROOT / "src" / "main" / "java"
+        for path in source_root.rglob("*.java"):
+            source = path.read_text(encoding="utf-8")
+            if "@EventBusSubscriber" in source and "@SubscribeEvent" not in source:
+                offenders.append(str(path.relative_to(ROOT)))
+        self.assertFalse(
+            offenders,
+            "NeoForge rejects automatic subscribers without @SubscribeEvent methods:\n"
+            + "\n".join(offenders),
+        )
+
     def test_ci_runs_datagen_and_rejects_generated_resource_drift(self):
         workflow = WORKFLOW.read_text(encoding="utf-8")
         self.assertIn("runData", workflow)
