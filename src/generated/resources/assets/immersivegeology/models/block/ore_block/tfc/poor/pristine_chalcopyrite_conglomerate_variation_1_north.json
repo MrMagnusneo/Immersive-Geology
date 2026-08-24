@@ -3,6 +3,6 @@
   "textures": {
     "ore_north": "immersivegeology:palette/block/ore_bearing/layered/poor_1_pristine_chalcopyrite",
     "side": "tfc:block/rock/raw/conglomerate",
-    "top": "tfc:block/rock/raw/conglomerate"
+    "top": "tfc:block/rock/raw/conglomerate_top"
   }
 }
