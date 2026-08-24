@@ -27,7 +27,10 @@ import net.neoforged.neoforge.network.connection.ConnectionType;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Base64;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Objects;
+import java.util.WeakHashMap;
 import java.util.stream.Stream;
 
 /**
@@ -39,6 +42,7 @@ public abstract class LegacyIERecipeSerializer<R extends Recipe<?>> extends IERe
 {
     private static final ResourceLocation LEGACY_ID = ResourceLocation.fromNamespaceAndPath("immersivegeology", "legacy_codec");
     private static final String NETWORK_PAYLOAD_KEY = "immersivegeology:legacy_network";
+    private final Map<R, JsonObject> sourceJson = Collections.synchronizedMap(new WeakHashMap<>());
 
     public abstract R readFromJson(ResourceLocation id, JsonObject json, IContext context);
     public abstract @Nullable R fromNetwork(ResourceLocation id, FriendlyByteBuf buffer);
@@ -86,10 +90,12 @@ public abstract class LegacyIERecipeSerializer<R extends Recipe<?>> extends IERe
                 JsonElement json = ops.convertTo(JsonOps.INSTANCE, map);
                 try
                 {
-                    return DataResult.success(Objects.requireNonNull(
+                    R recipe = Objects.requireNonNull(
                             readFromJson(LEGACY_ID, json.getAsJsonObject(), IContext.EMPTY),
                             "Legacy recipe JSON decoder returned null"
-                    ));
+                    );
+                    sourceJson.put(recipe, json.deepCopy());
+                    return DataResult.success(recipe);
                 }
                 catch(RuntimeException ex)
                 {
@@ -100,6 +106,13 @@ public abstract class LegacyIERecipeSerializer<R extends Recipe<?>> extends IERe
             @Override
             public <T> RecordBuilder<T> encode(R input, DynamicOps<T> ops, RecordBuilder<T> prefix)
             {
+                JsonObject original = sourceJson.get(input);
+                if(original!=null)
+                {
+                    for(var entry : original.entrySet())
+                        prefix.add(ops.createString(entry.getKey()), JsonOps.INSTANCE.convertTo(ops, entry.getValue()));
+                    return prefix;
+                }
                 DataResult<T> payload = encodePayload(input).map(ops::createString);
                 return prefix.add(NETWORK_PAYLOAD_KEY, payload);
             }

@@ -137,6 +137,41 @@ class RuntimeValidationWorkflowTest(unittest.TestCase):
         ).read_text(encoding="utf-8")
         self.assertIn("item.getFlag() == BlockCategoryFlags.ENERGY_PIPE", item_models)
 
+    def test_gametest_template_uses_the_1_21_singular_resource_directory(self):
+        template = (
+            ROOT
+            / "src/gametest/resources/data/immersivegeology/structure/test_area.nbt"
+        )
+        self.assertTrue(template.is_file())
+        self.assertFalse(
+            (ROOT / "src/gametest/resources/data/immersivegeology/structures").exists()
+        )
+
+    def test_legacy_recipe_codec_preserves_semantic_json_for_datagen(self):
+        serializer = (
+            ROOT
+            / "src/main/java/com/igteam/immersivegeology/common/recipe/LegacyIERecipeSerializer.java"
+        ).read_text(encoding="utf-8")
+        self.assertIn("sourceJson.put(recipe, json.deepCopy())", serializer)
+        self.assertIn("JsonObject original = sourceJson.get(input)", serializer)
+
+    def test_tfc_recipe_builder_uses_neoforge_load_conditions(self):
+        builder = (
+            ROOT
+            / "src/datagen/java/com/igteam/immersivegeology/common/data/helper/TFCCollapseRecipeBuilder.java"
+        ).read_text(encoding="utf-8")
+        self.assertIn('"neoforge:conditions"', builder)
+        self.assertIn('"neoforge:mod_loaded"', builder)
+        self.assertNotIn('"forge:conditional"', builder)
+        self.assertNotIn('"forge:mod_loaded"', builder)
+
+    def test_generated_material_tags_use_the_neoforge_common_namespace(self):
+        tags = (
+            ROOT / "src/main/java/com/igteam/immersivegeology/common/tag/IGTags.java"
+        ).read_text(encoding="utf-8")
+        self.assertNotIn('fromNamespaceAndPath("forge"', tags)
+        self.assertIn('fromNamespaceAndPath("c"', tags)
+
     def test_ci_runs_datagen_and_rejects_generated_resource_drift(self):
         workflow = WORKFLOW.read_text(encoding="utf-8")
         self.assertIn("runData", workflow)

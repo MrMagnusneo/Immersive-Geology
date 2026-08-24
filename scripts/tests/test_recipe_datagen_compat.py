@@ -58,8 +58,8 @@ class RecipeDatagenCompatibilityTest(unittest.TestCase):
         source = LEGACY_SERIALIZER.read_text(encoding="utf-8")
         self.assertIn("toNetwork(buffer, recipe)", source)
         self.assertIn("fromNetwork(LEGACY_ID, buffer)", source)
-        self.assertNotIn("return prefix;", source)
         self.assertIn("prefix.add", source)
+        self.assertIn("JsonOps.INSTANCE.convertTo(ops, entry.getValue())", source)
         self.assertIn("DataResult.error", source)
 
 
