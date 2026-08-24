@@ -1,0 +1,17 @@
+{
+  "type": "immersivegeology:gravity_separator",
+  "byproduct": {
+    "count": 1,
+    "id": "immersivegeology:metal_oxide_titanium"
+  },
+  "byproduct_chance": 0.5,
+  "input": {
+    "tag": "c:powdered_slag/ilmenite"
+  },
+  "result": {
+    "count": 1,
+    "id": "immersivegeology:metal_oxide_iron"
+  },
+  "time": 300,
+  "water": 250
+}

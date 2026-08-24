@@ -1,0 +1,17 @@
+{
+  "type": "immersivegeology:gravity_separator",
+  "byproduct": {
+    "count": 1,
+    "id": "immersivegeology:metal_oxide_iron"
+  },
+  "byproduct_chance": 0.75,
+  "input": {
+    "tag": "c:powdered_slag/sphalerite"
+  },
+  "result": {
+    "count": 1,
+    "id": "immersivegeology:metal_oxide_zinc"
+  },
+  "time": 200,
+  "water": 250
+}

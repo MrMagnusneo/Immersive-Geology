@@ -2,10 +2,27 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.content_manifest import ManifestError, collect_manifest, compare_manifests
+from scripts.content_manifest import (
+    ManifestError,
+    collect_manifest,
+    compare_manifests,
+    normalize_legacy_resource_path,
+)
 
 
 class ContentManifestTest(unittest.TestCase):
+    def test_normalizes_minecraft_1_21_resource_directory_migrations(self):
+        cases = {
+            "data/immersivegeology/recipes/a.json": "data/immersivegeology/recipe/a.json",
+            "data/immersivegeology/structures/a.nbt": "data/immersivegeology/structure/a.nbt",
+            "data/forge/tags/items/ingots.json": "data/c/tags/item/ingots.json",
+            "data/forge/loot_modifiers/global_loot_modifiers.json": "data/neoforge/loot_modifiers/global_loot_modifiers.json",
+            "data/immersivegeology/forge/biome_modifier/a.json": "data/immersivegeology/neoforge/biome_modifier/a.json",
+        }
+        for legacy, current in cases.items():
+            with self.subTest(legacy=legacy):
+                self.assertEqual(current, normalize_legacy_resource_path(legacy))
+
     def test_collects_geology_registration_surfaces(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

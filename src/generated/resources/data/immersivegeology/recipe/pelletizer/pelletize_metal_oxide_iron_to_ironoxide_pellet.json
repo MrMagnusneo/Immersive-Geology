@@ -1,0 +1,12 @@
+{
+  "type": "immersivegeology:pelletizer",
+  "energy": 4800,
+  "input": {
+    "tag": "c:metal_oxide/iron"
+  },
+  "result": {
+    "count": 1,
+    "id": "immersivegeology:oxide_pellet_iron"
+  },
+  "time": 600
+}

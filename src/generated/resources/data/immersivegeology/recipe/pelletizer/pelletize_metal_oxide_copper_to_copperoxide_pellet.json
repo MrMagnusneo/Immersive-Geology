@@ -1,0 +1,12 @@
+{
+  "type": "immersivegeology:pelletizer",
+  "energy": 4800,
+  "input": {
+    "tag": "c:metal_oxide/copper"
+  },
+  "result": {
+    "count": 1,
+    "id": "immersivegeology:oxide_pellet_copper"
+  },
+  "time": 600
+}

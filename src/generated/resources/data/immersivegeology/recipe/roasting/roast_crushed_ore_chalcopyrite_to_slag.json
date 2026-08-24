@@ -1,0 +1,12 @@
+{
+  "type": "immersivegeology:reverberation_furnace",
+  "input": {
+    "tag": "c:crushed_ore/chalcopyrite"
+  },
+  "result": {
+    "count": 1,
+    "id": "immersivegeology:slag_chalcopyrite"
+  },
+  "time": 800,
+  "waste": 25
+}

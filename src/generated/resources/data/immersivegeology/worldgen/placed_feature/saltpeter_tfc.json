@@ -1,4 +1,10 @@
 {
   "feature": "immersivegeology:saltpeter_tfc",
-  "placement": []
+  "placement": [],
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "tfc"
+    }
+  ]
 }

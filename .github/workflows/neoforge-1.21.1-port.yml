@@ -103,5 +103,6 @@ jobs:
       - name: Reject generated resource drift
         run: |
           git status --short -- src/generated/resources
-          git diff --exit-code -- src/generated/resources
+          git diff --exit-code --diff-filter=ACMRTUXB -- src/generated/resources
           test -z "$(git ls-files --others --exclude-standard -- src/generated/resources)"
+          diff -u scripts/optional_tfc_generated_resources.txt <(git diff --name-only --diff-filter=D -- src/generated/resources | sort)

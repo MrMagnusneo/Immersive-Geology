@@ -1,0 +1,17 @@
+{
+  "type": "immersivegeology:gravity_separator",
+  "byproduct": {
+    "count": 1,
+    "id": "immersivegeology:metal_oxide_silver"
+  },
+  "byproduct_chance": 0.075,
+  "input": {
+    "tag": "c:powdered_slag/galena"
+  },
+  "result": {
+    "count": 1,
+    "id": "immersivegeology:metal_oxide_lead"
+  },
+  "time": 200,
+  "water": 250
+}

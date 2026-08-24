@@ -1,0 +1,14 @@
+{
+  "type": "immersivegeology:bloomery",
+  "input": {
+    "basePredicate": {
+      "tag": "c:crushed_ore/copper"
+    },
+    "count": 2
+  },
+  "result": {
+    "count": 1,
+    "id": "minecraft:copper_ingot"
+  },
+  "time": 200
+}

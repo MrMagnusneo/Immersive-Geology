@@ -1,4 +1,5 @@
 import gzip
+import json
 import re
 import struct
 import unittest
@@ -7,6 +8,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW = ROOT / ".github" / "workflows" / "neoforge-1.21.1-port.yml"
+GENERATED = ROOT / "src" / "generated" / "resources"
 
 
 class RuntimeValidationWorkflowTest(unittest.TestCase):
@@ -180,10 +182,59 @@ class RuntimeValidationWorkflowTest(unittest.TestCase):
         self.assertNotIn('fromNamespaceAndPath("forge"', tags)
         self.assertIn('fromNamespaceAndPath("c"', tags)
 
+    def test_generated_resources_use_1_21_paths_and_semantic_recipes(self):
+        self.assertFalse((GENERATED / "data/forge").exists())
+        self.assertFalse((GENERATED / ".cache").exists())
+        for namespace in (GENERATED / "data").iterdir():
+            if not namespace.is_dir():
+                continue
+            for obsolete in ("recipes", "advancements", "loot_tables"):
+                self.assertFalse((namespace / obsolete).exists(), f"obsolete pack path: {namespace / obsolete}")
+            tags = namespace / "tags"
+            for obsolete in ("items", "blocks", "fluids"):
+                self.assertFalse((tags / obsolete).exists(), f"obsolete tag path: {tags / obsolete}")
+
+        payload_files = []
+        for path in (GENERATED / "data/immersivegeology/recipe").rglob("*.json"):
+            if "immersivegeology:legacy_network" in path.read_text(encoding="utf-8"):
+                payload_files.append(str(path.relative_to(ROOT)))
+        self.assertFalse(payload_files, "opaque registry-ID recipe payloads:\n" + "\n".join(payload_files))
+
+    def test_optional_tfc_generated_content_is_preserved_and_conditioned(self):
+        collapse_dir = GENERATED / "data/immersivegeology/recipe/collapse"
+        collapse = sorted(collapse_dir.glob("*.json"))
+        self.assertEqual(1293, len(collapse))
+        for path in collapse:
+            data = json.loads(path.read_text(encoding="utf-8"))
+            self.assertEqual("tfc:collapse", data.get("type"), path.name)
+            self.assertEqual(
+                [{"type": "neoforge:mod_loaded", "modid": "tfc"}],
+                data.get("neoforge:conditions"),
+                path.name,
+            )
+
+        manifest = ROOT / "scripts/optional_tfc_generated_resources.txt"
+        expected = manifest.read_text(encoding="utf-8").splitlines()
+        actual = sorted(
+            str(path.relative_to(ROOT))
+            for path in GENERATED.rglob("*.json")
+            if path.is_relative_to(collapse_dir)
+            or path.is_relative_to(GENERATED / "data/tfc")
+            or path.name.endswith("_tfc.json")
+        )
+        # The twelve retained chemical recipes are also listed explicitly in the manifest.
+        actual.extend(
+            path for path in expected if "/recipe/centrifuge/" in path
+            or "/recipe/chemical_reactor/" in path
+            or "/recipe/small_chemical_reactor/" in path
+        )
+        self.assertEqual(expected, sorted(actual))
+
     def test_ci_runs_datagen_and_rejects_generated_resource_drift(self):
         workflow = WORKFLOW.read_text(encoding="utf-8")
         self.assertIn("runData", workflow)
-        self.assertIn("git diff --exit-code -- src/generated/resources", workflow)
+        self.assertIn("--diff-filter=ACMRTUXB", workflow)
+        self.assertIn("optional_tfc_generated_resources.txt", workflow)
         self.assertIn("generated-resources-after-runData", workflow)
 
     def test_ci_starts_a_real_gametest_server(self):

@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "i": {
+      "item": "immersivegeology:ingot_stainless_steel"
+    },
+    "r": {
+      "item": "immersivegeology:rod_stainless_steel"
+    }
+  },
+  "pattern": [
+    "iri",
+    "iri"
+  ],
+  "result": {
+    "count": 3,
+    "id": "immersivegeology:fence_stainless_steel"
+  }
+}

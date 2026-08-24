@@ -1,0 +1,24 @@
+{
+  "type": "immersivegeology:chemical_reactor",
+  "energy": 51200,
+  "fluidInputA": {
+    "amount": 250,
+    "tag": "c:hydrochloric_acid"
+  },
+  "fluidInputB": {
+    "amount": 250,
+    "tag": "c:nitric_acid"
+  },
+  "fluidResult": {
+    "amount": 432,
+    "id": "immersivegeology:slurry_aqua_regia_gold"
+  },
+  "itemInput": {
+    "item": "immersivegeology:crushed_ore_gold"
+  },
+  "result": {
+    "basePredicate": [],
+    "count": 0
+  },
+  "time": 200
+}

@@ -1,8 +1,19 @@
 {
+  "items": {
+    "misc_refractory_brick": "refractory_brick",
+    "misc_stainless_steel": "ingot_stainless_steel",
+    "misc_stone": "hammer_stone"
+  },
   "resource_paths": {
-    "META-INF/mods.toml": "META-INF/neoforge.mods.toml"
+    "META-INF/mods.toml": "META-INF/neoforge.mods.toml",
+    "assets/immersivegeology/models/item/misc_refractory_brick.json": "assets/immersivegeology/models/item/refractory_brick.json",
+    "assets/immersivegeology/models/item/misc_stainless_steel.json": "assets/immersivegeology/models/item/ingot_stainless_steel.json",
+    "assets/immersivegeology/models/item/misc_stone.json": "assets/immersivegeology/models/item/hammer_stone.json"
   },
   "resource_hashes": {
-    "META-INF/mods.toml": "META-INF/neoforge.mods.toml"
+    "META-INF/mods.toml": "META-INF/neoforge.mods.toml",
+    "assets/immersivegeology/models/item/misc_refractory_brick.json": "assets/immersivegeology/models/item/refractory_brick.json",
+    "assets/immersivegeology/models/item/misc_stainless_steel.json": "assets/immersivegeology/models/item/ingot_stainless_steel.json",
+    "assets/immersivegeology/models/item/misc_stone.json": "assets/immersivegeology/models/item/hammer_stone.json"
   }
 }

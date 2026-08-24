@@ -1,0 +1,20 @@
+{
+  "type": "immersivegeology:small_chemical_reactor",
+  "damage_per_second": 0,
+  "energy": 25600,
+  "fluidInputA": {
+    "amount": 125,
+    "tag": "c:sodium_hydroxide"
+  },
+  "fluidResult": {
+    "amount": 0,
+    "id": "minecraft:empty"
+  },
+  "itemInput": {
+    "tag": "c:metal_oxide/aluminum"
+  },
+  "result": {
+    "id": "immersivegeology:compound_dust_aluminum"
+  },
+  "time": 200
+}

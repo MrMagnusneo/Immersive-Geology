@@ -1,0 +1,17 @@
+{
+  "type": "immersivegeology:gravity_separator",
+  "byproduct": {
+    "count": 1,
+    "id": "immersivegeology:metal_oxide_chromium"
+  },
+  "byproduct_chance": 0.075,
+  "input": {
+    "tag": "c:powdered_slag/millerite"
+  },
+  "result": {
+    "count": 1,
+    "id": "immersivegeology:metal_oxide_nickel"
+  },
+  "time": 200,
+  "water": 250
+}

@@ -52,6 +52,51 @@ class ManifestError(RuntimeError):
     pass
 
 
+def normalize_legacy_resource_path(path: str) -> str:
+    """Map Forge/1.20 datapack locations to their NeoForge/Minecraft 1.21 paths."""
+    parts = path.split("/")
+    if len(parts) < 3 or parts[0] != "data":
+        return path
+
+    namespace = parts[1]
+    if namespace == "forge" and len(parts) > 2:
+        if parts[2] == "tags":
+            parts[1] = "c"
+        elif parts[2] == "loot_modifiers":
+            parts[1] = "neoforge"
+
+    if len(parts) > 2:
+        parts[2] = {
+            "advancements": "advancement",
+            "loot_tables": "loot_table",
+            "recipes": "recipe",
+            "structures": "structure",
+        }.get(parts[2], parts[2])
+    if len(parts) > 3 and parts[2] == "tags":
+        parts[3] = {
+            "blocks": "block",
+            "fluids": "fluid",
+            "items": "item",
+        }.get(parts[3], parts[3])
+    if namespace == "immersivegeology" and len(parts) > 2 and parts[2] == "forge":
+        parts[2] = "neoforge"
+    return "/".join(parts)
+
+
+def normalize_legacy_manifest_resources(manifest: dict) -> dict:
+    normalized = dict(manifest)
+    if "resource_paths" in manifest:
+        normalized["resource_paths"] = sorted(
+            {normalize_legacy_resource_path(path) for path in manifest["resource_paths"]}
+        )
+    if "resource_hashes" in manifest:
+        normalized["resource_hashes"] = {
+            normalize_legacy_resource_path(path): digest
+            for path, digest in manifest["resource_hashes"].items()
+        }
+    return normalized
+
+
 def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -245,7 +290,7 @@ def main() -> int:
         return 0
 
     if args.compare_root:
-        baseline = collect_manifest(args.compare_root)
+        baseline = normalize_legacy_manifest_resources(collect_manifest(args.compare_root))
     else:
         baseline = json.loads(target.read_text(encoding="utf-8"))
     replacements = {}

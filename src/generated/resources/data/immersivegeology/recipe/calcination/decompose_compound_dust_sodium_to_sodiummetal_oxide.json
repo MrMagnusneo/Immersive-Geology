@@ -1,0 +1,12 @@
+{
+  "type": "immersivegeology:rotary_kiln",
+  "heat": 75,
+  "input": {
+    "tag": "c:compound_dust/sodium"
+  },
+  "result": {
+    "count": 1,
+    "id": "immersivegeology:metal_oxide_sodium"
+  },
+  "time": 300
+}

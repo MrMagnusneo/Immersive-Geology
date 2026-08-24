@@ -1,0 +1,12 @@
+{
+  "type": "immersivegeology:pelletizer",
+  "energy": 4800,
+  "input": {
+    "tag": "c:metal_oxide/tin"
+  },
+  "result": {
+    "count": 1,
+    "id": "immersivegeology:oxide_pellet_tin"
+  },
+  "time": 600
+}
