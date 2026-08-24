@@ -69,6 +69,14 @@ class RuntimeValidationWorkflowTest(unittest.TestCase):
         self.assertGreaterEqual(block_models.count("trackPalettedTexture("), 3)
         self.assertIn("trackPalettedTexture(", item_models)
 
+        for compat_type in (
+            "src/main/java/com/igteam/immersivegeology/core/material/data/stone/compat/tfc/MaterialTFCRawStone.java",
+            "src/main/java/com/igteam/immersivegeology/core/material/data/stone/compat/adastra/MaterialAdAstraStone.java",
+        ):
+            source = (ROOT / compat_type).read_text(encoding="utf-8")
+            with self.subTest(compat_type=compat_type):
+                self.assertIn("trackOptionalTexture(", source)
+
     def test_ci_runs_datagen_and_rejects_generated_resource_drift(self):
         workflow = WORKFLOW.read_text(encoding="utf-8")
         self.assertIn("runData", workflow)

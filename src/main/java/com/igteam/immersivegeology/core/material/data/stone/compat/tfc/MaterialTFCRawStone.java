@@ -9,6 +9,7 @@
 package com.igteam.immersivegeology.core.material.data.stone.compat.tfc;
 
 import com.igteam.immersivegeology.core.material.data.types.MaterialStone;
+import com.igteam.immersivegeology.core.material.GeologyMaterial;
 import com.igteam.immersivegeology.core.material.helper.flags.BlockCategoryFlags;
 import com.igteam.immersivegeology.core.material.helper.flags.IFlagType;
 import com.igteam.immersivegeology.core.material.helper.flags.MaterialFlags;
@@ -35,7 +36,6 @@ public class MaterialTFCRawStone extends MaterialStone
 	@Override
 	public ResourceLocation getTextureLocation(IFlagType<?> flag) {
 
-		return ResourceLocation.fromNamespaceAndPath("tfc", "block/rock/raw/"+getName());
+		return GeologyMaterial.trackOptionalTexture(ResourceLocation.fromNamespaceAndPath("tfc", "block/rock/raw/"+getName()));
 	}
 }
-

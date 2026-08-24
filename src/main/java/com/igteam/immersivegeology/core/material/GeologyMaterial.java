@@ -203,6 +203,17 @@ public abstract class GeologyMaterial implements MaterialHelper {
         return texture;
     }
 
+    public static ResourceLocation trackOptionalTexture(ResourceLocation texture)
+    {
+        if(EXISTING_HELPER!=null)
+        {
+            // Optional compatibility resource packs are not present in the base datagen run,
+            // but their model references must remain valid when those mods are installed.
+            EXISTING_HELPER.trackGenerated(texture, PALETTED_TEXTURE);
+        }
+        return texture;
+    }
+
     protected ResourceLocation greyScaleTextures(IFlagType<?> pattern)
     {
         if(pattern.getValue() instanceof BlockCategoryFlags b)
