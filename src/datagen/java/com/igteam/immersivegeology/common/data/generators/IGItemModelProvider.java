@@ -231,6 +231,8 @@ public class IGItemModelProvider extends IGTRSRItemModelProvider
         {
             if(item instanceof IGGenericBlockItem blockItem)
             {
+                // ENERGY_PIPE has a dedicated OBJ model registered after the generic loop.
+                if(item.getFlag() == BlockCategoryFlags.ENERGY_PIPE) return;
                 if(blockItem.cancelDatagen()) return;
                 if(blockItem.getBlock() instanceof IOreBlock igOreBlock){
                     String prefix = "minecraft";

@@ -130,10 +130,18 @@ class RuntimeValidationWorkflowTest(unittest.TestCase):
         self.assertIn("i.getFlag()==ItemCategoryFlags.MISC", item_models)
         self.assertIn("continue;", item_models)
 
+    def test_energy_pipe_uses_its_explicit_obj_item_model_only(self):
+        item_models = (
+            ROOT
+            / "src/datagen/java/com/igteam/immersivegeology/common/data/generators/IGItemModelProvider.java"
+        ).read_text(encoding="utf-8")
+        self.assertIn("item.getFlag() == BlockCategoryFlags.ENERGY_PIPE", item_models)
+
     def test_ci_runs_datagen_and_rejects_generated_resource_drift(self):
         workflow = WORKFLOW.read_text(encoding="utf-8")
         self.assertIn("runData", workflow)
         self.assertIn("git diff --exit-code -- src/generated/resources", workflow)
+        self.assertIn("generated-resources-after-runData", workflow)
 
     def test_ci_starts_a_real_gametest_server(self):
         workflow = WORKFLOW.read_text(encoding="utf-8")
