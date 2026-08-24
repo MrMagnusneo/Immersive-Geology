@@ -10,6 +10,7 @@ import com.igteam.immersivegeology.common.data.TRSRModelBuilder;
 import com.igteam.immersivegeology.common.item.*;
 import com.igteam.immersivegeology.common.item.helper.IGFlagItem;
 import com.igteam.immersivegeology.core.lib.IGLib;
+import com.igteam.immersivegeology.core.material.GeologyMaterial;
 import com.igteam.immersivegeology.core.material.data.enums.ChemicalEnum;
 import com.igteam.immersivegeology.core.material.data.enums.MiscEnum;
 import com.igteam.immersivegeology.core.material.data.types.MaterialStone;
@@ -97,7 +98,7 @@ public class IGItemModelProvider extends IGTRSRItemModelProvider
     {
         String itemLocation = ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "item/" + item.getFlag().getRegistryKey(item.getMaterial(MaterialTexture.base))).getPath();
         ResourceLocation coloredTexture = ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "item/colored/" + item.getMaterial(MaterialTexture.base).getName() + "/" + item.getFlag().name().toLowerCase());
-        ResourceLocation texture = ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "palette/item/drill_head/drill_head_pristine_"+item.getMaterial(MaterialTexture.base).getName().toLowerCase());
+        ResourceLocation texture = GeologyMaterial.trackPalettedTexture(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "palette/item/drill_head/drill_head_pristine_"+item.getMaterial(MaterialTexture.base).getName().toLowerCase()));
         boolean colored = this.existingFileHelper.exists(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "textures/" + coloredTexture.getPath()).withSuffix(".png"), PackType.CLIENT_RESOURCES);
         try {
             ResourceLocation parentLocation = ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "item/base/ig_base_item");

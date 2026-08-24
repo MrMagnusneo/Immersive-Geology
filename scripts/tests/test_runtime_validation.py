@@ -57,7 +57,17 @@ class RuntimeValidationWorkflowTest(unittest.TestCase):
             / "src/main/java/com/igteam/immersivegeology/core/material/GeologyMaterial.java"
         ).read_text(encoding="utf-8")
         self.assertIn("PALETTED_TEXTURE", material)
-        self.assertIn("trackGenerated(selectedTexture, PALETTED_TEXTURE)", material)
+        self.assertIn("trackGenerated(texture, PALETTED_TEXTURE)", material)
+        block_models = (
+            ROOT
+            / "src/datagen/java/com/igteam/immersivegeology/common/data/generators/IGBlockStateProvider.java"
+        ).read_text(encoding="utf-8")
+        item_models = (
+            ROOT
+            / "src/datagen/java/com/igteam/immersivegeology/common/data/generators/IGItemModelProvider.java"
+        ).read_text(encoding="utf-8")
+        self.assertGreaterEqual(block_models.count("trackPalettedTexture("), 3)
+        self.assertIn("trackPalettedTexture(", item_models)
 
     def test_ci_runs_datagen_and_rejects_generated_resource_drift(self):
         workflow = WORKFLOW.read_text(encoding="utf-8")

@@ -185,13 +185,22 @@ public abstract class GeologyMaterial implements MaterialHelper {
 
         boolean exists = EXISTING_HELPER.exists(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "textures/" + texture.getPath() + ".png"), CLIENT_RESOURCES);
         ResourceLocation selectedTexture = exists ? texture : greyScaleTextures(flag);
-        if(!exists&&selectedTexture.getPath().startsWith("palette/"))
+        if(!exists)
+        {
+            trackPalettedTexture(selectedTexture);
+        }
+        return selectedTexture;
+    }
+
+    public static ResourceLocation trackPalettedTexture(ResourceLocation texture)
+    {
+        if(EXISTING_HELPER!=null&&texture.getPath().startsWith("palette/"))
         {
             // Paletted-permutation sprites are produced by the block atlas at load time,
             // so no standalone PNG exists for model generation to discover.
-            EXISTING_HELPER.trackGenerated(selectedTexture, PALETTED_TEXTURE);
+            EXISTING_HELPER.trackGenerated(texture, PALETTED_TEXTURE);
         }
-        return selectedTexture;
+        return texture;
     }
 
     protected ResourceLocation greyScaleTextures(IFlagType<?> pattern)
