@@ -51,6 +51,14 @@ class RuntimeValidationWorkflowTest(unittest.TestCase):
             + "\n".join(offenders),
         )
 
+    def test_paletted_atlas_outputs_are_tracked_for_model_validation(self):
+        material = (
+            ROOT
+            / "src/main/java/com/igteam/immersivegeology/core/material/GeologyMaterial.java"
+        ).read_text(encoding="utf-8")
+        self.assertIn("PALETTED_TEXTURE", material)
+        self.assertIn("trackGenerated(selectedTexture, PALETTED_TEXTURE)", material)
+
     def test_ci_runs_datagen_and_rejects_generated_resource_drift(self):
         workflow = WORKFLOW.read_text(encoding="utf-8")
         self.assertIn("runData", workflow)

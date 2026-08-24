@@ -62,6 +62,8 @@ import static net.minecraft.server.packs.PackType.CLIENT_RESOURCES;
 
 public abstract class GeologyMaterial implements MaterialHelper {
     public static ExistingFileHelper EXISTING_HELPER;
+    private static final ExistingFileHelper.ResourceType PALETTED_TEXTURE =
+            new ExistingFileHelper.ResourceType(CLIENT_RESOURCES, ".png", "textures");
     protected String name, unserialized_name;
     protected Logger logger = IGLib.getNewLogger();
     protected BiFunction<IFlagType<?>, Integer, Integer> colorFunction; // in goes a category, returns the color white as a default
@@ -182,7 +184,14 @@ public abstract class GeologyMaterial implements MaterialHelper {
         }
 
         boolean exists = EXISTING_HELPER.exists(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "textures/" + texture.getPath() + ".png"), CLIENT_RESOURCES);
-        return exists ? texture : greyScaleTextures(flag);
+        ResourceLocation selectedTexture = exists ? texture : greyScaleTextures(flag);
+        if(!exists&&selectedTexture.getPath().startsWith("palette/"))
+        {
+            // Paletted-permutation sprites are produced by the block atlas at load time,
+            // so no standalone PNG exists for model generation to discover.
+            EXISTING_HELPER.trackGenerated(selectedTexture, PALETTED_TEXTURE);
+        }
+        return selectedTexture;
     }
 
     protected ResourceLocation greyScaleTextures(IFlagType<?> pattern)
