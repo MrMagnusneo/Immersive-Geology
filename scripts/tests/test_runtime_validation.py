@@ -76,6 +76,8 @@ class RuntimeValidationWorkflowTest(unittest.TestCase):
             source = (ROOT / compat_type).read_text(encoding="utf-8")
             with self.subTest(compat_type=compat_type):
                 self.assertIn("trackOptionalTexture(", source)
+                self.assertIn('withSuffix("_top")', source)
+                self.assertIn('withSuffix("_side")', source)
 
     def test_ci_runs_datagen_and_rejects_generated_resource_drift(self):
         workflow = WORKFLOW.read_text(encoding="utf-8")

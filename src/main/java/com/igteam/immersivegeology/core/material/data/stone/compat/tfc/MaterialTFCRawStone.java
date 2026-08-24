@@ -35,7 +35,9 @@ public class MaterialTFCRawStone extends MaterialStone
 
 	@Override
 	public ResourceLocation getTextureLocation(IFlagType<?> flag) {
-
-		return GeologyMaterial.trackOptionalTexture(ResourceLocation.fromNamespaceAndPath("tfc", "block/rock/raw/"+getName()));
+		ResourceLocation texture = ResourceLocation.fromNamespaceAndPath("tfc", "block/rock/raw/"+getName());
+		GeologyMaterial.trackOptionalTexture(texture.withSuffix("_top"));
+		GeologyMaterial.trackOptionalTexture(texture.withSuffix("_side"));
+		return GeologyMaterial.trackOptionalTexture(texture);
 	}
 }

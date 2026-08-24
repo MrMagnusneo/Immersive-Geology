@@ -205,7 +205,7 @@ public abstract class GeologyMaterial implements MaterialHelper {
 
     public static ResourceLocation trackOptionalTexture(ResourceLocation texture)
     {
-        if(EXISTING_HELPER!=null)
+        if(EXISTING_HELPER!=null&&(texture.getNamespace().equals("tfc")||texture.getNamespace().equals("ad_astra")))
         {
             // Optional compatibility resource packs are not present in the base datagen run,
             // but their model references must remain valid when those mods are installed.
