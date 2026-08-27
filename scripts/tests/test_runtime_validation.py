@@ -2,6 +2,7 @@ import gzip
 import json
 import re
 import struct
+import tomllib
 import unittest
 from pathlib import Path
 
@@ -182,6 +183,93 @@ class RuntimeValidationWorkflowTest(unittest.TestCase):
         self.assertNotIn('fromNamespaceAndPath("forge"', tags)
         self.assertIn('fromNamespaceAndPath("c"', tags)
 
+    def test_authored_resources_use_neoforge_condition_and_common_tag_namespaces(self):
+        """Catch data files which NeoForge can no longer resolve at reload time."""
+        stale_references = []
+        data_root = ROOT / "src/main/resources/data"
+        for path in data_root.rglob("*.json"):
+            data = json.loads(path.read_text(encoding="utf-8"))
+            for value in self._json_strings(data):
+                if value.startswith("forge:") or value.startswith("#forge:"):
+                    stale_references.append(f"{path.relative_to(ROOT)}: {value}")
+        self.assertFalse(stale_references, "stale Forge data references:\n" + "\n".join(stale_references))
+
+    def test_obj_models_and_access_transformer_do_not_target_removed_forge_types(self):
+        stale_models = []
+        for path in (ROOT / "src/main/resources/assets").rglob("*.json"):
+            data = json.loads(path.read_text(encoding="utf-8"))
+            if data.get("loader") == "forge:obj":
+                stale_models.append(str(path.relative_to(ROOT)))
+        self.assertFalse(stale_models, "obsolete Forge OBJ loaders:\n" + "\n".join(stale_models))
+
+        access_transformer = (
+            ROOT / "src/main/resources/META-INF/accesstransformer.cfg"
+        ).read_text(encoding="utf-8")
+        self.assertNotIn("net.minecraftforge.", access_transformer)
+
+    def test_optional_fluid_outputs_use_the_codec_that_accepts_empty_stacks(self):
+        """Empty secondary/chemical outputs are valid recipes, not invalid fluid stacks."""
+        serializers = (
+            "common/block/multiblocks/recipe/serializer/BasicChemicalRecipeSerializer.java",
+            "common/block/multiblocks/recipe/serializer/ChemicalRecipeSerializer.java",
+            "common/block/multiblocks/recipe/serializer/CentrifugeRecipeSerializer.java",
+        )
+        for relative_path in serializers:
+            source = (ROOT / "src/main/java/com/igteam/immersivegeology" / relative_path).read_text(encoding="utf-8")
+            with self.subTest(serializer=relative_path):
+                self.assertIn("FluidStack.OPTIONAL_CODEC", source)
+
+        recipe_builder = (
+            ROOT / "src/main/java/com/igteam/immersivegeology/client/helper/IGRecipeBuilder.java"
+        ).read_text(encoding="utf-8")
+        self.assertIn("FluidStack.OPTIONAL_CODEC", recipe_builder)
+
+    def test_skin_defaults_resolve_config_by_stable_multiblock_id(self):
+        """Display names may differ from the registered skin IDs (for example, Crude Bloomery)."""
+        config = (
+            ROOT / "src/main/java/com/igteam/immersivegeology/common/config/IGServerConfig.java"
+        ).read_text(encoding="utf-8")
+        skin_block = (
+            ROOT / "src/main/java/com/igteam/immersivegeology/common/block/multiblocks/part/SkinableMultiblockPart.java"
+        ).read_text(encoding="utf-8")
+        game_test = (
+            ROOT / "src/gametest/java/com/igteam/immersivegeology/gametest/tests/CommonTests.java"
+        ).read_text(encoding="utf-8")
+        self.assertIn("getSkinConfig", config)
+        self.assertIn("getSkinConfig", skin_block)
+        self.assertIn("assertSkinConfiguration", game_test)
+
+    def test_legacy_recipe_outputs_keep_tag_resolution_lazy(self):
+        """Recipe reload must not turn populated tag outputs into ItemStack.EMPTY before tags resolve."""
+        serializer = (
+            ROOT / "src/main/java/com/igteam/immersivegeology/common/recipe/LegacyIERecipeSerializer.java"
+        ).read_text(encoding="utf-8")
+        self.assertIn("TagOutput output = TagOutput.CODECS.codec().parse", serializer)
+        self.assertIn("return Lazy.of(output::get);", serializer)
+
+    def test_mod_metadata_marks_jei_as_an_optional_dependency(self):
+        metadata = tomllib.loads(
+            (ROOT / "src/main/resources/META-INF/neoforge.mods.toml").read_text(encoding="utf-8")
+        )
+        dependencies = metadata["dependencies"]["immersivegeology"]
+        self.assertFalse(
+            any("mandatory" in dependency for dependency in dependencies),
+            "NeoForge 1.21.1 dependency metadata uses type, not mandatory",
+        )
+        jei = next(dependency for dependency in dependencies if dependency["modId"] == "jei")
+        self.assertEqual("optional", jei["type"])
+
+    @staticmethod
+    def _json_strings(value):
+        if isinstance(value, str):
+            yield value
+        elif isinstance(value, list):
+            for element in value:
+                yield from RuntimeValidationWorkflowTest._json_strings(element)
+        elif isinstance(value, dict):
+            for element in value.values():
+                yield from RuntimeValidationWorkflowTest._json_strings(element)
+
     def test_generated_resources_use_1_21_paths_and_semantic_recipes(self):
         self.assertFalse((GENERATED / "data/forge").exists())
         self.assertFalse((GENERATED / ".cache").exists())
@@ -221,12 +309,6 @@ class RuntimeValidationWorkflowTest(unittest.TestCase):
             if path.is_relative_to(collapse_dir)
             or path.is_relative_to(GENERATED / "data/tfc")
             or path.name.endswith("_tfc.json")
-        )
-        # The twelve retained chemical recipes are also listed explicitly in the manifest.
-        actual.extend(
-            path for path in expected if "/recipe/centrifuge/" in path
-            or "/recipe/chemical_reactor/" in path
-            or "/recipe/small_chemical_reactor/" in path
         )
         self.assertEqual(expected, sorted(actual))
 

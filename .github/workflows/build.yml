@@ -13,16 +13,14 @@ jobs:
           fetch-depth: 1000
           fetch-tags: true
 
-      - name: Setup JDK 17
-        uses: actions/setup-java@v2
+      - name: Setup JDK 21
+        uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: 'temurin'
 
       - name: Build with Gradle
-        uses: gradle/gradle-build-action@v2
-        with:
-          arguments: build
+        run: ./gradlew --no-daemon --console=plain build
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -36,12 +34,15 @@ jobs:
     runs-on: ubuntu-latest
     concurrency:
       group: discord
+    env:
+      WEBHOOK: ${{ secrets.WH_PUSH_PUBLIC }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Notify Discord
+        if: env.WEBHOOK != ''
         env:
           COMMIT_FROM: ${{ github.event.before }}
           COMMIT_TO: ${{ github.event.after }}

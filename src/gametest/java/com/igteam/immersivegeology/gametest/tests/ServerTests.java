@@ -8,6 +8,7 @@
 
 package com.igteam.immersivegeology.gametest.tests;
 
+import com.igteam.immersivegeology.common.block.multiblocks.recipe.CentrifugeRecipe;
 import com.igteam.immersivegeology.core.lib.IGLib;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -41,6 +42,11 @@ public class ServerTests
 				200, 0, true, ServerTests::testNetworkConnectivity
 		));
 
+		tests.add(new TestFunction(
+				"server", "optional_fluid_recipe_outputs", TEST_AREA,
+				200, 0, true, ServerTests::testOptionalFluidRecipeOutputs
+		));
+
 		return tests;
 	}
 
@@ -62,5 +68,17 @@ public class ServerTests
 				helper.fail("Network test failed: " + e.getMessage());
 			}
 		});
+	}
+
+	private static void testOptionalFluidRecipeOutputs(GameTestHelper helper)
+	{
+		CentrifugeRecipe recipe = CentrifugeRecipe.RECIPES.getRecipes(helper.getLevel()).stream()
+				.map(holder -> holder.value())
+				.filter(value -> value.secondaryFluidOutput.get().isEmpty())
+				.findFirst()
+				.orElse(null);
+		helper.assertTrue(recipe != null, "Missing centrifuge recipe with an empty optional fluid output");
+		helper.assertTrue(!recipe.itemOutput.get().isEmpty(), "Centrifuge recipe resolved an item output as empty");
+		helper.succeed();
 	}
 }

@@ -10,8 +10,12 @@ package com.igteam.immersivegeology.gametest.tests;
 
 import blusunrize.immersiveengineering.api.multiblocks.MultiblockHandler;
 import blusunrize.immersiveengineering.api.multiblocks.MultiblockHandler.IMultiblock;
+import blusunrize.immersiveengineering.api.multiblocks.blocks.logic.IMultiblockBE;
 import blusunrize.immersiveengineering.common.register.IEItems.Tools;
 import com.igteam.immersivegeology.common.block.multiblocks.IGTemplateMultiblock;
+import com.igteam.immersivegeology.common.block.multiblocks.part.SkinableMultiblockPart;
+import com.igteam.immersivegeology.common.block.multiblocks.skins.helpers.IIGMultiSkinHelper;
+import com.igteam.immersivegeology.common.config.IGServerConfig;
 import com.igteam.immersivegeology.core.lib.IGLib;
 import com.igteam.immersivegeology.core.material.data.enums.MetalEnum;
 import com.igteam.immersivegeology.core.material.data.enums.StoneEnum;
@@ -30,6 +34,7 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate.StructureBlockInfo;
 import net.minecraft.world.phys.BlockHitResult;
@@ -99,6 +104,60 @@ public class CommonTests
 	{
 		formMultiblock(multiblock, helper);
 		helper.assertBlockPresent(multiblock.getBlock(), testPos);
+		assertSkinConfiguration(helper, multiblock, testPos);
+	}
+
+	private static void assertSkinConfiguration(GameTestHelper helper, IGTemplateMultiblock multiblock, BlockPos testPos)
+	{
+		if(multiblock.getBlock() instanceof SkinableMultiblockPart<?, ?> skinable)
+		{
+			Enum<?>[] skins = skinable.getSkinClass().getEnumConstants();
+			Enum<?> defaultSkin = skins[0];
+			String multiblockId = ((IIGMultiSkinHelper)defaultSkin).multiblockName();
+			var skinConfig = IGServerConfig.MACHINES.getSkinConfig(multiblockId);
+			helper.assertTrue(
+					skinConfig != null,
+					"Missing default skin config for " + multiblockId
+			);
+			Enum<?> configuredDefault = skins[skinConfig.default_skin_ordinal.get() % skins.length];
+			Enum<?> initialSkin = helper.getBlockState(testPos).getValue(skinable.getSkinProperty());
+			helper.assertTrue(
+					initialSkin.equals(configuredDefault),
+					"Configured default skin was not applied for " + multiblockId
+			);
+			if(skins.length > 1)
+			{
+				Enum<?> alternateSkin = null;
+				for(Enum<?> skin : skins)
+					if(!skin.equals(initialSkin))
+					{
+						alternateSkin = skin;
+						break;
+					}
+				helper.assertTrue(alternateSkin != null, "Missing alternate skin for " + multiblockId);
+				BlockEntity blockEntity = helper.getLevel().getBlockEntity(helper.absolutePos(testPos));
+				helper.assertTrue(blockEntity instanceof IMultiblockBE<?>, "Missing multiblock block entity for " + multiblockId);
+				IMultiblockBE<?> be = (IMultiblockBE<?>)blockEntity;
+				var context = be.getHelper().getContext();
+				helper.assertTrue(context != null, "Missing multiblock context for " + multiblockId);
+				helper.assertTrue(
+						SkinableMultiblockPart.setSkin(context.getLevel(), multiblock, alternateSkin),
+						"Could not apply alternate skin for " + multiblockId
+				);
+				helper.assertTrue(
+						helper.getBlockState(testPos).getValue(skinable.getSkinProperty()).equals(alternateSkin),
+						"Alternate skin was not applied for " + multiblockId
+				);
+				helper.assertTrue(
+						SkinableMultiblockPart.setSkin(context.getLevel(), multiblock, alternateSkin),
+						"Could not reset default skin for " + multiblockId
+				);
+				helper.assertTrue(
+						helper.getBlockState(testPos).getValue(skinable.getSkinProperty()).equals(configuredDefault),
+						"Default skin was not restored for " + multiblockId
+				);
+			}
+		}
 	}
 
 	public static void formMultiblock(IMultiblock multiblock, GameTestHelper helper)

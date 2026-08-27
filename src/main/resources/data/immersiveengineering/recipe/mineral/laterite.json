@@ -5,31 +5,31 @@
     {
       "chance": 0.5,
       "output": {
-        "tag": "forge:poor_ore/bauxite"
+        "tag": "c:poor_ore/bauxite"
       }
     },
     {
       "chance": 0.15,
       "output": {
-        "tag": "forge:poor_ore/hematite"
+        "tag": "c:poor_ore/hematite"
       }
     },
     {
       "chance": 0.15,
       "output": {
-        "tag": "forge:poor_ore/ilmenite"
+        "tag": "c:poor_ore/ilmenite"
       }
     },
     {
       "chance": 0.05,
       "output": {
-        "tag": "forge:normal_ore/bauxite"
+        "tag": "c:normal_ore/bauxite"
       }
     },
     {
       "chance": 0.05,
       "output": {
-        "tag": "forge:normal_ore/ilmenite"
+        "tag": "c:normal_ore/ilmenite"
       }
     }
   ],

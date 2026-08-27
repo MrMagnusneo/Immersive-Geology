@@ -54,7 +54,7 @@ public class IGDataProvider {
             generator.addProvider(runServer, new TFCCompatOreProvider(out));
         } else
         {
-            IGLib.IG_LOGGER.error("\n============ WARNING =============\nTFC is NOT loaded, this will result in missing TFC Ore Generation\n============ WARNING =============");
+			IGLib.IG_LOGGER.warn("\n============ WARNING =============\nTFC is NOT loaded, this will result in missing TFC Ore Generation\n============ WARNING =============");
         }
 
         // God I hate this system. ~Muddykat

@@ -5,7 +5,7 @@
     {
       "chance": 0.3,
       "output": {
-        "tag": "forge:poor_ore/gold"
+        "tag": "c:poor_ore/gold"
       }
     },
     {
@@ -17,7 +17,7 @@
     {
       "chance": 0.2,
       "output": {
-        "tag": "forge:dusts/sulfur"
+        "tag": "c:dusts/sulfur"
       }
     }
   ],

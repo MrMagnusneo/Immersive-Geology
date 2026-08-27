@@ -50,7 +50,7 @@ public class BasicChemicalRecipeSerializer extends LegacyIERecipeSerializer<Basi
 			itemOut = ItemStack.EMPTY;
 		}
 
-		FluidStack fluidOut = FluidStack.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json.get("fluidResult")).getOrThrow();
+		FluidStack fluidOut = FluidStack.OPTIONAL_CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json.get("fluidResult")).getOrThrow();
 		IngredientWithSize itemInput = IngredientWithSize.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json.get("itemInput")).getOrThrow();
 		Set<FluidTagInput> fluidSet = new HashSet<>();
 

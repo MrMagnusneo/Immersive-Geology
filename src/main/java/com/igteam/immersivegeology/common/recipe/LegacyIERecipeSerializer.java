@@ -50,8 +50,8 @@ public abstract class LegacyIERecipeSerializer<R extends Recipe<?>> extends IERe
 
     protected static Lazy<ItemStack> readOutput(JsonElement json)
     {
-        ItemStack stack = TagOutput.CODECS.codec().parse(JsonOps.INSTANCE, json).getOrThrow().get();
-        return Lazy.of(() -> stack);
+        TagOutput output = TagOutput.CODECS.codec().parse(JsonOps.INSTANCE, json).getOrThrow();
+        return Lazy.of(output::get);
     }
 
     protected static Lazy<ItemStack> readLazyStack(FriendlyByteBuf buffer)

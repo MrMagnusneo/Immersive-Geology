@@ -5,19 +5,19 @@
     {
       "chance": 0.05,
       "output": {
-        "tag": "forge:poor_ore/platinum"
+        "tag": "c:poor_ore/platinum"
       }
     },
     {
       "chance": 0.0175,
       "output": {
-        "tag": "forge:normal_ore/platinum"
+        "tag": "c:normal_ore/platinum"
       }
     },
     {
       "chance": 0.25,
       "output": {
-        "tag": "forge:poor_ore/millerite"
+        "tag": "c:poor_ore/millerite"
       }
     }
   ],

@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - codex/neoforge-1.21.1-port
+      - neoforge-1.21.1
   pull_request:
     branches:
       - neoforge-1.21.1
@@ -45,7 +46,7 @@ jobs:
           python3 scripts/content_manifest.py --compare-root forge-baseline --allow-content-changes --replacements src/test/resources/neoforge-1.21.1-content-replacements.json
 
       - name: Build gameplay JAR and compile game tests
-        run: ./gradlew --no-daemon --stacktrace clean jar gametestClasses test
+        run: ./gradlew --no-daemon --console=plain --stacktrace clean build gametestClasses
 
       - name: Verify packaged NeoForge gameplay JAR
         shell: bash
@@ -58,6 +59,7 @@ jobs:
           unzip -l "${jars[0]}" | grep -F 'META-INF/neoforge.mods.toml'
           unzip -l "${jars[0]}" | grep -F 'com/igteam/immersivegeology/ImmersiveGeology.class'
           echo "GAMEPLAY_JAR=${jars[0]}" >> "$GITHUB_ENV"
+          sha256sum "${jars[0]}"
 
       - name: Upload NeoForge gameplay JAR
         uses: actions/upload-artifact@v4
@@ -87,9 +89,15 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Generate all data resources
-        run: ./gradlew --no-daemon --stacktrace runData
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p validation-logs
+          ./gradlew --no-daemon --console=plain --stacktrace runData 2>&1 | tee validation-logs/datagen.log
+          python3 scripts/validate_runtime_log.py --kind datagen validation-logs/datagen.log
 
       - name: Upload generated-resource diagnostic snapshot
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: generated-resources-after-runData
@@ -98,7 +106,21 @@ jobs:
           if-no-files-found: error
 
       - name: Start NeoForge server and run game tests
-        run: ./gradlew --no-daemon --stacktrace runGameTestServer
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p run validation-logs
+          touch run/server.properties
+          ./gradlew --no-daemon --console=plain --stacktrace runGameTestServer 2>&1 | tee validation-logs/gametest.log
+          python3 scripts/validate_runtime_log.py --kind gametest validation-logs/gametest.log
+
+      - name: Upload runtime validation logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: neoforge-runtime-validation-logs
+          path: validation-logs
+          if-no-files-found: warn
 
       - name: Reject generated resource drift
         run: |
@@ -106,3 +128,28 @@ jobs:
           git diff --exit-code --diff-filter=ACMRTUXB -- src/generated/resources
           test -z "$(git ls-files --others --exclude-standard -- src/generated/resources)"
           diff -u scripts/optional_tfc_generated_resources.txt <(git diff --name-only --diff-filter=D -- src/generated/resources | sort)
+
+  reproducibility:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download the three independently built gameplay JARs
+        uses: actions/download-artifact@v4
+        with:
+          pattern: immersive-geology-neoforge-1.21.1-verification-*
+          path: verified-jars
+
+      - name: Require byte-identical gameplay JARs
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          from pathlib import Path
+          jars = sorted(Path('verified-jars').rglob('*.jar'))
+          if len(jars) != 3:
+              raise SystemExit(f'Expected three gameplay JARs, found {len(jars)}')
+          hashes = [hashlib.sha256(path.read_bytes()).hexdigest() for path in jars]
+          for path, digest in zip(jars, hashes):
+              print(digest, path)
+          if len(set(hashes)) != 1:
+              raise SystemExit('Independent gameplay JARs are not byte-identical')
+          PY

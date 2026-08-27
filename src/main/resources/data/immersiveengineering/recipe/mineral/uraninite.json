@@ -5,37 +5,37 @@
     {
       "chance": 0.45,
       "output": {
-        "tag": "forge:poor_ore/uraninite"
+        "tag": "c:poor_ore/uraninite"
       }
     },
     {
       "chance": 0.25,
       "output": {
-        "tag": "forge:poor_ore/thorianite"
+        "tag": "c:poor_ore/thorianite"
       }
     },
     {
       "chance": 0.15,
       "output": {
-        "tag": "forge:poor_ore/monazite"
+        "tag": "c:poor_ore/monazite"
       }
     },
     {
       "chance": 0.05,
       "output": {
-        "tag": "forge:normal_ore/uraninite"
+        "tag": "c:normal_ore/uraninite"
       }
     },
     {
       "chance": 0.05,
       "output": {
-        "tag": "forge:normal_ore/thorianite"
+        "tag": "c:normal_ore/thorianite"
       }
     },
     {
       "chance": 0.05,
       "output": {
-        "tag": "forge:normal_ore/monazite"
+        "tag": "c:normal_ore/monazite"
       }
     }
   ],

@@ -5,37 +5,37 @@
     {
       "chance": 0.35,
       "output": {
-        "tag": "forge:poor_ore/chalcocite"
+        "tag": "c:poor_ore/chalcocite"
       }
     },
     {
       "chance": 0.3,
       "output": {
-        "tag": "forge:poor_ore/copper"
+        "tag": "c:poor_ore/copper"
       }
     },
     {
       "chance": 0.15,
       "output": {
-        "tag": "forge:poor_ore/gold"
+        "tag": "c:poor_ore/gold"
       }
     },
     {
       "chance": 0.1,
       "output": {
-        "tag": "forge:poor_ore/pyrite"
+        "tag": "c:poor_ore/pyrite"
       }
     },
     {
       "chance": 0.05,
       "output": {
-        "tag": "forge:normal_ore/copper"
+        "tag": "c:normal_ore/copper"
       }
     },
     {
       "chance": 0.05,
       "output": {
-        "tag": "forge:normal_ore/gold"
+        "tag": "c:normal_ore/gold"
       }
     }
   ],

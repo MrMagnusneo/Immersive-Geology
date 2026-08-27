@@ -5,28 +5,28 @@
     {
       "chance": 0.6,
       "output": {
-        "tag": "forge:ores/redstone"
+        "tag": "c:ores/redstone"
       }
     },
     {
       "chance": 0.4,
       "output": {
-        "tag": "forge:dusts/sulfur"
+        "tag": "c:dusts/sulfur"
       }
     },
     {
       "chance": 0.3,
       "conditions": [
         {
-          "type": "forge:not",
+          "type": "neoc:not",
           "value": {
-            "type": "forge:tag_empty",
-            "tag": "forge:ores/mercury"
+            "type": "neoc:tag_empty",
+            "tag": "c:ores/mercury"
           }
         }
       ],
       "output": {
-        "tag": "forge:ores/mercury"
+        "tag": "c:ores/mercury"
       }
     }
   ],

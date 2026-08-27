@@ -228,7 +228,8 @@ public class IGRecipeBuilder<R extends IGRecipeBuilder<R>> implements FinishedRe
 
 	public R addFluid(String key, FluidStack fluidStack) {
 		return this.addWriter((jsonObject) -> {
-			jsonObject.add(key, serialize(FluidStack.CODEC, fluidStack));
+			Codec<FluidStack> codec = fluidStack.isEmpty() ? FluidStack.OPTIONAL_CODEC : FluidStack.CODEC;
+			jsonObject.add(key, serialize(codec, fluidStack));
 		});
 	}
 

@@ -5,7 +5,7 @@
     {
       "chance": 0.3,
       "output": {
-        "tag": "forge:ores/emerald"
+        "tag": "c:ores/emerald"
       }
     },
     {
@@ -18,15 +18,15 @@
       "chance": 0.3,
       "conditions": [
         {
-          "type": "forge:not",
+          "type": "neoc:not",
           "value": {
-            "type": "forge:tag_empty",
-            "tag": "forge:gems/aquamarine"
+            "type": "neoc:tag_empty",
+            "tag": "c:gems/aquamarine"
           }
         }
       ],
       "output": {
-        "tag": "forge:gems/aquamarine"
+        "tag": "c:gems/aquamarine"
       }
     }
   ],

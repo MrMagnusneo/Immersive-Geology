@@ -40,8 +40,8 @@ public class CentrifugeRecipeSerializer extends LegacyIERecipeSerializer<Centrif
 	{
 		FluidTagInput input = FluidTagInput.deserialize(GsonHelper.getAsJsonObject(json, "fluid_input"));
 		Lazy<ItemStack> output = readOutput(json.get("item_output"));
-		FluidStack primary_fluid_output = FluidStack.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json.get("primary_fluid_out")).getOrThrow();
-		FluidStack secondary_fluid_output = FluidStack.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json.get("secondary_fluid_out")).getOrThrow();
+		FluidStack primary_fluid_output = FluidStack.OPTIONAL_CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json.get("primary_fluid_out")).getOrThrow();
+		FluidStack secondary_fluid_output = FluidStack.OPTIONAL_CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json.get("secondary_fluid_out")).getOrThrow();
 		int energy = GsonHelper.getAsInt(json, "energy");
 		int time = GsonHelper.getAsInt(json, "time");
 

@@ -18,28 +18,28 @@ credits="Crimson Twilight, Peter, RGBoid"
 
 [[dependencies.immersivegeology]]
 modId="neoforge"
-mandatory=true
+type="required"
 versionRange="[${version_neoforge_min},)"
 ordering="NONE"
 side="BOTH"
 
 [[dependencies.immersivegeology]]
 modId="minecraft"
-mandatory=true
+type="required"
 versionRange="[${version_mc}]"
 ordering="NONE"
 side="BOTH"
 
 [[dependencies.immersivegeology]]
 modId="immersiveengineering"
-mandatory=true
+type="required"
 versionRange="[${version_ie},)"
 ordering="AFTER"
 side="BOTH"
 
 [[dependencies.immersivegeology]]
 modId="jei"
-mandatory=false
+type="optional"
 versionRange="[${version_jei},)"
 ordering="NONE"
 side="CLIENT"

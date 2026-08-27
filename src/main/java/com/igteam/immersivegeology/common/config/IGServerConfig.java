@@ -113,21 +113,30 @@ public class IGServerConfig
 	public static class Machines
 	{
 		public final Map<String, MachineConfig> machines = new HashMap<>();
+		private final Map<String, MachineConfig> skinConfigs = new HashMap<>();
 
 		Machines(ModConfigSpec.Builder builder)
 		{
 			builder.push("machines").comment("=== IG Machine Config Start ===");
-				for(TemplateMultiblock mb : IGRegistrationHolder.MB_TEMPLATE_MAP.values())
+				for(Map.Entry<String, TemplateMultiblock> entry : IGRegistrationHolder.MB_TEMPLATE_MAP.entrySet())
 				{
+					TemplateMultiblock mb = entry.getValue();
 					if(mb instanceof IGConfigurableMachine config)
 					{
 						String mb_name = config.getName().toLowerCase().replace(' ', '_');
 						builder.push(mb_name);
-						machines.put(mb_name, new MachineConfig(builder, config));
+						MachineConfig machineConfig = new MachineConfig(builder, config);
+						machines.put(mb_name, machineConfig);
+						skinConfigs.put(entry.getKey(), machineConfig);
 						builder.pop();
 					}
 				}
 			builder.pop();
+		}
+
+		public MachineConfig getSkinConfig(String multiblockId)
+		{
+			return skinConfigs.get(multiblockId);
 		}
 
 		public static class MachineConfig
