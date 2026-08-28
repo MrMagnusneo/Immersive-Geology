@@ -38,8 +38,7 @@ import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.Tags;
-import net.minecraftforge.event.ForgeEventFactory;
+import net.neoforged.neoforge.common.Tags;
 
 import java.util.HashMap;
 import java.util.Random;
@@ -77,7 +76,7 @@ public class MaterialSulfuricAcid extends MaterialChemical
 					);
 				}
 			}
-			if(!(living instanceof Skeleton)) living.setSecondsOnFire(40);
+			if(!(living instanceof Skeleton)) living.igniteForSeconds(40);
 		}
 
 		// Logic for items
@@ -89,7 +88,7 @@ public class MaterialSulfuricAcid extends MaterialChemical
 			);
 
 			if (rand.nextInt(60) == 0) {
-				item.setSecondsOnFire(3);
+				item.igniteForSeconds(3);
 			}
 		}
 	}

@@ -8,8 +8,9 @@
 
 package com.igteam.immersivegeology.common.block.multiblocks.recipe.serializer;
 
-import blusunrize.immersiveengineering.api.crafting.IERecipeSerializer;
+import com.igteam.immersivegeology.common.recipe.LegacyIERecipeSerializer;
 import blusunrize.immersiveengineering.api.crafting.StackWithChance;
+import blusunrize.immersiveengineering.api.crafting.TagOutput;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.igteam.immersivegeology.common.block.multiblocks.recipe.IndustrialSluiceRecipe;
@@ -21,11 +22,11 @@ import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraftforge.common.crafting.conditions.ICondition.IContext;
-import net.minecraftforge.common.util.Lazy;
+import net.neoforged.neoforge.common.conditions.ICondition.IContext;
+import net.neoforged.neoforge.common.util.Lazy;
 import org.jetbrains.annotations.Nullable;
 
-public class IndustrialSluiceRecipeSerializer extends IERecipeSerializer<IndustrialSluiceRecipe>
+public class IndustrialSluiceRecipeSerializer extends LegacyIERecipeSerializer<IndustrialSluiceRecipe>
 {
 	@Override
 	public ItemStack getIcon()
@@ -36,9 +37,9 @@ public class IndustrialSluiceRecipeSerializer extends IERecipeSerializer<Industr
 	@Override
 	public IndustrialSluiceRecipe readFromJson(ResourceLocation resourceLocation, JsonObject json, IContext iContext)
 	{
-		Ingredient input = Ingredient.fromJson(GsonHelper.getAsJsonObject(json, "input"));
+		Ingredient input = Ingredient.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, GsonHelper.getAsJsonObject(json, "input")).getOrThrow();
 
-		Lazy<ItemStack> primary = readOutput(json.get("result"));
+		TagOutput primary = readOutput(json.get("result"));
 
 		NonNullList<StackWithChance> byproducts = readByproductsFromJson(json);
 
@@ -57,7 +58,9 @@ public class IndustrialSluiceRecipeSerializer extends IERecipeSerializer<Industr
 
 		for (int index = 0; index < amount_of_byproducts; index++) {
 			JsonObject byproductObject = jsonArray.get(index).getAsJsonObject();
-			list.add(readConditionalStackWithChance(byproductObject, IContext.EMPTY));
+			StackWithChance byproduct = readConditionalStackWithChance(byproductObject, IContext.EMPTY);
+			if(byproduct != null)
+				list.add(byproduct);
 		}
 
 		return list;
@@ -66,11 +69,11 @@ public class IndustrialSluiceRecipeSerializer extends IERecipeSerializer<Industr
 	@Override
 	public @Nullable IndustrialSluiceRecipe fromNetwork(ResourceLocation resourceLocation, FriendlyByteBuf buffer)
 	{
-		Lazy<ItemStack> primary = readLazyStack(buffer);
+		TagOutput primary = readLazyStack(buffer);
 
 		NonNullList<StackWithChance> byproducts = readByproducts(buffer);
 
-		Ingredient input = Ingredient.fromNetwork(buffer);
+		Ingredient input = Ingredient.CONTENTS_STREAM_CODEC.decode((net.minecraft.network.RegistryFriendlyByteBuf) buffer);
 		int time = buffer.readInt();
 		int water = buffer.readInt();
 		int energy = buffer.readInt();
@@ -83,7 +86,7 @@ public class IndustrialSluiceRecipeSerializer extends IERecipeSerializer<Industr
 		NonNullList<StackWithChance> item_list = NonNullList.createWithCapacity(size);
 		for(int index = 0; index < size; index++)
 		{
-			item_list.add(StackWithChance.read(buffer));
+			item_list.add(StackWithChance.CODECS.streamCodec().decode((net.minecraft.network.RegistryFriendlyByteBuf)buffer));
 		}
 
 		return item_list;
@@ -98,7 +101,7 @@ public class IndustrialSluiceRecipeSerializer extends IERecipeSerializer<Industr
 		buffer.writeInt(size);
 		for(int index = 0; index < size; index++)
 		{
-			byproducts.get(index).write(buffer);
+			StackWithChance.CODECS.streamCodec().encode((net.minecraft.network.RegistryFriendlyByteBuf)buffer, byproducts.get(index));
 		}
 	}
 
@@ -107,7 +110,7 @@ public class IndustrialSluiceRecipeSerializer extends IERecipeSerializer<Industr
 	{
 		writeLazyStack(buffer, recipe.itemOutput);
 		writeByproducts(buffer, recipe);
-		recipe.itemIn.toNetwork(buffer);
+		Ingredient.CONTENTS_STREAM_CODEC.encode((net.minecraft.network.RegistryFriendlyByteBuf) buffer, recipe.itemIn);
 		buffer.writeInt(recipe.getTotalProcessTime());
 		buffer.writeInt(recipe.getTotalProcessWater());
 		buffer.writeInt(recipe.getTotalProcessEnergy());

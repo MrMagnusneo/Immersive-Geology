@@ -31,7 +31,7 @@ public class IGFluidBlock extends LiquidBlock
 	private final MaterialInterface<?> material;
 	public IGFluidBlock(Supplier<? extends FlowingFluid> fluid, MaterialInterface<?> material, Properties pProperties)
 	{
-		super(fluid, pProperties);
+		super(fluid.get(), pProperties);
 		this.material = material;
 	}
 

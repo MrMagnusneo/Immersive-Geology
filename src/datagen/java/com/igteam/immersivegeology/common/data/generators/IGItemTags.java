@@ -29,8 +29,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraftforge.common.Tags;
-import net.minecraftforge.common.data.ExistingFileHelper;
+import net.neoforged.neoforge.common.Tags;
+import net.neoforged.neoforge.common.data.ExistingFileHelper;
 
 import java.util.Collection;
 import java.util.Set;
@@ -150,7 +150,7 @@ public class IGItemTags extends ItemTagsProvider
 					useOptionalTag = false;
 					String name = oreBlock.getIGDescriptionId().toLowerCase();
 					String id = name.substring(name.lastIndexOf('.')+1);
-					tag(Tags.Items.ORES).addOptional(new ResourceLocation(IGLib.MODID, id));
+					tag(Tags.Items.ORES).addOptional(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, id));
 					continue;
 				}
 				tag(Tags.Items.ORES).add(oreBlock.asIGItem());

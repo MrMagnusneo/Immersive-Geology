@@ -9,8 +9,8 @@
 package com.igteam.immersivegeology.common.block.multiblocks.recipe.serializer;
 
 import blusunrize.immersiveengineering.api.ApiUtils;
-import blusunrize.immersiveengineering.api.crafting.FluidTagInput;
-import blusunrize.immersiveengineering.api.crafting.IERecipeSerializer;
+import com.igteam.immersivegeology.common.compat.ie.crafting.FluidTagInput;
+import com.igteam.immersivegeology.common.recipe.LegacyIERecipeSerializer;
 import com.google.gson.JsonObject;
 import com.igteam.immersivegeology.common.block.multiblocks.recipe.CrystallizerRecipe;
 import com.igteam.immersivegeology.common.block.multiblocks.recipe.GeothermalExchangerRecipe;
@@ -19,12 +19,12 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.crafting.conditions.ICondition.IContext;
-import net.minecraftforge.common.util.Lazy;
-import net.minecraftforge.fluids.FluidStack;
+import net.neoforged.neoforge.common.conditions.ICondition.IContext;
+import net.neoforged.neoforge.common.util.Lazy;
+import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.Nullable;
 
-public class GeothermalExchangerRecipeSerializer extends IERecipeSerializer<GeothermalExchangerRecipe>
+public class GeothermalExchangerRecipeSerializer extends LegacyIERecipeSerializer<GeothermalExchangerRecipe>
 {
 	@Override
 	public ItemStack getIcon()
@@ -35,27 +35,27 @@ public class GeothermalExchangerRecipeSerializer extends IERecipeSerializer<Geot
 	@Override
 	public GeothermalExchangerRecipe readFromJson(ResourceLocation resourceLocation, JsonObject json, IContext iContext)
 	{
-		FluidStack fluid_output = ApiUtils.jsonDeserializeFluidStack(GsonHelper.getAsJsonObject(json, "fluidResult"));
+		FluidStack fluid_output = FluidStack.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json.get("fluidResult")).getOrThrow();
 		FluidTagInput input = FluidTagInput.deserialize(GsonHelper.getAsJsonObject(json, "input"));
 		int energy = GsonHelper.getAsInt(json, "energy");
 		int time = GsonHelper.getAsInt(json, "time");
-		return new GeothermalExchangerRecipe(resourceLocation, input, ()->fluid_output, energy, time);
+		return new GeothermalExchangerRecipe(resourceLocation, input, Lazy.of(()->fluid_output), energy, time);
 	}
 
 	@Override
 	public @Nullable GeothermalExchangerRecipe fromNetwork(ResourceLocation resourceLocation, FriendlyByteBuf buffer)
 	{
-		FluidStack fluid_output = buffer.readFluidStack();
+		FluidStack fluid_output = FluidStack.OPTIONAL_STREAM_CODEC.decode((net.minecraft.network.RegistryFriendlyByteBuf)buffer);
 		FluidTagInput input = FluidTagInput.read(buffer);
 		int energy = buffer.readInt();
 		int time = buffer.readInt();
-		return new GeothermalExchangerRecipe(resourceLocation, input, ()->fluid_output, energy, time);
+		return new GeothermalExchangerRecipe(resourceLocation, input, Lazy.of(()->fluid_output), energy, time);
 	}
 
 	@Override
 	public void toNetwork(FriendlyByteBuf buffer, GeothermalExchangerRecipe recipe)
 	{
-		buffer.writeFluidStack(recipe.fluidOutput.get());
+		FluidStack.OPTIONAL_STREAM_CODEC.encode((net.minecraft.network.RegistryFriendlyByteBuf)buffer, recipe.fluidOutput.get());
 		recipe.fluidIn.write(buffer);
 		buffer.writeInt(recipe.getTotalProcessEnergy());
 		buffer.writeInt(recipe.getTotalProcessTime());

@@ -8,8 +8,7 @@
 
 package com.igteam.immersivegeology.common.block.multiblocks.recipe.serializer;
 
-import blusunrize.immersiveengineering.api.crafting.IERecipeSerializer;
-import com.google.common.base.Preconditions;
+import com.igteam.immersivegeology.common.recipe.LegacyIERecipeSerializer;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -22,14 +21,13 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.biome.Biome;
-import net.minecraftforge.common.crafting.conditions.ICondition.IContext;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.common.conditions.ICondition.IContext;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class GeothermalBiomeRecipeSerializer extends IERecipeSerializer<GeothermalBiomeRecipe> {
+public class GeothermalBiomeRecipeSerializer extends LegacyIERecipeSerializer<GeothermalBiomeRecipe> {
 
 	@Override
 	public ItemStack getIcon() {
@@ -43,19 +41,17 @@ public class GeothermalBiomeRecipeSerializer extends IERecipeSerializer<Geotherm
 		}
 
 		if (json.has("biome")) {
-			ResourceLocation biomeId = new ResourceLocation(json.get("biome").getAsString());
-			Biome biome = ForgeRegistries.BIOMES.getValue(biomeId);
-			Preconditions.checkNotNull(biome, "Biome '%s' not found", biomeId);
+			ResourceLocation biomeId = ResourceLocation.parse(json.get("biome").getAsString());
 			int min_heat = json.get("min_heat").getAsInt();
 			int max_heat = json.get("max_heat").getAsInt();
-			return new GeothermalBiomeRecipe(id, biome, min_heat, max_heat);
+			return new GeothermalBiomeRecipe(id, biomeId, min_heat, max_heat);
 		}
 
 		if (json.has("biome_tags")) {
 			JsonArray tagArray = json.getAsJsonArray("biome_tags");
 			List<TagKey<Biome>> tags = new ArrayList<>();
 			for (JsonElement el : tagArray) {
-				ResourceLocation tagId = new ResourceLocation(el.getAsString());
+				ResourceLocation tagId = ResourceLocation.parse(el.getAsString());
 				tags.add(TagKey.create(Registries.BIOME, tagId));
 			}
 			int min_heat = json.get("min_heat").getAsInt();
@@ -71,7 +67,7 @@ public class GeothermalBiomeRecipeSerializer extends IERecipeSerializer<Geotherm
 		boolean isSingleBiome = buffer.readBoolean();
 
 		if (isSingleBiome) {
-			Biome biome = buffer.readRegistryIdUnsafe(ForgeRegistries.BIOMES);
+			ResourceLocation biome = buffer.readResourceLocation();
 			int min_heat = buffer.readInt();
 			int max_heat = buffer.readInt();
 			return new GeothermalBiomeRecipe(id, biome, min_heat, max_heat);
@@ -90,16 +86,14 @@ public class GeothermalBiomeRecipeSerializer extends IERecipeSerializer<Geotherm
 
 	@Override
 	public void toNetwork(FriendlyByteBuf buffer, GeothermalBiomeRecipe recipe) {
-		List<TagKey<Biome>> tags = recipe.getBiomes();
-
 		if (recipe.biomes.isLeft()) {
 			buffer.writeBoolean(true); // indicates single biome
-			Biome biome = recipe.biomes.leftNonnull();
-			buffer.writeRegistryIdUnsafe(ForgeRegistries.BIOMES, biome);
+			buffer.writeResourceLocation(recipe.biomes.leftNonnull());
 			buffer.writeInt(recipe.getMinHeat());
 			buffer.writeInt(recipe.getMaxHeat());
 		} else {
 			buffer.writeBoolean(false); // indicates list of tags
+			List<TagKey<Biome>> tags = recipe.biomes.rightNonnull();
 			buffer.writeVarInt(tags.size());
 			for (TagKey<Biome> tag : tags) {
 				buffer.writeResourceLocation(tag.location());

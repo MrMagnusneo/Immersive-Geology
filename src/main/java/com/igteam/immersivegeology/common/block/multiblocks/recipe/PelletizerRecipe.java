@@ -11,6 +11,8 @@ package com.igteam.immersivegeology.common.block.multiblocks.recipe;
 import blusunrize.immersiveengineering.api.crafting.IERecipeSerializer;
 import blusunrize.immersiveengineering.api.crafting.IngredientWithSize;
 import blusunrize.immersiveengineering.api.crafting.MultiblockRecipe;
+import blusunrize.immersiveengineering.api.crafting.TagOutput;
+import blusunrize.immersiveengineering.api.crafting.TagOutputList;
 import blusunrize.immersiveengineering.api.crafting.cache.CachedRecipeList;
 import com.igteam.immersivegeology.core.registration.IGRecipeTypes;
 import net.minecraft.core.NonNullList;
@@ -18,29 +20,31 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.util.Lazy;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.neoforge.common.util.Lazy;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 import java.util.List;
 
 public class PelletizerRecipe extends MultiblockRecipe
 {
-	public static RegistryObject<IERecipeSerializer<PelletizerRecipe>> SERIALIZER;
+	public static DeferredHolder<RecipeSerializer<?>, ? extends IERecipeSerializer<PelletizerRecipe>> SERIALIZER;
 	public static final CachedRecipeList<PelletizerRecipe> RECIPES = new CachedRecipeList<>(IGRecipeTypes.PELLETIZER);
 	public final Lazy<ItemStack> itemOutput;
 	public final IngredientWithSize itemIn;
 	Lazy<Integer> totalProcessEnergy;
 	Lazy<Integer> totalProcessTime;
 
-	public <T extends Recipe<?>> PelletizerRecipe(ResourceLocation id, IngredientWithSize input, Lazy<ItemStack> output, int energy, int time)
+	public PelletizerRecipe(ResourceLocation id, IngredientWithSize input, TagOutput output, int energy, int time)
 	{
-		super(LAZY_EMPTY, IGRecipeTypes.PELLETIZER, id);
-		this.itemOutput = output;
+		super(output, IGRecipeTypes.PELLETIZER, time, energy, () -> new RecipeMultiplier(() -> 1, () -> 1));
+		this.itemOutput = Lazy.of(output::get);
 		this.itemIn = input;
 		totalProcessEnergy = Lazy.of(() -> energy);
 		totalProcessTime = Lazy.of(() -> time);
-		this.outputList = Lazy.of(() -> NonNullList.of(ItemStack.EMPTY, this.itemOutput.get()));
+		this.outputList = new TagOutputList(output);
+		this.setInputListWithSizes(List.of(input));
 	}
 
 	@Override
@@ -67,11 +71,11 @@ public class PelletizerRecipe extends MultiblockRecipe
 		return totalProcessTime.get();
 	}
 
-	public static PelletizerRecipe findRecipe(Level level, ItemStack input)
+	public static RecipeHolder<PelletizerRecipe> findRecipe(Level level, ItemStack input)
 	{
-		for(PelletizerRecipe recipe : RECIPES.getRecipes(level))
-			if(recipe.itemIn.test(input))
-				return recipe;
+		for(RecipeHolder<PelletizerRecipe> holder : RECIPES.getRecipes(level))
+			if(holder.value().itemIn.test(input))
+				return holder;
 		return null;
 	}
 

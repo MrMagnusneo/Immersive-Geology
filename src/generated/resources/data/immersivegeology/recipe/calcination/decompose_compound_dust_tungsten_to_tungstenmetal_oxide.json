@@ -1,0 +1,12 @@
+{
+  "type": "immersivegeology:rotary_kiln",
+  "heat": 75,
+  "input": {
+    "tag": "c:compound_dust/tungsten"
+  },
+  "result": {
+    "count": 1,
+    "id": "immersivegeology:metal_oxide_tungsten"
+  },
+  "time": 300
+}

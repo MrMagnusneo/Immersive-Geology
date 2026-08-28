@@ -8,7 +8,6 @@
 
 package com.igteam.immersivegeology.common.item;
 
-import blusunrize.immersiveengineering.api.utils.CapabilityUtils;
 import com.igteam.immersivegeology.client.menu.ItemSubGroup;
 import com.igteam.immersivegeology.common.item.helper.IGFlagItem;
 import com.igteam.immersivegeology.core.lib.IGLib;
@@ -32,13 +31,9 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.FluidType;
-import net.minecraftforge.fluids.capability.IFluidHandlerItem;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.FluidType;
+import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -51,9 +46,11 @@ public class IGGenericBucketItem extends BucketItem implements IGFlagItem, Dispe
     private final Map<MaterialTexture, MaterialInterface<?>> materialMap = new HashMap<>();
     private final BlockCategoryFlags fluid_category;
     private final ItemCategoryFlags bucket_type;
+    private final Fluid containedFluid;
 
     public IGGenericBucketItem(Supplier<? extends Fluid> fluid, BlockCategoryFlags flag, ItemCategoryFlags bucket_type, MaterialInterface<?> material) {
-        super(fluid, new Properties().stacksTo(1).craftRemainder(Items.BUCKET));
+        super(fluid.get(), new Properties().stacksTo(1).craftRemainder(Items.BUCKET));
+        this.containedFluid = fluid.get();
         this.materialMap.put(MaterialTexture.base, material);
         this.fluid_category = flag;
         this.bucket_type = bucket_type;
@@ -136,6 +133,11 @@ public class IGGenericBucketItem extends BucketItem implements IGFlagItem, Dispe
         return fluid_category;
     }
 
+    public Fluid getFluid()
+    {
+        return containedFluid;
+    }
+
     @Override
     public ItemSubGroup getSubGroup() {
         return ItemCategoryFlags.BUCKET.getSubGroup();
@@ -151,13 +153,6 @@ public class IGGenericBucketItem extends BucketItem implements IGFlagItem, Dispe
         return materialMap.get(t);
     }
 
-    @Nullable
-    @Override
-    public ICapabilityProvider initCapabilities(ItemStack stack, @Nullable CompoundTag nbt)
-    {
-        return new FluidHandler(stack);
-    }
-
     public IFlagType<?> getBucketType()
     {
         return bucket_type;
@@ -169,12 +164,12 @@ public class IGGenericBucketItem extends BucketItem implements IGFlagItem, Dispe
         return super.emptyContents(p_150716_, p_150717_, p_150718_, p_150719_, container);
     }
 
-    private static class FluidHandler implements IFluidHandlerItem, ICapabilityProvider
+    public static class FluidHandler implements IFluidHandlerItem
     {
         private final ItemStack stack;
         private boolean empty = false;
 
-        private FluidHandler(ItemStack stack)
+        public FluidHandler(ItemStack stack)
         {
             this.stack = stack;
         }
@@ -234,7 +229,7 @@ public class IGGenericBucketItem extends BucketItem implements IGFlagItem, Dispe
         public FluidStack drain(FluidStack resource, FluidAction action)
         {
             FluidStack fluid = getFluid();
-            if(!fluid.isFluidEqual(resource)||!Objects.equals(fluid.getTag(), resource.getTag()))
+            if(!FluidStack.isSameFluidSameComponents(fluid, resource))
                 return FluidStack.EMPTY;
             return drain(resource.getAmount(), action);
         }
@@ -252,16 +247,5 @@ public class IGGenericBucketItem extends BucketItem implements IGFlagItem, Dispe
             return potion;
         }
 
-        private final LazyOptional<IFluidHandlerItem> lazyOpt = CapabilityUtils.constantOptional(this);
-
-        @Nonnull
-        @Override
-        public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side)
-        {
-            if(cap==ForgeCapabilities.FLUID_HANDLER_ITEM)
-                return lazyOpt.cast();
-            else
-                return LazyOptional.empty();
-        }
     }
 }

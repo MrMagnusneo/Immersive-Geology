@@ -10,7 +10,6 @@ import blusunrize.immersiveengineering.api.multiblocks.blocks.logic.IMultiblockS
 import blusunrize.immersiveengineering.api.multiblocks.blocks.registry.MultiblockBlockEntityDummy;
 import blusunrize.immersiveengineering.api.multiblocks.blocks.util.CapabilityPosition;
 import blusunrize.immersiveengineering.api.multiblocks.blocks.util.RelativeBlockFace;
-import blusunrize.immersiveengineering.api.utils.CapabilityReference;
 import blusunrize.immersiveengineering.api.utils.DirectionUtils;
 import blusunrize.immersiveengineering.api.utils.SafeChunkUtils;
 import blusunrize.immersiveengineering.api.utils.shapes.CachedVoxelShapes;
@@ -20,7 +19,6 @@ import blusunrize.immersiveengineering.common.blocks.IEBaseBlockEntity;
 import blusunrize.immersiveengineering.common.blocks.IEBlockInterfaces;
 import blusunrize.immersiveengineering.common.register.IEBlocks.WoodenDecoration;
 import blusunrize.immersiveengineering.common.register.IEItems.Tools;
-import blusunrize.immersiveengineering.common.util.ResettableCapability;
 import blusunrize.immersiveengineering.common.util.Utils;
 import blusunrize.immersiveengineering.common.util.WorldMap;
 import com.google.common.collect.ImmutableSet;
@@ -34,11 +32,13 @@ import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
 import it.unimi.dsi.fastutil.objects.Object2BooleanOpenHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -57,15 +57,12 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.energy.IEnergyStorage;
-import net.minecraftforge.event.level.LevelEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.event.level.LevelEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -73,10 +70,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
-@EventBusSubscriber(
-		modid = "immersivegeology",
-		bus = Bus.FORGE
-)
+@EventBusSubscriber(modid = "immersivegeology")
 public class IGEnergyPipeEntity extends IEBaseBlockEntity implements IEnergyPipe, IEBlockInterfaces.IColouredBE, IEBlockInterfaces.IPlayerInteraction, IEBlockInterfaces.IHammerInteraction, IEBlockInterfaces.IPlacementInteraction, IEBlockInterfaces.ISelectionBounds, IEBlockInterfaces.ICollisionBounds, IEBlockInterfaces.IAdditionalDrops {
 	static WorldMap<BlockPos, Set<IGEnergyPipeEntity.DirectionalEnergyOutput>> indirectConnections = new WorldMap();
 	public static ArrayList<Predicate<Block>> validPipeCovers = new ArrayList();
@@ -86,7 +80,7 @@ public class IGEnergyPipeEntity extends IEBaseBlockEntity implements IEnergyPipe
 	private byte connections;
 	@Nullable
 	private DyeColor color;
-	private final Map<Direction, ResettableCapability<IEnergyStorage>> sidedHandlers;
+	private final Map<Direction, IEnergyStorage> sidedHandlers;
 	private final Map<Direction, MultiblockCapabilityReference<IEnergyStorage>> neighbors;
 	private static final CachedVoxelShapes<IGEnergyPipeEntity.BoundingBoxKey> SHAPES = new CachedVoxelShapes<>(IGEnergyPipeEntity::getBoxes);
 
@@ -105,11 +99,11 @@ public class IGEnergyPipeEntity extends IEBaseBlockEntity implements IEnergyPipe
 		this.connections = 0;
 		this.color = null;
 		this.sidedHandlers = new EnumMap<>(Direction.class);
-		this.neighbors = MultiblockCapabilityReference.forAllNeighbors(this, ForgeCapabilities.ENERGY);
+		this.neighbors = MultiblockCapabilityReference.forAllNeighbors(this, Capabilities.EnergyStorage.BLOCK);
 
 		for(var5 = 0; var5 < var4; ++var5) {
 			f = var3[var5];
-			this.sidedHandlers.put(f, this.registerCapability(new PipeEnergyHandler(this, f)));
+			this.sidedHandlers.put(f, new PipeEnergyHandler(this, f));
 		}
 	}
 
@@ -180,13 +174,13 @@ public class IGEnergyPipeEntity extends IEBaseBlockEntity implements IEnergyPipe
 										openList.add(nextPos);
 									} else {
 										// Check if the adjacent tile has energy capability
-										LazyOptional<IEnergyStorage> handlerOptional = adjacentTile.getCapability(
-												ForgeCapabilities.ENERGY, fd.getOpposite());
+										IEnergyStorage handler = world.getCapability(
+												Capabilities.EnergyStorage.BLOCK, nextPos, fd.getOpposite());
 
-										handlerOptional.ifPresent(handler -> {
+										if(handler!=null) {
 											// Add to energy handlers list
 											energyHandlers.add(new DirectionalEnergyOutput(handler, fd, adjacentTile));
-										});
+										}
 									}
 								}
 							}
@@ -258,7 +252,7 @@ public class IGEnergyPipeEntity extends IEBaseBlockEntity implements IEnergyPipe
 
 	}
 
-	public void readCustomNBT(CompoundTag nbt, boolean descPacket) {
+	public void readCustomNBT(CompoundTag nbt, boolean descPacket, HolderLookup.Provider registries) {
 		int[] config = nbt.getIntArray("sideConfig");
 
 		for(int i = 0; i < 6; ++i) {
@@ -278,7 +272,7 @@ public class IGEnergyPipeEntity extends IEBaseBlockEntity implements IEnergyPipe
 		}
 
 		Block oldCover = this.cover;
-		this.cover = (Block)ForgeRegistries.BLOCKS.getValue(new ResourceLocation(nbt.getString("cover")));
+		this.cover = BuiltInRegistries.BLOCK.get(ResourceLocation.parse(nbt.getString("cover")));
 		DyeColor oldColor = this.color;
 		if (nbt.contains("color", 3)) {
 			this.color = DyeColor.byId(nbt.getInt("color"));
@@ -295,7 +289,7 @@ public class IGEnergyPipeEntity extends IEBaseBlockEntity implements IEnergyPipe
 
 	}
 
-	public void writeCustomNBT(CompoundTag nbt, boolean descPacket) {
+	public void writeCustomNBT(CompoundTag nbt, boolean descPacket, HolderLookup.Provider registries) {
 		int[] config = new int[6];
 
 		for(int i = 0; i < 6; ++i) {
@@ -306,7 +300,7 @@ public class IGEnergyPipeEntity extends IEBaseBlockEntity implements IEnergyPipe
 
 		nbt.putIntArray("sideConfig", config);
 		if (this.hasCover()) {
-			nbt.putString("cover", ForgeRegistries.BLOCKS.getKey(this.cover).toString());
+			nbt.putString("cover", BuiltInRegistries.BLOCK.getKey(this.cover).toString());
 		}
 
 		nbt.putByte("connections", this.connections);
@@ -317,24 +311,22 @@ public class IGEnergyPipeEntity extends IEBaseBlockEntity implements IEnergyPipe
 	}
 
 	private void invalidateHandler(Direction side) {
-		ResettableCapability<IEnergyStorage> handler = this.sidedHandlers.get(side);
+		IEnergyStorage handler = this.sidedHandlers.get(side);
 		if (handler != null) {
 			this.sidedHandlers.put(side, null);
-			handler.reset();
 		}
 
 	}
 
 	private void setValidHandler(Direction side) {
-		ResettableCapability<IEnergyStorage> handler = this.sidedHandlers.get(side);
+		IEnergyStorage handler = this.sidedHandlers.get(side);
 		if (handler == null) {
-			this.sidedHandlers.put(side, this.registerCapability(new PipeEnergyHandler(this, side)));
+			this.sidedHandlers.put(side, new PipeEnergyHandler(this, side));
 		}
 	}
 
-	@Nonnull
-	public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> capability, @Nullable Direction facing) {
-		return capability == ForgeCapabilities.ENERGY && facing != null && this.sideConfig.getBoolean(facing) ? ((ResettableCapability)this.sidedHandlers.get(facing)).cast() : super.getCapability(capability, facing);
+	public @Nullable IEnergyStorage getEnergyHandler(@Nullable Direction facing) {
+		return facing!=null&&this.sideConfig.getBoolean(facing)?this.sidedHandlers.get(facing): null;
 	}
 
 	protected boolean hasCover() {
@@ -559,7 +551,7 @@ public class IGEnergyPipeEntity extends IEBaseBlockEntity implements IEnergyPipe
 
 	}
 
-	public boolean interact(Direction side, Player player, InteractionHand hand, ItemStack heldItem, float hitX, float hitY, float hitZ) {
+	public ItemInteractionResult interact(Direction side, Player player, InteractionHand hand, ItemStack heldItem, float hitX, float hitY, float hitZ) {
 		if (heldItem.isEmpty() && player.isShiftKeyDown() && this.hasCover()) {
 			if (!player.level().isClientSide) {
 				this.dropCover(player);
@@ -569,9 +561,10 @@ public class IGEnergyPipeEntity extends IEBaseBlockEntity implements IEnergyPipe
 				this.markChunkDirty();
 			}
 
-			return true;
+			return ItemInteractionResult.SUCCESS;
 		} else {
-			return !heldItem.isEmpty() && !player.isShiftKeyDown() ? this.setColorOrCoverFrom(heldItem, player) : false;
+			boolean handled = !heldItem.isEmpty() && !player.isShiftKeyDown() && this.setColorOrCoverFrom(heldItem, player);
+			return handled ? ItemInteractionResult.SUCCESS : ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 		}
 	}
 

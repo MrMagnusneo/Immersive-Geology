@@ -9,8 +9,8 @@
 package com.igteam.immersivegeology.common.block.multiblocks.recipe.serializer;
 
 import blusunrize.immersiveengineering.api.ApiUtils;
-import blusunrize.immersiveengineering.api.crafting.FluidTagInput;
-import blusunrize.immersiveengineering.api.crafting.IERecipeSerializer;
+import com.igteam.immersivegeology.common.compat.ie.crafting.FluidTagInput;
+import com.igteam.immersivegeology.common.recipe.LegacyIERecipeSerializer;
 import blusunrize.immersiveengineering.common.network.PacketUtils;
 import com.google.common.base.Preconditions;
 import com.google.gson.JsonObject;
@@ -18,20 +18,21 @@ import com.igteam.immersivegeology.common.block.multiblocks.recipe.GeothermalCon
 import com.igteam.immersivegeology.common.block.multiblocks.recipe.GeothermalExchangerRecipe;
 import com.igteam.immersivegeology.core.registration.IGMultiblockProvider;
 import com.mojang.datafixers.util.Pair;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraftforge.common.crafting.conditions.ICondition.IContext;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.common.conditions.ICondition.IContext;
+import net.neoforged.neoforge.common.util.Lazy;
+import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public class GeothermalConversionRecipeSerializer extends IERecipeSerializer<GeothermalConversionRecipe>
+public class GeothermalConversionRecipeSerializer extends LegacyIERecipeSerializer<GeothermalConversionRecipe>
 {
 	@Override
 	public ItemStack getIcon()
@@ -43,8 +44,8 @@ public class GeothermalConversionRecipeSerializer extends IERecipeSerializer<Geo
 	public GeothermalConversionRecipe readFromJson(ResourceLocation resourceLocation, JsonObject json, IContext iContext)
 	{
 
-		ResourceLocation transitionBlockName = new ResourceLocation(json.get("transitionBlock").getAsString());
-		Block transitionBlock = (Block)Preconditions.checkNotNull((Block)ForgeRegistries.BLOCKS.getValue(transitionBlockName));
+		ResourceLocation transitionBlockName = ResourceLocation.parse(json.get("transitionBlock").getAsString());
+		Block transitionBlock = Preconditions.checkNotNull(BuiltInRegistries.BLOCK.get(transitionBlockName));
 		int transitionBlockHeat = json.get("blockHeat").getAsInt();
 
 		boolean hasUpper = json.has("upperBoundBlock");
@@ -54,29 +55,28 @@ public class GeothermalConversionRecipeSerializer extends IERecipeSerializer<Geo
 
 		if(hasUpper)
 		{
-			ResourceLocation upperBoundBlockName = new ResourceLocation(json.get("upperBoundBlock").getAsString());
-			Block upperBlock = (Block)Preconditions.checkNotNull((Block)ForgeRegistries.BLOCKS.getValue(upperBoundBlockName));
+			ResourceLocation upperBoundBlockName = ResourceLocation.parse(json.get("upperBoundBlock").getAsString());
+			Block upperBlock = Preconditions.checkNotNull(BuiltInRegistries.BLOCK.get(upperBoundBlockName));
 			int upperHeat = json.get("upperHeat").getAsInt();
 			upperBound = Pair.of(upperBlock, upperHeat);
 		}
 
 		if(hasLower)
 		{
-			ResourceLocation lowerBoundBlockName = new ResourceLocation(json.get("lowerBoundBlock").getAsString());
-			Block lowerBoundBlock = (Block)Preconditions.checkNotNull((Block)ForgeRegistries.BLOCKS.getValue(lowerBoundBlockName));
+			ResourceLocation lowerBoundBlockName = ResourceLocation.parse(json.get("lowerBoundBlock").getAsString());
+			Block lowerBoundBlock = Preconditions.checkNotNull(BuiltInRegistries.BLOCK.get(lowerBoundBlockName));
 			int upperHeat = json.get("lowerHeat").getAsInt();
 			lowerBound = Pair.of(lowerBoundBlock, upperHeat);
 		}
 
-		return new GeothermalConversionRecipe(resourceLocation, () -> transitionBlock, transitionBlockHeat, upperBound, lowerBound);
+		return new GeothermalConversionRecipe(resourceLocation, Lazy.of(() -> transitionBlock), transitionBlockHeat, upperBound, lowerBound);
 	}
 
 	@Override
 	public @Nullable GeothermalConversionRecipe fromNetwork(ResourceLocation resourceLocation, FriendlyByteBuf buffer)
 	{
-		List<Block> blocks = PacketUtils.readList(buffer, (buf) -> {
-			return (Block)buf.readRegistryIdUnsafe(ForgeRegistries.BLOCKS);
-		});
+		List<Block> blocks = PacketUtils.readList(buffer,
+				buf -> BuiltInRegistries.BLOCK.get(buf.readResourceLocation()));
 
 		Block baseBlock = blocks.get(0);
 		Block upperBlock = blocks.get(1);
@@ -99,15 +99,14 @@ public class GeothermalConversionRecipeSerializer extends IERecipeSerializer<Geo
 			lowerBound = Pair.of(lowerBlock, buffer.readInt());
 		}
 
-		return new GeothermalConversionRecipe(resourceLocation, () -> baseBlock, transitionBlockHeat, upperBound, lowerBound);
+		return new GeothermalConversionRecipe(resourceLocation, Lazy.of(() -> baseBlock), transitionBlockHeat, upperBound, lowerBound);
 	}
 
 	@Override
 	public void toNetwork(FriendlyByteBuf buffer, GeothermalConversionRecipe recipe)
 	{
-		PacketUtils.writeList(buffer, recipe.getMatchingBlocks(), (b, buf) -> {
-			buf.writeRegistryIdUnsafe(ForgeRegistries.BLOCKS, b);
-		});
+		PacketUtils.writeList(buffer, recipe.getMatchingBlocks(),
+				(block, buf) -> buf.writeResourceLocation(BuiltInRegistries.BLOCK.getKey(block)));
 		buffer.writeInt(recipe.blockHeat);
 		if(recipe.upperHeat != null) buffer.writeInt(recipe.upperHeat);
 		if(recipe.lowerHeat != null) buffer.writeInt(recipe.lowerHeat);

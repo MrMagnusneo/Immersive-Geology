@@ -12,14 +12,14 @@ import com.igteam.immersivegeology.common.data.TRSRModelBuilder;
 import com.igteam.immersivegeology.core.lib.IGLib;
 import com.igteam.immersivegeology.core.registration.IGMultiblockProvider;
 import net.minecraft.data.PackOutput;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.level.ItemLike;
-import net.minecraftforge.client.model.generators.ModelBuilder;
-import net.minecraftforge.client.model.generators.ModelProvider;
-import net.minecraftforge.client.model.generators.loaders.ObjModelBuilder;
-import net.minecraftforge.common.data.ExistingFileHelper;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.client.model.generators.ModelBuilder;
+import net.neoforged.neoforge.client.model.generators.ModelProvider;
+import net.neoforged.neoforge.client.model.generators.loaders.ObjModelBuilder;
+import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import org.joml.Vector3f;
 
 import javax.annotation.Nullable;
@@ -39,7 +39,7 @@ public class IGComplexItemModelProvider extends ModelProvider<TRSRModelBuilder>
 		return getClass().getSimpleName();
 	}
 
-	static final ResourceLocation ITEM_GENERATED = new ResourceLocation("minecraft", "item/generated");
+	static final ResourceLocation ITEM_GENERATED = ResourceLocation.fromNamespaceAndPath("minecraft", "item/generated");
 
 	@Override
 	protected void registerModels()
@@ -88,7 +88,7 @@ public class IGComplexItemModelProvider extends ModelProvider<TRSRModelBuilder>
 
 	private String name(ItemLike item)
 	{
-		return ForgeRegistries.ITEMS.getKey(item.asItem()).getPath();
+		return BuiltInRegistries.ITEM.getKey(item.asItem()).getPath();
 	}
 
 	private void generateCentrifugeMultiblock(String id, Supplier<? extends ItemLike> block)
@@ -123,7 +123,7 @@ public class IGComplexItemModelProvider extends ModelProvider<TRSRModelBuilder>
 
 	private void generatePelletizerModel(String id, Supplier<? extends ItemLike> block)
 	{
-		TRSRModelBuilder model = obj(block, "block/multiblock/obj/pelletizer/"+id+".obj").texture("pelletizer", new ResourceLocation(IGLib.MODID, "block/multiblock/pelletizer/default"));
+		TRSRModelBuilder model = obj(block, "block/multiblock/obj/pelletizer/"+id+".obj").texture("pelletizer", ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "block/multiblock/pelletizer/default"));
 
 		ModelBuilder<?>.TransformsBuilder trans = model.transforms();
 		doTransform(trans, ItemDisplayContext.FIRST_PERSON_LEFT_HAND, new Vector3f(-1.75F, 2.5F, 1.25F), new Vector3f(0, 225, 0), 0.03125F);
@@ -153,7 +153,7 @@ public class IGComplexItemModelProvider extends ModelProvider<TRSRModelBuilder>
 
 	private void generateSteamTurbine(Supplier<? extends ItemLike> block)
 	{
-		TRSRModelBuilder model = obj(block, "block/multiblock/obj/steam_turbine/steam_turbine_item.obj").texture("steam_turbine", new ResourceLocation(IGLib.MODID, "block/multiblock/steam_turbine/default"));
+		TRSRModelBuilder model = obj(block, "block/multiblock/obj/steam_turbine/steam_turbine_item.obj").texture("steam_turbine", ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "block/multiblock/steam_turbine/default"));
 
 		ModelBuilder<?>.TransformsBuilder trans = model.transforms();
 		doTransform(trans, ItemDisplayContext.FIRST_PERSON_LEFT_HAND, new Vector3f(-1.75F, 2.5F, 1.25F), new Vector3f(0, 225, 0), 0.03125F);
@@ -168,7 +168,7 @@ public class IGComplexItemModelProvider extends ModelProvider<TRSRModelBuilder>
 
 	private void generateAlternator(Supplier<? extends ItemLike> block)
 	{
-		TRSRModelBuilder model = obj(block, "block/multiblock/obj/alternator/alternator_item.obj").texture("alternator", new ResourceLocation(IGLib.MODID, "block/multiblock/alternator/default"));
+		TRSRModelBuilder model = obj(block, "block/multiblock/obj/alternator/alternator_item.obj").texture("alternator", ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "block/multiblock/alternator/default"));
 
 		ModelBuilder<?>.TransformsBuilder trans = model.transforms();
 		doTransform(trans, ItemDisplayContext.FIRST_PERSON_LEFT_HAND, new Vector3f(-1.75F, 2.5F, 1.25F), new Vector3f(0, 225, 0), 0.03125F);
@@ -183,7 +183,7 @@ public class IGComplexItemModelProvider extends ModelProvider<TRSRModelBuilder>
 
 	private void generateSmallChemicalReactor(Supplier<? extends ItemLike> block)
 	{
-		TRSRModelBuilder model = obj(block, "block/multiblock/obj/small_chemical_reactor/small_chemical_reactor.obj").texture("small_chemical_reactor", new ResourceLocation(IGLib.MODID, "block/multiblock/small_chemical_reactor/default"));
+		TRSRModelBuilder model = obj(block, "block/multiblock/obj/small_chemical_reactor/small_chemical_reactor.obj").texture("small_chemical_reactor", ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "block/multiblock/small_chemical_reactor/default"));
 
 		ModelBuilder<?>.TransformsBuilder trans = model.transforms();
 		doTransform(trans, ItemDisplayContext.FIRST_PERSON_LEFT_HAND, new Vector3f(-1.75F, 2.5F, 1.25F), new Vector3f(0, 225, 0), 0.03125F);
@@ -198,7 +198,7 @@ public class IGComplexItemModelProvider extends ModelProvider<TRSRModelBuilder>
 
 	private void generateGeothermalExchanger(Supplier<? extends ItemLike> block)
 	{
-		TRSRModelBuilder model = obj(block, "block/multiblock/obj/geothermal_exchanger/geothermal_exchanger.obj").texture("geothermal_exchanger", new ResourceLocation(IGLib.MODID, "block/multiblock/geothermal_exchanger/default"));
+		TRSRModelBuilder model = obj(block, "block/multiblock/obj/geothermal_exchanger/geothermal_exchanger.obj").texture("geothermal_exchanger", ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "block/multiblock/geothermal_exchanger/default"));
 
 		ModelBuilder<?>.TransformsBuilder trans = model.transforms();
 		doTransform(trans, ItemDisplayContext.FIRST_PERSON_LEFT_HAND, new Vector3f(-1.75F, 2.5F, 1.25F), new Vector3f(0, 225, 0), 0.03125F);
@@ -213,7 +213,7 @@ public class IGComplexItemModelProvider extends ModelProvider<TRSRModelBuilder>
 
 	private void generateBloomeryModel(Supplier<? extends ItemLike> block)
 	{
-		TRSRModelBuilder model = obj(block, "block/multiblock/obj/bloomery/bloomery.obj").texture("bloomery", new ResourceLocation(IGLib.MODID, "block/multiblock/bloomery/default"));
+		TRSRModelBuilder model = obj(block, "block/multiblock/obj/bloomery/bloomery.obj").texture("bloomery", ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "block/multiblock/bloomery/default"));
 
 		ModelBuilder<?>.TransformsBuilder trans = model.transforms();
 		doTransform(trans, ItemDisplayContext.FIRST_PERSON_LEFT_HAND, new Vector3f(-1.75F, 2.5F, 1.25F), new Vector3f(0, 225, 0), 0.03125F);

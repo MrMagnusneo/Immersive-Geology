@@ -31,7 +31,6 @@ import com.igteam.immersivegeology.core.material.data.enums.StoneEnum;
 import com.igteam.immersivegeology.core.material.helper.flags.BlockCategoryFlags;
 import com.igteam.immersivegeology.core.material.helper.material.MaterialInterface;
 import com.igteam.immersivegeology.core.material.helper.material.recipe.helper.IGRecipeChain;
-import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
@@ -41,6 +40,7 @@ import net.minecraft.util.GsonHelper;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Skeleton;
 import net.minecraft.world.entity.player.Player;
@@ -51,7 +51,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.data.ForgeRecipeProvider;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import org.jetbrains.annotations.Nullable;
 
 import java.text.DecimalFormat;
@@ -68,7 +68,7 @@ public class IGContent {
         ChemthrowerHandler.registerEffect(ChemicalEnum.ChemicalWaste.getFluidTag(), new ChemthrowerEffect()
         {
             @Override
-            public void applyToEntity(LivingEntity livingEntity, @Nullable Player player, ItemStack itemStack, Fluid fluid)
+            public void applyToEntity(LivingEntity livingEntity, @Nullable Player player, @Nullable Entity directHit, ItemStack itemStack, Fluid fluid)
             {
                 livingEntity.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 50));
                 livingEntity.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 140));
@@ -79,7 +79,7 @@ public class IGContent {
             }
 
             @Override
-            public void applyToBlock(Level level, HitResult hitResult, @Nullable Player player, ItemStack itemStack, Fluid fluid)
+            public void applyToBlock(Level level, HitResult hitResult, @Nullable Player player, @Nullable Entity directHit, ItemStack itemStack, Fluid fluid)
             {
                 Vec3 vec = hitResult.getLocation();
                 BlockPos loc = new BlockPos((int)vec.x(), (int)vec.y(), (int)vec.z()).below();
@@ -89,7 +89,7 @@ public class IGContent {
                 {
                     level.setBlock(loc, Blocks.DIRT.defaultBlockState(), 3);
                 }
-                if(state.is(Blocks.TALL_GRASS) || state.is(Blocks.GRASS) || state.is(Blocks.FERN) || state.is(Blocks.LARGE_FERN))
+                if(state.is(Blocks.TALL_GRASS) || state.is(Blocks.SHORT_GRASS) || state.is(Blocks.FERN) || state.is(Blocks.LARGE_FERN))
                 {
                     level.setBlock(loc, Blocks.AIR.defaultBlockState(), 0);
                 }
@@ -112,18 +112,18 @@ public class IGContent {
         ChemthrowerHandler.registerEffect(ChemicalEnum.SulfuricAcid.getFluidTag(), new ChemthrowerEffect()
         {
             @Override
-            public void applyToEntity(LivingEntity livingEntity, @Nullable Player player, ItemStack itemStack, Fluid fluid)
+            public void applyToEntity(LivingEntity livingEntity, @Nullable Player player, @Nullable Entity directHit, ItemStack itemStack, Fluid fluid)
             {
                 if(!(livingEntity instanceof Skeleton))
                 {
-                    livingEntity.setSecondsOnFire(5);
+                    livingEntity.igniteForSeconds(5);
                     livingEntity.addEffect(new MobEffectInstance(MobEffects.WITHER, 10, 0));
-                    livingEntity.addEffect(new MobEffectInstance(IEPotions.FLAMMABLE.get(), 20 * 5,0));
+                    livingEntity.addEffect(new MobEffectInstance(IEPotions.FLAMMABLE, 20 * 5,0));
                 }
             }
 
             @Override
-            public void applyToBlock(Level level, HitResult hitResult, @Nullable Player player, ItemStack itemStack, Fluid fluid)
+            public void applyToBlock(Level level, HitResult hitResult, @Nullable Player player, @Nullable Entity directHit, ItemStack itemStack, Fluid fluid)
             {
 
             }
@@ -133,23 +133,23 @@ public class IGContent {
         IGLib.IG_LOGGER.info("Finished");
     }
 
-    public static void registerContainersAndScreens()
+    public static void registerContainersAndScreens(RegisterMenuScreensEvent event)
     {
-        MenuScreens.register(IGMenuTypes.BLOOMERY.getType(), BloomeryScreen::new);
-        MenuScreens.register(IGMenuTypes.REVERBERATION_FURNACE.getType(), ReverberationScreen::new);
-        MenuScreens.register(IGMenuTypes.GEOTHERMAL_EXCHANGER.getType(), GeothermalExchangerScreen::new);
-        MenuScreens.register(IGMenuTypes.CRYSTALLIZER.getType(), CrystallizerScreen::new);
-        MenuScreens.register(IGMenuTypes.CHEMICAL_REACTOR.getType(), ChemicalReactorScreen::new);
-        MenuScreens.register(IGMenuTypes.SMALL_CHEMICAL_REACTOR.getType(), SmallChemicalReactorScreen::new);
-        MenuScreens.register(IGMenuTypes.ROTARY_KILN.getType(), RotaryKilnScreen::new);
-        MenuScreens.register(IGMenuTypes.CRATE.get(), IGCrateScreen.StandardIGCrate::new);
+        event.register(IGMenuTypes.BLOOMERY.getType(), BloomeryScreen::new);
+        event.register(IGMenuTypes.REVERBERATION_FURNACE.getType(), ReverberationScreen::new);
+        event.register(IGMenuTypes.GEOTHERMAL_EXCHANGER.getType(), GeothermalExchangerScreen::new);
+        event.register(IGMenuTypes.CRYSTALLIZER.getType(), CrystallizerScreen::new);
+        event.register(IGMenuTypes.CHEMICAL_REACTOR.getType(), ChemicalReactorScreen::new);
+        event.register(IGMenuTypes.SMALL_CHEMICAL_REACTOR.getType(), SmallChemicalReactorScreen::new);
+        event.register(IGMenuTypes.ROTARY_KILN.getType(), RotaryKilnScreen::new);
+        event.register(IGMenuTypes.CRATE.get(), IGCrateScreen.StandardIGCrate::new);
     }
 
     public static void initializeManualEntries()
     {
         ManualInstance instance = ManualHelper.getManual();
 
-        instance.registerSpecialElement(new ResourceLocation(IGLib.MODID, "recipe_overview"), s ->
+        instance.registerSpecialElement(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "recipe_overview"), s ->
         {
             String mineral_name = GsonHelper.getAsString(s, "mineral");
             GeologyMaterial material = MineralEnum.valueOf(mineral_name).instance();
@@ -157,13 +157,13 @@ public class IGContent {
             return new IGRecipeOverview(instance, material, priority);
         });
 
-        InnerNode<ResourceLocation, ManualEntry> parent_category = instance.getRoot().getOrCreateSubnode(new ResourceLocation(IGLib.MODID, "main"), 99);
+        InnerNode<ResourceLocation, ManualEntry> parent_category = instance.getRoot().getOrCreateSubnode(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "main"), 99);
 
         ManualEntry.ManualEntryBuilder builder = new ManualEntry.ManualEntryBuilder(ManualHelper.getManual());
-        builder.readFromFile(new ResourceLocation(IGLib.MODID, "intro"));
+        builder.readFromFile(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "intro"));
         instance.addEntry(parent_category, builder.create());
 
-        InnerNode<ResourceLocation, ManualEntry> multiblock_category = parent_category.getOrCreateSubnode(new ResourceLocation(IGLib.MODID, "ig_multiblocks"), 0);
+        InnerNode<ResourceLocation, ManualEntry> multiblock_category = parent_category.getOrCreateSubnode(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "ig_multiblocks"), 0);
         multiblockEntry(instance, multiblock_category, "crystallizer");
         multiblockEntry(instance, multiblock_category, "coredrill");
         multiblockEntry(instance, multiblock_category, "gravity_separator");
@@ -180,16 +180,16 @@ public class IGContent {
         multiblockEntry(instance, multiblock_category, "small_chemical_reactor");
 
         // Build the manual entry for the contributors
-        builder.readFromFile(new ResourceLocation(IGLib.MODID, "getting_started"));
+        builder.readFromFile(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "getting_started"));
         instance.addEntry(parent_category, builder.create());
 
-        builder.readFromFile(new ResourceLocation(IGLib.MODID, "bug_bounty_contributors"));
+        builder.readFromFile(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "bug_bounty_contributors"));
         instance.addEntry(parent_category, builder.create());
-        InnerNode<ResourceLocation, ManualEntry> geology = parent_category.getOrCreateSubnode(new ResourceLocation(IGLib.MODID, "ig_geology"), 2);
+        InnerNode<ResourceLocation, ManualEntry> geology = parent_category.getOrCreateSubnode(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "ig_geology"), 2);
 
-        InnerNode<ResourceLocation, ManualEntry> overworld = geology.getOrCreateSubnode(new ResourceLocation(IGLib.MODID, "overworld"), 0);
-        InnerNode<ResourceLocation, ManualEntry> nether = geology.getOrCreateSubnode(new ResourceLocation(IGLib.MODID, "nether"), 1);
-        InnerNode<ResourceLocation, ManualEntry> the_end = geology.getOrCreateSubnode(new ResourceLocation(IGLib.MODID, "the_end"), 2);
+        InnerNode<ResourceLocation, ManualEntry> overworld = geology.getOrCreateSubnode(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "overworld"), 0);
+        InnerNode<ResourceLocation, ManualEntry> nether = geology.getOrCreateSubnode(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "nether"), 1);
+        InnerNode<ResourceLocation, ManualEntry> the_end = geology.getOrCreateSubnode(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "the_end"), 2);
 
         List<MaterialInterface<?>> materials = IGLib.getGeneratedMaterials();
         for(MaterialInterface<?> mineral : materials)
@@ -199,13 +199,13 @@ public class IGContent {
             if(mineral.instance().acceptableStoneType(StoneEnum.MCEndStone)) mineralTreeEntry(instance, the_end, mineral);
         }
 
-//        InnerNode<ResourceLocation, ManualEntry> chemical_entries = processing_chains.getOrCreateSubnode(new ResourceLocation(IGLib.MODID, "ig_chemical_chains"), 3);
+//        InnerNode<ResourceLocation, ManualEntry> chemical_entries = processing_chains.getOrCreateSubnode(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "ig_chemical_chains"), 3);
     }
 
     private static void mineralTreeEntry(ManualInstance instance, InnerNode<ResourceLocation, ManualEntry> category, MaterialInterface<?> material)
     {
         ManualEntry.ManualEntryBuilder mineral = new ManualEntry.ManualEntryBuilder(ManualHelper.getManual());
-        mineral.setLocation(new ResourceLocation(IGLib.MODID, material.getName()));
+        mineral.setLocation(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, material.getName()));
         mineral.setContent(() -> createMineralContent(material));
 
         instance.addEntry(category, mineral.create());
@@ -214,7 +214,7 @@ public class IGContent {
     private static void metalTreeEntry(ManualInstance instance, InnerNode<ResourceLocation, ManualEntry> category, MaterialInterface<?> material)
     {
         ManualEntry.ManualEntryBuilder mineral = new ManualEntry.ManualEntryBuilder(ManualHelper.getManual());
-        mineral.setLocation(new ResourceLocation(IGLib.MODID, material.getName()));
+        mineral.setLocation(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, material.getName()));
         mineral.setContent(() -> createMineralContent(material));
 
         instance.addEntry(category, mineral.create());
@@ -223,7 +223,7 @@ public class IGContent {
     private static void chemicalTreeEntry(ManualInstance instance, InnerNode<ResourceLocation, ManualEntry> category, MaterialInterface<?> material)
     {
         ManualEntry.ManualEntryBuilder mineral = new ManualEntry.ManualEntryBuilder(ManualHelper.getManual());
-        mineral.setLocation(new ResourceLocation(IGLib.MODID, material.getName()));
+        mineral.setLocation(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, material.getName()));
         mineral.setContent(() -> createMineralContent(material));
 
         instance.addEntry(category, mineral.create());
@@ -402,13 +402,13 @@ public class IGContent {
 
     private static void multiblockEntry(ManualInstance instance, InnerNode<ResourceLocation, ManualEntry> category, String id){
         ManualEntry.ManualEntryBuilder multiblock = new ManualEntry.ManualEntryBuilder(ManualHelper.getManual());
-        multiblock.readFromFile(new ResourceLocation(IGLib.MODID, id));
+        multiblock.readFromFile(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, id));
         instance.addEntry(category, multiblock.create());
     }
 
     private static void multiblockRotaryKilnEntry(ManualInstance instance, InnerNode<ResourceLocation, ManualEntry> category, String id){
         ManualEntry.ManualEntryBuilder multiblock = new ManualEntry.ManualEntryBuilder(ManualHelper.getManual());
-        multiblock.readFromFile(new ResourceLocation(IGLib.MODID, id));
+        multiblock.readFromFile(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, id));
         multiblock.addSpecialElement(new SpecialElementData("list", 0, new ManualElementTable(instance, formatBasicTable(getEnergyRates(), "fe/t"), true)));
         instance.addEntry(category, multiblock.create());
     }
@@ -416,14 +416,14 @@ public class IGContent {
     ChemthrowerEffect acidic = new ChemthrowerEffect()
     {
         @Override
-        public void applyToEntity(LivingEntity livingEntity, @Nullable Player player, ItemStack itemStack, Fluid fluid)
+        public void applyToEntity(LivingEntity livingEntity, @Nullable Player player, @Nullable Entity directHit, ItemStack itemStack, Fluid fluid)
         {
             livingEntity.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 40));
             livingEntity.addEffect(new MobEffectInstance(MobEffects.POISON, 40, 1));
         }
 
         @Override
-        public void applyToBlock(Level level, HitResult hitResult, @Nullable Player player, ItemStack itemStack, Fluid fluid)
+        public void applyToBlock(Level level, HitResult hitResult, @Nullable Player player, @Nullable Entity directHit, ItemStack itemStack, Fluid fluid)
         {
             Vec3 vec = hitResult.getLocation();
             BlockPos loc = new BlockPos((int)vec.x(), (int)vec.y(), (int)vec.z());
@@ -433,7 +433,7 @@ public class IGContent {
                 level.setBlock(loc, Blocks.DIRT.defaultBlockState(), 0);
             }
 
-            if(state.is(Blocks.TALL_GRASS) || state.is(Blocks.GRASS) || state.is(Blocks.FERN) || state.is(Blocks.LARGE_FERN))
+            if(state.is(Blocks.TALL_GRASS) || state.is(Blocks.SHORT_GRASS) || state.is(Blocks.FERN) || state.is(Blocks.LARGE_FERN))
             {
                 level.setBlock(loc, Blocks.AIR.defaultBlockState(), 0);
             }

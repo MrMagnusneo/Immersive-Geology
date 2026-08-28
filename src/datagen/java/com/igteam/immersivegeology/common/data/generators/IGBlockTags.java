@@ -28,10 +28,10 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.block.Block;
-import net.minecraftforge.common.Tags;
-import net.minecraftforge.common.data.BlockTagsProvider;
-import net.minecraftforge.common.data.ExistingFileHelper;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.neoforge.common.Tags;
+import net.neoforged.neoforge.common.data.BlockTagsProvider;
+import net.neoforged.neoforge.common.data.ExistingFileHelper;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 import java.util.List;
 import java.util.Set;
@@ -54,7 +54,7 @@ public class IGBlockTags extends BlockTagsProvider
 
 		IGLib.IG_LOGGER.info("Started Registration of Immersive Geology Block Tags");
 		boolean useOptionalTag = false;
-		for(RegistryObject<Block> block : IGRegistrationHolder.getBlockRegistryMap().values())
+		for(DeferredHolder<Block, Block> block : IGRegistrationHolder.getBlockRegistryMap().values())
 		{
 			if(block.get() instanceof IGFluidBlock fluidBlock)
 			{
@@ -109,18 +109,18 @@ public class IGBlockTags extends BlockTagsProvider
 					useOptionalTag = false;
 					String name = oreBlock.getIGDescriptionId().toLowerCase();
 					String id = name.substring(name.lastIndexOf('.') +1);
-					tag(BlockTags.MINEABLE_WITH_PICKAXE).addOptional(new ResourceLocation(IGLib.MODID, id));
-					tag(BlockTags.NEEDS_STONE_TOOL).addOptional(new ResourceLocation(IGLib.MODID, id));
-					tag(Tags.Blocks.ORES).addOptional(new ResourceLocation(IGLib.MODID, id));
-					tag(ore_material_tag).addOptional(new ResourceLocation(IGLib.MODID, id));
-					tag(ore_block).addOptional(new ResourceLocation(IGLib.MODID, id));
+					tag(BlockTags.MINEABLE_WITH_PICKAXE).addOptional(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, id));
+					tag(BlockTags.NEEDS_STONE_TOOL).addOptional(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, id));
+					tag(Tags.Blocks.ORES).addOptional(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, id));
+					tag(ore_material_tag).addOptional(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, id));
+					tag(ore_block).addOptional(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, id));
 					if(ModFlags.TFC.isStrictlyLoaded())
 					{
-						tag(getTFCBlockTag("CAN_COLLAPSE")).addOptional(new ResourceLocation(IGLib.MODID, id));
-						tag(getTFCBlockTag("CAN_START_COLLAPSE")).addOptional(new ResourceLocation(IGLib.MODID, id));
-						tag(getTFCBlockTag("CAN_TRIGGER_COLLAPSE")).addOptional(new ResourceLocation(IGLib.MODID, id));
-						tag(getTFCBlockTag("POWDERKEG_BREAKING_BLOCKS")).addOptional(new ResourceLocation(IGLib.MODID, id));
-						tag(getTFCBlockTag("PROSPECTABLE")).addOptional(new ResourceLocation(IGLib.MODID, id));
+						tag(getTFCBlockTag("CAN_COLLAPSE")).addOptional(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, id));
+						tag(getTFCBlockTag("CAN_START_COLLAPSE")).addOptional(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, id));
+						tag(getTFCBlockTag("CAN_TRIGGER_COLLAPSE")).addOptional(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, id));
+						tag(getTFCBlockTag("POWDERKEG_BREAKING_BLOCKS")).addOptional(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, id));
+						tag(getTFCBlockTag("PROSPECTABLE")).addOptional(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, id));
 					}
 					continue;
 				}
@@ -135,11 +135,11 @@ public class IGBlockTags extends BlockTagsProvider
 				{
 					String name = oreBlock.getIGDescriptionId().toLowerCase();
 					String id = name.substring(name.lastIndexOf('.') +1);
-					tag(getTFCBlockTag("CAN_COLLAPSE")).addOptional(new ResourceLocation(IGLib.MODID, id));
-					tag(getTFCBlockTag("CAN_START_COLLAPSE")).addOptional(new ResourceLocation(IGLib.MODID, id));
-					tag(getTFCBlockTag("CAN_TRIGGER_COLLAPSE")).addOptional(new ResourceLocation(IGLib.MODID, id));
-					tag(getTFCBlockTag("POWDERKEG_BREAKING_BLOCKS")).addOptional(new ResourceLocation(IGLib.MODID, id));
-					tag(getTFCBlockTag("PROSPECTABLE")).addOptional(new ResourceLocation(IGLib.MODID, id));
+					tag(getTFCBlockTag("CAN_COLLAPSE")).addOptional(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, id));
+					tag(getTFCBlockTag("CAN_START_COLLAPSE")).addOptional(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, id));
+					tag(getTFCBlockTag("CAN_TRIGGER_COLLAPSE")).addOptional(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, id));
+					tag(getTFCBlockTag("POWDERKEG_BREAKING_BLOCKS")).addOptional(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, id));
+					tag(getTFCBlockTag("PROSPECTABLE")).addOptional(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, id));
 				}
 			} else if(block.get() instanceof IGGenericBlock genericBlock)
 			{
@@ -168,7 +168,7 @@ public class IGBlockTags extends BlockTagsProvider
 					useOptionalTag = false;
 					String name = genericBlock.getIGBlock().getDescriptionId().toLowerCase();
 					String id = name.substring(name.lastIndexOf('.')+1);
-					tag(BlockTags.MINEABLE_WITH_PICKAXE).addOptional(new ResourceLocation(IGLib.MODID, id));
+					tag(BlockTags.MINEABLE_WITH_PICKAXE).addOptional(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, id));
 				}
 				else
 				{
@@ -196,7 +196,7 @@ public class IGBlockTags extends BlockTagsProvider
 					useOptionalTag = false;
 					String name = slab.getIGBlock().getDescriptionId().toLowerCase();
 					String id = name.substring(name.lastIndexOf('.')+1);
-					tag(BlockTags.MINEABLE_WITH_PICKAXE).addOptional(new ResourceLocation(IGLib.MODID, id));
+					tag(BlockTags.MINEABLE_WITH_PICKAXE).addOptional(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, id));
 				}
 				else
 				{

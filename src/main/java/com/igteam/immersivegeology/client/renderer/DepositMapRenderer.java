@@ -9,12 +9,13 @@
 package com.igteam.immersivegeology.client.renderer;
 
 import net.minecraft.client.gui.MapRenderer;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureManager;
 
 public class DepositMapRenderer extends MapRenderer
 {
 	public DepositMapRenderer(TextureManager pTextureManager)
 	{
-		super(pTextureManager);
+		super(pTextureManager, Minecraft.getInstance().getMapDecorationTextures());
 	}
 }

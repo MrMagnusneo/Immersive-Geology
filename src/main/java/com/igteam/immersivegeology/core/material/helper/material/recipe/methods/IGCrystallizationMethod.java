@@ -8,7 +8,7 @@
 
 package com.igteam.immersivegeology.core.material.helper.material.recipe.methods;
 
-import blusunrize.immersiveengineering.api.crafting.FluidTagInput;
+import com.igteam.immersivegeology.common.compat.ie.crafting.FluidTagInput;
 import blusunrize.lib.manual.gui.ManualScreen;
 import com.igteam.immersivegeology.common.block.multiblocks.recipe.builder.CrystallizerRecipeBuilder;
 import com.igteam.immersivegeology.core.lib.IGLib;
@@ -23,13 +23,13 @@ import com.igteam.immersivegeology.core.material.helper.material.recipe.IGRecipe
 import com.igteam.immersivegeology.core.material.helper.material.recipe.IGStageDesignation;
 import com.igteam.immersivegeology.core.registration.IGMultiblockProvider;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.data.recipes.FinishedRecipe;
+import com.igteam.immersivegeology.client.helper.FinishedRecipe;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraftforge.common.util.Lazy;
-import net.minecraftforge.fluids.FluidStack;
+import net.neoforged.neoforge.common.util.Lazy;
+import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Consumer;
@@ -55,7 +55,7 @@ public class IGCrystallizationMethod extends IGRecipeMethod
 		if(slurry_base.instance() instanceof MaterialChemical chemical){
 			this.itemResult = parentMaterial.getPrimaryProduct().getStack(output_form, 1);
 			this.fluid_tag = chemical.getFluidTag(BlockCategoryFlags.SLURRY, parentMaterial.getPrimaryProduct());
-			this.fluidInput = () -> new FluidTagInput(fluid_tag, IGLib.SLURRY_TO_CRYSTAL_MB);
+			this.fluidInput = Lazy.of(() -> new FluidTagInput(fluid_tag, IGLib.SLURRY_TO_CRYSTAL_MB));
 			this.time = 300;
 			this.fluid_out = new FluidStack(chemical.getFluid(BlockCategoryFlags.FLUID), IGLib.ACID_RECOVERED_FROM_SLURRY);
 			this.energy = 38400;
@@ -73,7 +73,7 @@ public class IGCrystallizationMethod extends IGRecipeMethod
 		if(slurry_base.instance() instanceof MaterialChemical chemical){
 			this.itemResult = slurry_product.getStack(ItemCategoryFlags.CRYSTAL, 1);
 			this.fluid_tag = chemical.getFluidTag(BlockCategoryFlags.SLURRY, slurry_product);
-			this.fluidInput = () -> new FluidTagInput(fluid_tag, IGLib.SLURRY_TO_CRYSTAL_MB);
+			this.fluidInput = Lazy.of(() -> new FluidTagInput(fluid_tag, IGLib.SLURRY_TO_CRYSTAL_MB));
 			this.time = 300;
 			this.fluid_out = new FluidStack(chemical.getFluid(BlockCategoryFlags.FLUID), IGLib.ACID_RECOVERED_FROM_SLURRY);
 			this.energy = 38400;
@@ -90,7 +90,7 @@ public class IGCrystallizationMethod extends IGRecipeMethod
 		if(slurry_base.instance() instanceof MaterialChemical chemical){
 			this.itemResult = output;
 			this.fluid_tag = chemical.getFluidTag(BlockCategoryFlags.SLURRY, slurry_product);
-			this.fluidInput = () -> new FluidTagInput(fluid_tag, fluidAmount);
+			this.fluidInput = Lazy.of(() -> new FluidTagInput(fluid_tag, fluidAmount));
 			this.time = time;
 			this.fluid_out = new FluidStack(chemical.getFluid(BlockCategoryFlags.FLUID), IGLib.ACID_RECOVERED_FROM_SLURRY);
 			this.energy = energy;
@@ -108,7 +108,7 @@ public class IGCrystallizationMethod extends IGRecipeMethod
 
 		this.itemResult = output;
 		this.fluid_tag = fluidTag;
-		this.fluidInput = () -> new FluidTagInput(fluidTag, fluidAmount);
+		this.fluidInput = Lazy.of(() -> new FluidTagInput(fluidTag, fluidAmount));
 		this.fluid_out = fluid_out;
 		this.time = time;
 		this.energy = energy;
@@ -121,7 +121,7 @@ public class IGCrystallizationMethod extends IGRecipeMethod
 		if(slurry_base.instance() instanceof MaterialChemical chemical){
 			this.itemResult = output;
 			this.fluid_tag = chemical.getFluidTag(BlockCategoryFlags.SLURRY, slurry_product);
-			this.fluidInput = () -> new FluidTagInput(fluid_tag, fluidAmount);
+			this.fluidInput = Lazy.of(() -> new FluidTagInput(fluid_tag, fluidAmount));
 			this.fluid_out = fluid_out;
 			this.time = time;
 			this.energy = energy;

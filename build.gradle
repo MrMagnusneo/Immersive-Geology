@@ -1,224 +1,190 @@
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
-import groovy.json.JsonParserType
-import net.minecraftforge.gradle.common.tasks.SignJar
 
 plugins {
-    id 'net.minecraftforge.gradle'         version '[6.0,6.2)'
-    id 'com.github.johnrengelman.shadow' version '8.1.1'
-    id 'org.parchmentmc.librarian.forgegradle' version '1.+'
-    id 'org.spongepowered.mixin'         version '0.7-SNAPSHOT'
+    id 'java-library'
+    id 'maven-publish'
+    id 'net.neoforged.moddev' version '2.0.140'
+    id 'idea'
     id 'org.jetbrains.gradle.plugin.idea-ext' version '1.1.6'
     id 'eclipse'
-    id 'idea'
 }
-// Load version and build number from version.properties
-import java.util.Properties
+
+tasks.named('wrapper', Wrapper).configure {
+    distributionType = Wrapper.DistributionType.BIN
+}
 
 def versionProps = new Properties()
 file('version.properties').withInputStream { versionProps.load(it) }
 
-version = versionProps.getProperty('version')
-ext.version_buildnumber = versionProps.getProperty('build_number')?.toInteger() ?: 0
+def currentBuild = versionProps.getProperty('build_number')?.toInteger() ?: 0
+def baseVersion = versionProps.getProperty('version')
+def stage = versionProps.getProperty('stage') ?: 'alpha'
+def fullVersion = "${baseVersion}-b${currentBuild}-${stage}"
 
-println "-> build.gradle applying version: $version (build ${version_buildnumber})"
-
-gradle.taskGraph.whenReady { graph ->
-    // Only bump build number when doing a full build
-    if (graph.hasTask(':build')) {
-        ext.version_buildnumber = gradle.ext.nextBuildNumber
-    } else {
-        // preserve existing build number for non-build tasks
-        ext.version_buildnumber = project.findProperty('version_buildnumber') ?: 0
-    }
-}
-
+version = fullVersion
 group = 'com.igteam.immersivegeology'
-archivesBaseName = 'ImmersiveGeology'
+base.archivesName = 'ImmersiveGeology'
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs.addAll(['-Xmaxerrs', '500'])
 }
 
-// ----------------------------------------------------------------------------
-// RESOURCE EXPANSION & REPLACEMENTS
-// ----------------------------------------------------------------------------
-
-// 1) read the published version
-version = gradle.ext.nextVersion
-// 2) version_buildnumber set via taskGraph.whenReady above
-
-println "-> build.gradle applying version: $version (build ${version_buildnumber})"
+tasks.withType(Jar).configureEach {
+    archiveVersion.set(fullVersion)
+    zip64 = true
+}
 
 ext {
-    versionReplacements = [
-            version        : project.version,
-            build_number   : version_buildnumber,
-            mc_version     : version_minecraft,
-            forge_version  : version_forge,
-            jei_version    : version_jei,
-            mod_license    : mod_license,
-            mod_name       : mod_name,
-            mod_authors    : mod_authors,
-            mod_description: mod_description,
-            version_ie     : version_ie
-    ]
+    mod_id = 'immersivegeology'
+    version_minecraft = versionProps['version_mc']
+    version_neoforge = versionProps['version_neoforge']
+    version_neoforge_min = versionProps['version_neoforge_min']
+    version_parchment = versionProps['version_parchment']
+    version_ie = versionProps['version_ie']
+    version_ie_full = "${version_minecraft}-${version_ie}"
+    version_ie_curse = versionProps['version_ie_curse']
+    version_jei = versionProps['version_jei']
 }
+
+def versionReplacements = [
+        version              : project.version,
+        build_number         : currentBuild,
+        version_mc           : version_minecraft,
+        version_neoforge     : version_neoforge,
+        version_neoforge_min : version_neoforge_min,
+        version_ie           : version_ie_full,
+        version_jei          : version_jei,
+]
 
 sourceSets {
     main {
+        java { srcDirs = ["$rootDir/src/main/java"] }
         resources {
-            srcDirs = [
-                    "$rootDir/src/main/resources",
-                    "$rootDir/src/generated/resources"
-            ]
+            srcDirs = ["$rootDir/src/main/resources", "$rootDir/src/generated/resources"]
         }
     }
     datagen {
+        java { srcDirs = ["$rootDir/src/datagen/java"] }
+        resources { srcDirs = ["$rootDir/src/datagen/resources"] }
         compileClasspath += main.output + main.compileClasspath
         runtimeClasspath += main.output + main.runtimeClasspath
     }
     gametest {
+        java { srcDirs = ["$rootDir/src/gametest/java"] }
+        resources { srcDirs = ["$rootDir/src/gametest/resources"] }
         compileClasspath += main.output + main.compileClasspath
         runtimeClasspath += main.output + main.runtimeClasspath
     }
 }
 
-tasks.withType(ProcessResources).configureEach {
+processResources {
     duplicatesStrategy = DuplicatesStrategy.FAIL
-
-    // Declare inputs so Gradle can track changes
-    inputs.property 'mod_version', project.version
-    inputs.property 'mod_buildNumber', version_buildnumber
-    inputs.properties versionReplacements
-
-    filesMatching('META-INF/mods.toml') {
+    inputs.properties(versionReplacements)
+    filesMatching('META-INF/neoforge.mods.toml') {
         expand versionReplacements
     }
     exclude '.cache'
-
     doLast {
-        def slurper = new JsonSlurper()
-        // For lenient parsing (if you ever need comments/trailing commas):
-        // slurper.setType(JsonParserType.LAX)
-
-        fileTree(dir: outputs.files.asPath, include: ['**/*.json', '**/*.mcmeta']).each { File f ->
-            try {
-                def parsed = slurper.parse(f)
-                f.text = JsonOutput.prettyPrint(JsonOutput.toJson(parsed))
-            } catch (Exception e) {
-                logger.warn("Skipping invalid JSON file ${f.name}: ${e.message}")
+        destinationDir.eachFileRecurse { File file ->
+            if (file.file && (file.name.endsWith('.json') || file.name.endsWith('.mcmeta'))) {
+                try {
+                    file.setText(JsonOutput.toJson(new JsonSlurper().parse(file, 'UTF-8')))
+                } catch (Exception exception) {
+                    logger.warn("Skipping invalid JSON file ${file.name}: ${exception.message}")
+                }
             }
         }
     }
 }
 
-tasks.withType(Jar).configureEach {
-    zip64 = true
-}
+neoForge {
+    version = project.version_neoforge
 
-// ----------------------------------------------------------------------------
-// FORGE RUNS & DEPENDENCIES
-// ----------------------------------------------------------------------------
-
-minecraft {
-    mappings channel: 'parchment', version: "1.19.3-2023.06.25-1.20.1"
-    accessTransformers {
-        file 'src/main/resources/META-INF/accesstransformer.cfg'
+    parchment {
+        mappingsVersion = project.version_parchment
+        minecraftVersion = project.version_minecraft
     }
+
+    mods {
+        "${mod_id}" {
+            sourceSet sourceSets.main
+            sourceSet sourceSets.datagen
+            sourceSet sourceSets.gametest
+        }
+    }
+
     runs {
         client {
-            workingDirectory project.file('run')
-            property 'forge.logging.markers', 'SCAN'
-            property 'forge.enabledGameTestNamespaces', 'immersivegeology'
-            property 'forge.logging.console.level', 'debug'
-            ideaModule "${project.name}.main"
-            mods { immersivegeology { source sourceSets.main } }
+            client()
         }
         server {
-            workingDirectory project.file('run')
-            property 'forge.logging.markers', ''
-            property 'forge.enabledGameTestNamespaces', 'immersivegeology'
-            property 'forge.logging.console.level', 'debug'
-            arg '-nogui'
-            mods { immersivegeology { source sourceSets.main } }
+            server()
+            programArguments.addAll '--nogui'
         }
         data {
-            workingDirectory project.file('run')
-            property 'forge.logging.markers', ''
-            property 'forge.logging.console.level', 'debug'
-            property 'fml.earlyprogresswindow', 'false'
-            args '--mod', 'immersivegeology', '--all',
-                    '--output', file('src/generated/resources/'),
-                    '--validate', '--existing', sourceSets.main.resources.srcDirs[0]
-            ideaModule "${project.name}.datagen"
-            mods {
-                immersivegeology {
-                    source sourceSets.main
-                    source sourceSets.datagen
-                }
-            }
+            data()
+            sourceSet = sourceSets.datagen
+            programArguments.addAll '--mod', mod_id.toString(), '--all',
+                    '--output', file('src/generated/resources/').absolutePath,
+                    '--existing', file('src/main/resources/').absolutePath
         }
-
         gameTestServer {
-            workingDirectory project.file('run')
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.enabledGameTestNamespaces', 'immersivegeology'
-            property 'forge.logging.console.level', 'debug'
-            arg '-nogui'
-            ideaModule "${project.name}.gametest"
-            mods {
-                immersivegeology {
-                    source sourceSets.main
-                    source sourceSets.gametest
-                }
-            }
+            type = 'gameTestServer'
+        }
+        configureEach {
+            gameDirectory = project.file('run')
+            systemProperty('neoforge.enabledGameTestNamespaces', mod_id.toString())
         }
     }
+}
+
+tasks.register('prepareGametestOutputs') {
+    dependsOn gametestClasses, processResources
+}
+
+tasks.register('prepareDatagenOutputs') {
+    dependsOn datagenClasses, processResources
+}
+
+afterEvaluate {
+    tasks.named('runData').configure { dependsOn('prepareDatagenOutputs', 'prepareGametestOutputs') }
+    tasks.named('runServer').configure { standardInput = System.in }
 }
 
 repositories {
-    maven { url 'https://maven.blamejared.com/' }
-    maven { url 'https://www.cursemaven.com' }
-    maven { url 'https://cfa2.cursemaven.com' }
-    maven {
-        url 'https://squiddev.cc/maven/'
-        content {
-            includeGroup 'cc.tweaked'
-            includeModule 'org.squiddev', 'Cobalt'
-        }
-    }
     mavenCentral()
-    gradlePluginPortal()
+    maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
+    maven { url = 'https://maven.blamejared.com' }
+    maven { url = 'https://www.cursemaven.com'; content { includeGroup 'curse.maven' } }
+    maven { url = 'https://cfa2.cursemaven.com'; content { includeGroup 'curse.maven' } }
+    maven { name = 'ParchmentMC'; url = 'https://ldtteam.jfrog.io/artifactory/parchmentmc-public/' }
+}
+
+configurations {
+    runtimeClasspath.extendsFrom localRuntime
 }
 
 dependencies {
-    minecraft            "net.minecraftforge:forge:${version_minecraft}-${version_forge}"
-    compileOnly          fg.deobf("mezz.jei:jei-1.20.1-forge-api:${version_jei}")
-    compileOnly          fg.deobf("mezz.jei:jei-1.20.1-common-api:${version_jei}")
-    implementation       fg.deobf("mezz.jei:jei-1.20.1-forge:${version_jei}")
-    implementation fg.deobf("curse.maven:immersive-engineering-231951:6206989")
-    datagenImplementation "blusunrize.immersiveengineering:ImmersiveEngineering:${version_ie}:datagen"
-    implementation       fg.deobf("curse.maven:terrafirmacraft-302973:6187491")
-    implementation       fg.deobf("curse.maven:patchouli-306770:6164575")
-    implementation       fg.deobf("curse.maven:engineered-schematics-1207780:6293337")
-    implementation fg.deobf("curse.maven:chisels-bits-231095:5203366")
-    implementation fg.deobf("curse.maven:distant-horizons-508933:6791186")
-    implementation fg.deobf("curse.maven:observable-509575:5643037")
-    implementation fg.deobf("curse.maven:architectury-api-419699:5137938")
-    implementation fg.deobf("curse.maven:kotlin-for-forge-351264:5402061")
-    implementation fg.deobf("curse.maven:pipez-443900:6368313")
-    implementation fg.deobf("curse.maven:journeymap-32274:5789363")
-    testImplementation    'org.junit.jupiter:junit-jupiter-api:5.8.1'
-    testRuntimeOnly      'org.junit.jupiter:junit-jupiter-engine:5.8.1'
-    annotationProcessor  'org.spongepowered:mixin:0.8.5:processor'
-}
+    implementation "mezz.jei:jei-${version_minecraft}-neoforge-api:${version_jei}"
+    runtimeOnly "mezz.jei:jei-${version_minecraft}-neoforge:${version_jei}"
 
-// ----------------------------------------------------------------------------
-// TEST CONFIG, JAR SIGNING, EXTRA TASKS
-// ----------------------------------------------------------------------------
+    implementation "curse.maven:${version_ie_curse}"
+    implementation "blusunrize.immersiveengineering:ImmersiveEngineering:${version_ie_full}:datagen"
+
+    jarJar(implementation('malte0811:DualCodecs')) {
+        version {
+            strictly '[0.1.2,1)'
+            prefer '0.1.2'
+        }
+    }
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.4'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.11.4'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.4'
+}
 
 tasks.named('test') {
     useJUnitPlatform()
@@ -227,78 +193,42 @@ tasks.named('test') {
 }
 
 tasks.register('copyModsTomlForIntelliJ', Copy) {
-    from tasks.processResources.get().destinationDir
+    from processResources.destinationDir
     into "$projectDir/out/production/resources"
-    include 'META-INF/mods.toml'
-}
-tasks.named('copyModsTomlForIntelliJ') { dependsOn tasks.processResources }
-
-tasks.register('signJar', SignJar) {
-    onlyIf    { project.hasProperty('keyStore') }
-    keyStore  = project.findProperty('keyStore')
-    alias     = project.findProperty('storeAlias')
-    storePass = project.findProperty('storePass')
-
-    inputFile = shadowJar.archiveFile
-    outputFile = shadowJar.archiveFile
-    dependsOn tasks.named('shadowJar')
+    include 'META-INF/neoforge.mods.toml'
+    dependsOn processResources
 }
 
-tasks.named('build') { dependsOn tasks.named('signJar') }
+tasks.register('bumpVersion') {
+    def versionPropsFile = layout.projectDirectory.file('version.properties')
+    inputs.file(versionPropsFile)
+    outputs.upToDateWhen { false }
+    doLast {
+        def props = new Properties()
+        versionPropsFile.asFile.withInputStream { props.load(it) }
+        props['build_number'] = (currentBuild + 1).toString()
+        versionPropsFile.asFile.withOutputStream { props.store(it, null) }
+    }
+}
 
 tasks.register('datagenJar', Jar) {
-    dependsOn tasks.named('datagenClasses')
-    archiveClassifier.set('datagen')
+    dependsOn datagenClasses
+    archiveClassifier = 'datagen'
     from sourceSets.datagen.output
     manifest { attributes 'FMLModType': 'GAMELIBRARY' }
 }
 
 tasks.register('sourcesJar', Jar) {
-    dependsOn tasks.classes
-    archiveClassifier.set('sources')
-    from sourceSets.main.allSource, sourceSets.datagen.allSource
+    dependsOn classes
+    archiveClassifier = 'sources'
+    from sourceSets.main.allSource
+    from sourceSets.datagen.allSource
 }
+
 artifacts {
-    archives tasks.named('sourcesJar')
-    archives tasks.named('datagenJar')
+    archives sourcesJar
+    archives datagenJar
 }
-
-void minimizePNGFile(File file) {
-    long oldSize = file.length()
-    exec { executable 'optipng'; args '-q','-o7','-zm1-9','-strip','all', file }
-    long newSize = file.length()
-    if (newSize < oldSize) println "Optimized ${file.name}: ${oldSize} → ${newSize} bytes"
-}
-
-tasks.register('optimizePng') {
-    doLast {
-        sourceSets.main.resources.srcDirs.each { dir ->
-            fileTree(dir: dir, includes: ['**/*.png']).each { minimizePNGFile(it) }
-        }
-    }
-}
-
-tasks.register('speedUpPreRun') {
-    doLast {
-        ['Client','Server','Data'].each { type ->
-            ant.replace(
-                    file: ".idea/runConfigurations/run${type}.xml",
-                    token: "prepareRun${type}",
-                    value: 'prepareRuns'
-            )
-        }
-    }
-}
-
-tasks.withType(org.gradle.api.tasks.TaskContainer) {
-    it.matching { it.name == 'genIntellijRuns' }.all    { finalizedBy tasks.named('speedUpPreRun') }
-    it.matching { it.name == 'runServer'      }.all    { standardInput = System.in }
-}
-
-tasks.register('genIntellijRunsDummy') {}
 
 def customGradle = rootProject.file('custom.gradle')
 if (customGradle.exists()) apply from: customGradle
-afterEvaluate {
-    tasks.named('reobfJar').configure { enabled = true }
-}

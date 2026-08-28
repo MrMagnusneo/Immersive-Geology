@@ -1,6 +1,7 @@
 package com.igteam.immersivegeology.core.material.data.stone.compat.adastra;
 
 import com.igteam.immersivegeology.core.material.data.types.MaterialStone;
+import com.igteam.immersivegeology.core.material.GeologyMaterial;
 import com.igteam.immersivegeology.core.material.helper.flags.BlockCategoryFlags;
 import com.igteam.immersivegeology.core.material.helper.flags.IFlagType;
 import com.igteam.immersivegeology.core.material.helper.flags.MaterialFlags;
@@ -27,6 +28,9 @@ public class MaterialAdAstraStone extends MaterialStone {
     @Override
     public ResourceLocation getTextureLocation(IFlagType<?> flag)
     {
-        return new ResourceLocation("ad_astra", "block/"+getName());
+        ResourceLocation texture = ResourceLocation.fromNamespaceAndPath("ad_astra", "block/"+getName());
+        GeologyMaterial.trackOptionalTexture(texture.withSuffix("_top"));
+        GeologyMaterial.trackOptionalTexture(texture.withSuffix("_side"));
+        return GeologyMaterial.trackOptionalTexture(texture);
     }
 }

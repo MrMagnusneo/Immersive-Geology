@@ -1,0 +1,17 @@
+{
+  "type": "immersivegeology:chemical_reactor",
+  "energy": 51200,
+  "fluidInputA": {
+    "amount": 125,
+    "tag": "c:hydrofluoric_acid"
+  },
+  "fluidResult": {},
+  "itemInput": {
+    "tag": "c:compound_dust/aluminum"
+  },
+  "result": {
+    "count": 1,
+    "id": "immersivegeology:powder_cryolite"
+  },
+  "time": 200
+}

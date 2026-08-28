@@ -8,6 +8,8 @@
 
 package com.igteam.immersivegeology.common.block.multiblocks.logic;
 
+import blusunrize.immersiveengineering.api.multiblocks.blocks.component.IMultiblockComponent;
+
 import blusunrize.immersiveengineering.api.energy.AveragingEnergyStorage;
 import blusunrize.immersiveengineering.api.multiblocks.blocks.component.IClientTickableComponent;
 import blusunrize.immersiveengineering.api.multiblocks.blocks.component.IServerTickableComponent;
@@ -18,7 +20,6 @@ import blusunrize.immersiveengineering.api.multiblocks.blocks.env.IMultiblockLev
 import blusunrize.immersiveengineering.api.multiblocks.blocks.logic.IMultiblockLogic;
 import blusunrize.immersiveengineering.api.multiblocks.blocks.logic.IMultiblockState;
 import blusunrize.immersiveengineering.api.multiblocks.blocks.util.*;
-import blusunrize.immersiveengineering.api.utils.CapabilityReference;
 import blusunrize.immersiveengineering.common.blocks.multiblocks.process.MultiblockProcess;
 import blusunrize.immersiveengineering.common.blocks.multiblocks.process.MultiblockProcessInMachine;
 import blusunrize.immersiveengineering.common.blocks.multiblocks.process.MultiblockProcessor;
@@ -36,14 +37,16 @@ import com.igteam.immersivegeology.common.block.multiblocks.recipe.*;
 import com.igteam.immersivegeology.common.block.multiblocks.shapes.GeothermalExchangerShape;
 import com.igteam.immersivegeology.core.lib.IGLib;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
@@ -53,15 +56,13 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.energy.IEnergyStorage;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.FluidType;
-import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.fluids.capability.IFluidHandler.FluidAction;
-import net.minecraftforge.fluids.capability.templates.FluidTank;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.FluidType;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction;
+import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 
 import javax.annotation.Nonnull;
 import java.util.*;
@@ -88,7 +89,7 @@ public class GeothermalExchangerLogic implements IMultiblockLogic<GeothermalExch
     }
 
     @Override
-    public InteractionResult click(IMultiblockContext<State> ctx, BlockPos posInMultiblock, Player player, InteractionHand hand, BlockHitResult absoluteHit, boolean isClient)
+    public ItemInteractionResult click(IMultiblockContext<State> ctx, BlockPos posInMultiblock, Player player, InteractionHand hand, BlockHitResult absoluteHit, boolean isClient)
     {
         return IMultiblockLogic.super.click(ctx, posInMultiblock, player, hand, absoluteHit, isClient);
     }
@@ -150,11 +151,11 @@ public class GeothermalExchangerLogic implements IMultiblockLogic<GeothermalExch
     }
 
 
-    private void drainOutputTank(GeothermalExchangerLogic.State state, IMultiblockContext<GeothermalExchangerLogic.State> context, CapabilityReference<IFluidHandler> output_reference)
+    private void drainOutputTank(GeothermalExchangerLogic.State state, IMultiblockContext<GeothermalExchangerLogic.State> context, Supplier<IFluidHandler> output_reference)
     {
         int outSize = Math.min(FluidType.BUCKET_VOLUME, state.output_tank.getFluidAmount());
         FluidStack out = Utils.copyFluidStackWithAmount(state.output_tank.getFluid(), outSize, false);
-        IFluidHandler output = output_reference.getNullable();
+        IFluidHandler output = output_reference.get();
 
         if(output==null)
             return;
@@ -246,8 +247,8 @@ public class GeothermalExchangerLogic implements IMultiblockLogic<GeothermalExch
                                           Level rawLevel, MutableBlockPos localPos, GeothermalExchangerRecipe exchangerRecipe) {
         GeothermalConversionRecipe recipe = helper.getRandomCellPosition(state, localPos);
         if(recipe == null) return false;
-        if(!exchangerRecipe.isCooling() && recipe.blockHeat >= exchangerRecipe.fluidOutput.get().getRawFluid().getFluidType().getTemperature()) return processConversionCell(helper, multiblockLevel, rawLevel, localPos, exchangerRecipe);
-        if(exchangerRecipe.isCooling() && recipe.blockHeat <= exchangerRecipe.fluidOutput.get().getRawFluid().getFluidType().getTemperature()) return processConversionCell(helper, multiblockLevel, rawLevel, localPos, exchangerRecipe);
+        if(!exchangerRecipe.isCooling() && recipe.blockHeat >= exchangerRecipe.fluidOutput.get().getFluid().getFluidType().getTemperature()) return processConversionCell(helper, multiblockLevel, rawLevel, localPos, exchangerRecipe);
+        if(exchangerRecipe.isCooling() && recipe.blockHeat <= exchangerRecipe.fluidOutput.get().getFluid().getFluidType().getTemperature()) return processConversionCell(helper, multiblockLevel, rawLevel, localPos, exchangerRecipe);
         return false;
 	}
 
@@ -293,16 +294,16 @@ public class GeothermalExchangerLogic implements IMultiblockLogic<GeothermalExch
 
         final FluidStack input = state.water_tank.getFluid();
         if(input.isEmpty()) return false;
-        GeothermalExchangerRecipe recipe = GeothermalExchangerRecipe.findRecipe(rawLevel, input);
+        net.minecraft.world.item.crafting.RecipeHolder<GeothermalExchangerRecipe> recipe = GeothermalExchangerRecipe.findRecipe(rawLevel, input);
         if(recipe == null) return false;
         MultiblockProcessInMachine<GeothermalExchangerRecipe> process = new MultiblockProcessInMachine<>(recipe);
         if(input.isEmpty()) process.setInputTanks(1);
-        int drainSimulation = state.water_tank.drain(recipe.fluidIn.getAmount(), FluidAction.SIMULATE).getAmount();
-        int drainAmount = recipe.fluidIn.getAmount();
+        int drainSimulation = state.water_tank.drain(recipe.value().fluidIn.getAmount(), FluidAction.SIMULATE).getAmount();
+        int drainAmount = recipe.value().fluidIn.getAmount();
         if(state.processor.addProcessToQueue(process, rawLevel, true) && drainSimulation == drainAmount)
         {
             state.processor.addProcessToQueue(process, rawLevel, false);
-            state.water_tank.drain(recipe.fluidIn.getAmount(), FluidAction.EXECUTE).getAmount();
+            state.water_tank.drain(recipe.value().fluidIn.getAmount(), FluidAction.EXECUTE).getAmount();
             state.heatHelper.setupRecipeData(multiblockLevel);
             state.currentY = 4;
             return true;
@@ -341,7 +342,7 @@ public class GeothermalExchangerLogic implements IMultiblockLogic<GeothermalExch
                         int heatBlockIndex = -1;
                         if(recipe != null && (isSource || !isFluid))
                         {
-                            List<GeothermalConversionRecipe> recipeList = GeothermalConversionRecipe.RECIPES.getRecipes(rawLevel).stream().toList();
+                            List<GeothermalConversionRecipe> recipeList = GeothermalConversionRecipe.RECIPES.getRecipes(rawLevel).stream().map(net.minecraft.world.item.crafting.RecipeHolder::value).toList();
                             heatBlockIndex = recipeList.indexOf(recipe);
                         }
 
@@ -364,25 +365,15 @@ public class GeothermalExchangerLogic implements IMultiblockLogic<GeothermalExch
     }
 
     @Override
-    public <T> LazyOptional<T> getCapability(IMultiblockContext<State> ctx, CapabilityPosition position, Capability<T> cap)
+    public void registerCapabilities(IMultiblockComponent.CapabilityRegistrar<State> register)
     {
-        final GeothermalExchangerLogic.State state = ctx.getState();
-        if(cap == ForgeCapabilities.ENERGY && (position.side()==null || ENERGY_INPUT.equals(position)))
-        {
-            return state.energyCap.cast(ctx);
-        }
-        if(cap == ForgeCapabilities.FLUID_HANDLER)
-        {
-            if(FLUID_INPUT_CAP.equals(position))
-            {
-                return state.fInputCap.cast(ctx);
-            }
-            if(FLUID_OUTPUT_CAP.equals(position))
-            {
-                return state.fOutputCap.cast(ctx);
-            }
-        }
-        return LazyOptional.empty();
+        register.register(Capabilities.EnergyStorage.BLOCK, (state, position) ->
+                position.side()==null || ENERGY_INPUT.equals(position) ? state.energyCap : null);
+        register.register(Capabilities.FluidHandler.BLOCK, (state, position) -> {
+            if(FLUID_INPUT_CAP.equals(position)) return state.fInputCap;
+            if(FLUID_OUTPUT_CAP.equals(position)) return state.fOutputCap;
+            return null;
+        });
     }
 
     public static class State implements IGMultiblockState, ProcessContextInMachine<GeothermalExchangerRecipe>
@@ -399,10 +390,10 @@ public class GeothermalExchangerLogic implements IMultiblockLogic<GeothermalExch
         private int heat;
         private int ticks;
         public int currentY;
-        private final StoredCapability<IFluidHandler> fInputCap;
-        private final StoredCapability<IFluidHandler> fOutputCap;
-        private final CapabilityReference<IFluidHandler> fluidOutput;
-        private final StoredCapability<IEnergyStorage> energyCap;
+        private final IFluidHandler fInputCap;
+        private final IFluidHandler fOutputCap;
+        private final Supplier<IFluidHandler> fluidOutput;
+        private final IEnergyStorage energyCap;
         private final Supplier<GeothermalExchangerRecipe> cachedRecipe;
         private final LazyGetter<BlockPos, List<TagKey<Biome>>> biome_cache;
 
@@ -413,7 +404,7 @@ public class GeothermalExchangerLogic implements IMultiblockLogic<GeothermalExch
         private final MultiblockProcessor.InMachineProcessor<GeothermalExchangerRecipe> dummy;
         private final GeothermalHeatHelper heatHelper;
         public State(IInitialMultiblockContext<State> context) {
-            this.energyCap = new StoredCapability<>(this.energy_storage);
+            this.energyCap = this.energy_storage;
             this.isActive = false;
             this.currentY = 4;
             this.display_heat = 0;
@@ -426,27 +417,32 @@ public class GeothermalExchangerLogic implements IMultiblockLogic<GeothermalExch
                 context.getMarkDirtyRunnable().run();
             };
 
-            this.fInputCap = new StoredCapability<>(new ArrayFluidHandler(water_tank, true, true, changedAndSync));
-            this.fOutputCap = new StoredCapability<>(new ArrayFluidHandler(output_tank, true, false, changedAndSync));
+            this.fInputCap = new ArrayFluidHandler(water_tank, true, true, changedAndSync);
+            this.fOutputCap = new ArrayFluidHandler(output_tank, true, false, changedAndSync);
 
             Supplier<Level> getLevel = context.levelSupplier();
 
-            biome_cache = new LazyGetter<>((b) -> getLevel.get().getBiome(b).getTagKeys().toList());
+            biome_cache = new LazyGetter<>((b) -> getLevel.get().getBiome(b).tags().toList());
 
             heatHelper = new GeothermalHeatHelper(getLevel);
-            this.cachedRecipe = CachedRecipe.cached(GeothermalExchangerRecipe::findRecipe, getLevel, this.water_tank::getFluid);
+            Supplier<net.minecraft.world.item.crafting.RecipeHolder<GeothermalExchangerRecipe>> cachedRecipeHolder =
+                    CachedRecipe.cached(GeothermalExchangerRecipe::findRecipe, getLevel, this.water_tank::getFluid);
+            this.cachedRecipe = () -> {
+                net.minecraft.world.item.crafting.RecipeHolder<GeothermalExchangerRecipe> holder = cachedRecipeHolder.get();
+                return holder == null ? null : holder.value();
+            };
             this.processor = new MultiblockProcessor<>(
                     1, 0, 1, context.getMarkDirtyRunnable(), GeothermalExchangerRecipe.RECIPES::getById
             );
 
 			assert FLUID_OUTPUT_CAP.side()!=null;
-			this.fluidOutput = context.getCapabilityAt(ForgeCapabilities.FLUID_HANDLER, new MultiblockFace(FLUID_OUTPUT_CAP.side().getOpposite(), FLUID_OUTPUT_CAP.posInMultiblock().north()));
+			this.fluidOutput = context.getCapabilityAt(Capabilities.FluidHandler.BLOCK, new MultiblockFace(FLUID_OUTPUT_CAP.side().getOpposite(), FLUID_OUTPUT_CAP.posInMultiblock().north()));
             this.dummy = new InMachineProcessor<>(1, 0, 1, context.getMarkDirtyRunnable(), GeothermalExchangerRecipe.RECIPES::getById);
         }
 
         public void clearProcessor()
         {
-            this.processor.fromNBT(dummy.toNBT(), MultiblockProcessInMachine::new);
+            this.processor.getQueue().clear();
         }
 
         @Override
@@ -461,9 +457,9 @@ public class GeothermalExchangerLogic implements IMultiblockLogic<GeothermalExch
         }
 
         @Override
-        public void readSyncNBT(CompoundTag nbt)
+        public void readSyncNBT(CompoundTag nbt, HolderLookup.Provider provider)
         {
-            readSaveNBT(nbt);
+            readSaveNBT(nbt, provider);
             heating_states = nbt.getByteArray("heating_states");
             currentY = nbt.getInt("current_y");
             ticks = nbt.getInt("internal_ticks");
@@ -472,9 +468,9 @@ public class GeothermalExchangerLogic implements IMultiblockLogic<GeothermalExch
         }
 
         @Override
-        public void writeSyncNBT(CompoundTag nbt)
+        public void writeSyncNBT(CompoundTag nbt, HolderLookup.Provider provider)
         {
-            writeSaveNBT(nbt);
+            writeSaveNBT(nbt, provider);
             nbt.putByteArray("heating_states", heating_states);
             nbt.putInt("current_y", currentY);
             nbt.putInt("internal_ticks", ticks);
@@ -495,26 +491,26 @@ public class GeothermalExchangerLogic implements IMultiblockLogic<GeothermalExch
         }
 
         @Override
-        public void readSaveNBT(CompoundTag nbt){
+        public void readSaveNBT(CompoundTag nbt, HolderLookup.Provider provider){
             isActive = nbt.getBoolean("is_active");
             heat = nbt.getInt("heat");
             display_heat = nbt.getFloat("display_heat");
             cooling_rate = nbt.getFloat("cooling");
-            water_tank.readFromNBT(nbt.getCompound("water_tank"));
-            output_tank.readFromNBT(nbt.getCompound("steam_tank"));
-            processor.fromNBT(nbt.get("processor"), MultiblockProcessInMachine::new);
+            water_tank.readFromNBT(provider, nbt.getCompound("water_tank"));
+            output_tank.readFromNBT(provider, nbt.getCompound("steam_tank"));
+            processor.fromNBT(nbt.getList("processor", Tag.TAG_COMPOUND), (getter, data, registries) -> new MultiblockProcessInMachine<>(getter, data), provider);
             heatHelper.fromNBT(nbt);
         }
 
         @Override
-        public void writeSaveNBT(CompoundTag nbt){
+        public void writeSaveNBT(CompoundTag nbt, HolderLookup.Provider provider){
             nbt.putBoolean("is_active", isActive);
             nbt.putInt("heat", heat);
             nbt.putFloat("display_heat", display_heat);
             nbt.putFloat("cooling", cooling_rate);
-            nbt.put("water_tank", water_tank.writeToNBT(new CompoundTag()));
-            nbt.put("steam_tank", output_tank.writeToNBT(new CompoundTag()));
-            nbt.put("processor", processor.toNBT());
+            nbt.put("water_tank", water_tank.writeToNBT(provider, new CompoundTag()));
+            nbt.put("steam_tank", output_tank.writeToNBT(provider, new CompoundTag()));
+            nbt.put("processor", processor.toNBT(provider));
             nbt.put("helper", heatHelper.toNBT());
         }
 
@@ -568,11 +564,5 @@ public class GeothermalExchangerLogic implements IMultiblockLogic<GeothermalExch
             return this.display_heat;
         }
 
-        public void invalidate(@Nonnull IMultiblockContext<?> ctx)
-        {
-            this.fInputCap.get(ctx).invalidate();
-            this.fOutputCap.get(ctx).invalidate();
-            this.energyCap.get(ctx).invalidate();
-        }
     }
 }

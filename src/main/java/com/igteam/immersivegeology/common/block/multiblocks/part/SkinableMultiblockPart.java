@@ -20,6 +20,7 @@ import com.igteam.immersivegeology.common.block.multiblocks.IGTemplateMultiblock
 import com.igteam.immersivegeology.common.block.multiblocks.logic.CrystallizerLogic;
 import com.igteam.immersivegeology.common.block.multiblocks.logic.CrystallizerLogic.State;
 import com.igteam.immersivegeology.common.block.multiblocks.logic.helper.IGMultiblockState;
+import com.igteam.immersivegeology.common.block.multiblocks.logic.helper.IRemovalAwareMultiblockState;
 import com.igteam.immersivegeology.common.block.multiblocks.skins.helpers.IIGMultiSkinHelper;
 import com.igteam.immersivegeology.common.block.multiblocks.skins.helpers.IMultiSkinBlock;
 import com.igteam.immersivegeology.common.config.IGServerConfig;
@@ -73,14 +74,15 @@ public abstract class SkinableMultiblockPart<S extends IMultiblockState, T exten
 	@Override
 	public void onRemove(BlockState state, @NotNull Level level, @NotNull BlockPos pos, BlockState newState, boolean isMoving)
 	{
-		if(level.getBlockEntity(pos) instanceof IMultiblockBE<?> be)
+		if(!state.is(newState.getBlock()))
 		{
-			IMultiblockBEHelper<?> helper = be.getHelper();
-			IMultiblockState mbState = helper.getState();
-			if(mbState instanceof IGMultiblockState igState && helper.getContext() != null)
+			if(level.getBlockEntity(pos) instanceof IMultiblockBE<?> be)
 			{
-				igState.invalidate(helper.getContext());
+				IMultiblockBEHelper<?> helper = be.getHelper();
+				if(helper.getState() instanceof IRemovalAwareMultiblockState removalAware && helper.getContext() != null)
+					removalAware.onMultiblockPartRemoved(helper.getContext());
 			}
+			level.invalidateCapabilities(pos);
 		}
 		super.onRemove(state, level, pos, newState, isMoving);
 	}
@@ -92,7 +94,7 @@ public abstract class SkinableMultiblockPart<S extends IMultiblockState, T exten
 		if(!pMovedByPiston)
 		{
 			String multiblock = skinClass.getEnumConstants()[0].multiblockName();
-			MachineConfig config = IGServerConfig.MACHINES.machines.get(multiblock);
+			MachineConfig config = IGServerConfig.MACHINES.getSkinConfig(multiblock);
 			if(config!=null)
 			{
 				int skin_ordinal = config.default_skin_ordinal.get() % skinClass.getEnumConstants().length;
@@ -150,7 +152,7 @@ public abstract class SkinableMultiblockPart<S extends IMultiblockState, T exten
 				{
 					Class<T> skinClass = (Class<T>)skinValue.getDeclaringClass();
 					String multiblock = skinClass.getEnumConstants()[0].multiblockName();
-					MachineConfig config = IGServerConfig.MACHINES.machines.get(multiblock);
+					MachineConfig config = IGServerConfig.MACHINES.getSkinConfig(multiblock);
 					int skin_ordinal = config.default_skin_ordinal.get() % skinClass.getEnumConstants().length;
 					if(skinClass.getEnumConstants()[skin_ordinal].equals(skinValue)) return false;
 					BlockState state = current.setValue(prop, skinClass.getEnumConstants()[skin_ordinal]);

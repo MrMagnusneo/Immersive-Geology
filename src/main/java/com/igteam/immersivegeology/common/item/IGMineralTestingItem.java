@@ -27,6 +27,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.ChunkPos;
@@ -37,7 +38,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.LevelChunkSection;
-import net.minecraftforge.common.Tags;
+import net.neoforged.neoforge.common.Tags;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -80,7 +81,7 @@ public class IGMineralTestingItem extends IGGenericItem implements IGFlagItem
 		BlockPos usedPos = context.getClickedPos();
 		ChunkPos centreChunkPos = new ChunkPos(usedPos);
 
-		stack.hurtAndBreak(1, player, (p) -> {});
+		stack.hurtAndBreak(1, player, EquipmentSlot.MAINHAND);
 
 		MineralCacheEntry cachedEntry = cached_test.get(centreChunkPos);
 		if (cachedEntry != null) {

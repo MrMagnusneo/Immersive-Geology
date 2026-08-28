@@ -11,7 +11,11 @@ package com.igteam.immersivegeology.common.data.generators.loot;
 import blusunrize.immersiveengineering.api.IEApi;
 import com.igteam.immersivegeology.common.block.multiblocks.skins.*;
 import com.igteam.immersivegeology.core.registration.IGRegistrationHolder;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.loot.LootTableSubProvider;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
@@ -22,7 +26,7 @@ import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
 import net.minecraft.world.level.storage.loot.entries.LootPoolSingletonContainer;
 import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
-import net.minecraft.world.level.storage.loot.functions.SetNbtFunction;
+import net.minecraft.world.level.storage.loot.functions.SetComponentsFunction;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
@@ -31,8 +35,15 @@ import java.util.function.BiConsumer;
 
 public class IGChestLootProvider implements LootTableSubProvider
 {
+	private final HolderLookup.Provider registries;
+
+	public IGChestLootProvider(HolderLookup.Provider registries)
+	{
+		this.registries = registries;
+	}
+
 	@Override
-	public void generate(BiConsumer<ResourceLocation, Builder> out)
+	public void generate(BiConsumer<ResourceKey<LootTable>, Builder> out)
 	{
 
 	}
@@ -52,8 +63,8 @@ public class IGChestLootProvider implements LootTableSubProvider
 	{
 		LootPoolSingletonContainer.Builder<?> ret = LootItem.lootTableItem(item.getItem())
 				.setWeight(weight);
-		if(item.hasTag())
-			ret.apply(SetNbtFunction.setTag(item.getOrCreateTag()));
+		if(item.has(DataComponents.CUSTOM_DATA))
+			ret.apply(SetComponentsFunction.setComponent(DataComponents.CUSTOM_DATA, item.get(DataComponents.CUSTOM_DATA)));
 		return ret;
 	}
 }

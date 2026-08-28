@@ -16,7 +16,7 @@ import com.igteam.immersivegeology.core.material.helper.material.recipe.IGRecipe
 import com.igteam.immersivegeology.core.material.helper.material.recipe.IGStageDesignation;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.data.recipes.FinishedRecipe;
+import com.igteam.immersivegeology.client.helper.FinishedRecipe;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.SimpleCookingRecipeBuilder;
 import net.minecraft.resources.ResourceLocation;
@@ -130,7 +130,8 @@ public class IGBasicSmeltingMethod extends IGRecipeMethod
 	{
 		try
 		{
-			SimpleCookingRecipeBuilder.smelting(Ingredient.of(input), RecipeCategory.MISC, output, xp, smeltingTime).unlockedBy("has_"+input.asItem().getDescriptionId(), InventoryChangeTrigger.TriggerInstance.hasItems(input)).save(consumer, getLocation());
+			if(!(consumer instanceof net.minecraft.data.recipes.RecipeOutput recipeOutput)) return false;
+			SimpleCookingRecipeBuilder.smelting(Ingredient.of(input), RecipeCategory.MISC, output, xp, smeltingTime).unlockedBy("has_"+input.asItem().getDescriptionId(), InventoryChangeTrigger.TriggerInstance.hasItems(input)).save(recipeOutput, getLocation());
 			return true;
 		} catch(Exception exception)
 		{

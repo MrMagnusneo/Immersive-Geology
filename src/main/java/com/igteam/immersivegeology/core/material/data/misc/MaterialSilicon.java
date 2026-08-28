@@ -9,7 +9,7 @@
 package com.igteam.immersivegeology.core.material.data.misc;
 
 import blusunrize.immersiveengineering.api.IETags;
-import blusunrize.immersiveengineering.api.crafting.FluidTagInput;
+import com.igteam.immersivegeology.common.compat.ie.crafting.FluidTagInput;
 import blusunrize.immersiveengineering.api.crafting.IngredientWithSize;
 import com.igteam.immersivegeology.core.lib.IGLib;
 import com.igteam.immersivegeology.core.material.data.enums.ChemicalEnum;
@@ -24,7 +24,7 @@ import com.igteam.immersivegeology.core.material.helper.material.recipe.IGStageD
 import com.igteam.immersivegeology.core.material.helper.material.recipe.helper.IGMethodBuilder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.Tags.Items;
+import net.neoforged.neoforge.common.Tags.Items;
 
 
 
@@ -48,15 +48,15 @@ public class MaterialSilicon extends MaterialMisc
 			{
 				case INGOT,GRIT,SLAG ->
 				{
-					return new ResourceLocation(IGLib.MODID, "item/colored/silicon/"+i.getName());
+					return ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "item/colored/silicon/"+i.getName());
 				}
 				case POWDERED_SLAG ->
 				{
-					return new ResourceLocation(IGLib.MODID, "item/greyscale/rock/"+i.getName());
+					return ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "item/greyscale/rock/"+i.getName());
 				}
 				default ->
 				{
-					return new ResourceLocation(IGLib.MODID, "item/greyscale/metal/"+i.getName());
+					return ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "item/greyscale/metal/"+i.getName());
 				}
 			}
 		}

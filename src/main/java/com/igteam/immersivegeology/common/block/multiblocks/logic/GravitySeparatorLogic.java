@@ -8,6 +8,8 @@
 
 package com.igteam.immersivegeology.common.block.multiblocks.logic;
 
+import blusunrize.immersiveengineering.api.multiblocks.blocks.component.IMultiblockComponent;
+
 import blusunrize.immersiveengineering.api.multiblocks.blocks.component.IClientTickableComponent;
 import blusunrize.immersiveengineering.api.multiblocks.blocks.component.IServerTickableComponent;
 import blusunrize.immersiveengineering.api.multiblocks.blocks.component.RedstoneControl;
@@ -30,6 +32,7 @@ import com.igteam.immersivegeology.common.block.multiblocks.recipe.GravitySepara
 import com.igteam.immersivegeology.common.block.multiblocks.shapes.GravitySeparatorShape;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -38,18 +41,17 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.fluids.FluidType;
-import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.fluids.capability.templates.FluidTank;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemHandlerHelper;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.fluids.FluidType;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
+import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.ItemHandlerHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -159,7 +161,7 @@ public class GravitySeparatorLogic implements ISkinnableMultiblockLogic<GravityS
         if(recipe == null) return false;
         if(!simulate)
         {
-            p = new SeparatorProcess(ItemHandlerHelper.copyStackWithSize(stack, 1));
+            p = new SeparatorProcess(stack.copyWithCount(1));
             state.separatorProcessesQueue.add(p);
             stack.shrink(1);
         }
@@ -177,26 +179,16 @@ public class GravitySeparatorLogic implements ISkinnableMultiblockLogic<GravityS
     }
 
     @Override
-    public <T> LazyOptional<T> getCapability(IMultiblockContext<State> ctx, CapabilityPosition position, Capability<T> cap)
+    public void registerCapabilities(IMultiblockComponent.CapabilityRegistrar<State> register)
     {
-        final State state = ctx.getState();
-        if(cap == ForgeCapabilities.ITEM_HANDLER)
-        {
-            return state.insertionHandler.cast(ctx);
-        }
-        if(cap == ForgeCapabilities.FLUID_HANDLER)
-        {
-            if(FLUID_INPUT_CAP.equals(position))
-            {
-                return state.fInputCap.cast(ctx);
-            }
-        }
-        return LazyOptional.empty();
+        register.register(Capabilities.ItemHandler.BLOCK, (state, position) -> state.insertionHandler);
+        register.register(Capabilities.FluidHandler.BLOCK, (state, position) ->
+                FLUID_INPUT_CAP.equals(position) ? state.fInputCap : null);
     }
 
     @Nullable
     @Override
-    public List<Component> getOverlayText(State state, Player player, boolean b)
+    public List<Component> getOverlayText(State state, BlockPos pos, BlockHitResult hit, Player player, boolean b)
     {
         if(state == null) return List.of();
         if(!state.separatorProcessesQueue.isEmpty() && state.tank.getFluidAmount() < 20)
@@ -213,10 +205,10 @@ public class GravitySeparatorLogic implements ISkinnableMultiblockLogic<GravityS
         public final RedstoneControl.RSState rsState = RedstoneControl.RSState.disabledByDefault();
         public final ArrayList<SeparatorProcess> separatorProcessesQueue = new ArrayList<>();
         private int insert_cooldown = 10;
-        private final StoredCapability<IItemHandler> insertionHandler;
+        private final IItemHandler insertionHandler;
         private final DroppingMultiblockOutput output;
         private final DroppingMultiblockOutput secondary;
-        private final StoredCapability<IFluidHandler> fInputCap;
+        private final IFluidHandler fInputCap;
         public final FluidTank tank = new FluidTank(TANK_VOLUME);
         private boolean renderAsActive;
 
@@ -230,9 +222,9 @@ public class GravitySeparatorLogic implements ISkinnableMultiblockLogic<GravityS
             };
             this.output = new DroppingMultiblockOutput(OUTPUT_POS, ctx);
             this.secondary = new DroppingMultiblockOutput(SECONDARY_OUTPUT_POS, ctx);
-            this.fInputCap = new StoredCapability<>(new ArrayFluidHandler(tank, true, true, changedAndSync));
+            this.fInputCap = new ArrayFluidHandler(tank, true, true, changedAndSync);
 
-            this.insertionHandler = new StoredCapability<>(new InsertOnlyInventory()
+            this.insertionHandler = new InsertOnlyInventory()
             {
                 @Override
                 protected ItemStack insert(ItemStack toInsert, boolean simulate)
@@ -244,7 +236,7 @@ public class GravitySeparatorLogic implements ISkinnableMultiblockLogic<GravityS
                     }
                     return toInsert;
                 }
-            });
+            };
         }
 
         public boolean shouldRenderActive()
@@ -253,54 +245,48 @@ public class GravitySeparatorLogic implements ISkinnableMultiblockLogic<GravityS
         }
 
         @Override
-        public void writeSaveNBT(CompoundTag nbt){
-            writeSyncNBT(nbt);
+        public void writeSaveNBT(CompoundTag nbt, HolderLookup.Provider provider){
+            writeSyncNBT(nbt, provider);
         }
 
         @Override
-        public void readSaveNBT(CompoundTag nbt){
-            readSyncNBT(nbt);
+        public void readSaveNBT(CompoundTag nbt, HolderLookup.Provider provider){
+            readSyncNBT(nbt, provider);
         }
 
         @Override
-        public void writeSyncNBT(CompoundTag nbt)
+        public void writeSyncNBT(CompoundTag nbt, HolderLookup.Provider provider)
         {
-            writeCommonNBT(nbt);
-            nbt.put("tank", this.tank.writeToNBT(new CompoundTag()));
+            writeCommonNBT(nbt, provider);
+            nbt.put("tank", this.tank.writeToNBT(provider, new CompoundTag()));
             nbt.putBoolean("renderActive", renderAsActive);
             nbt.putInt("insert_cooldown", insert_cooldown);
         }
 
         @Override
-        public void readSyncNBT(CompoundTag nbt)
+        public void readSyncNBT(CompoundTag nbt, HolderLookup.Provider provider)
         {
-            readCommonNBT(nbt);
-            tank.readFromNBT(nbt.getCompound("tank"));
+            readCommonNBT(nbt, provider);
+            tank.readFromNBT(provider, nbt.getCompound("tank"));
             renderAsActive = nbt.getBoolean("renderActive");
             insert_cooldown = nbt.getInt("insert_cooldown");
         }
 
-        private void writeCommonNBT(CompoundTag nbt)
+        private void writeCommonNBT(CompoundTag nbt, HolderLookup.Provider provider)
         {
             ListTag processes = new ListTag();
             for(final SeparatorProcess process : separatorProcessesQueue)
-                processes.add(process.writeToNBT());
+                processes.add(process.writeToNBT(provider));
             nbt.put("processes", processes);
         }
 
-        private void readCommonNBT(CompoundTag nbt)
+        private void readCommonNBT(CompoundTag nbt, HolderLookup.Provider provider)
         {
             ListTag processes = nbt.getList("processes", Tag.TAG_COMPOUND);
             separatorProcessesQueue.clear();
             for(int i = 0; i < processes.size(); ++i)
-                separatorProcessesQueue.add(SeparatorProcess.readFromNBT(processes.getCompound(i)));
+                separatorProcessesQueue.add(SeparatorProcess.readFromNBT(processes.getCompound(i), provider));
         }
 
-        @Override
-        public void invalidate(@NotNull IMultiblockContext<?> ctx)
-        {
-            this.fInputCap.get(ctx).invalidate();
-            this.insertionHandler.get(ctx).invalidate();
-        }
     }
 }

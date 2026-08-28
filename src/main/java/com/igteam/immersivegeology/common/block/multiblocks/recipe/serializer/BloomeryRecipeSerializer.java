@@ -8,8 +8,9 @@
 
 package com.igteam.immersivegeology.common.block.multiblocks.recipe.serializer;
 
-import blusunrize.immersiveengineering.api.crafting.IERecipeSerializer;
+import com.igteam.immersivegeology.common.recipe.LegacyIERecipeSerializer;
 import blusunrize.immersiveengineering.api.crafting.IngredientWithSize;
+import blusunrize.immersiveengineering.api.crafting.TagOutput;
 import com.google.gson.JsonObject;
 import com.igteam.immersivegeology.common.block.multiblocks.recipe.BloomeryRecipe;
 import com.igteam.immersivegeology.core.lib.IGLib;
@@ -19,11 +20,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraftforge.common.crafting.conditions.ICondition.IContext;
-import net.minecraftforge.common.util.Lazy;
+import net.neoforged.neoforge.common.conditions.ICondition.IContext;
+import net.neoforged.neoforge.common.util.Lazy;
 import org.jetbrains.annotations.Nullable;
 
-public class BloomeryRecipeSerializer extends IERecipeSerializer<BloomeryRecipe>
+public class BloomeryRecipeSerializer extends LegacyIERecipeSerializer<BloomeryRecipe>
 {
 	@Override
 	public ItemStack getIcon()
@@ -34,8 +35,8 @@ public class BloomeryRecipeSerializer extends IERecipeSerializer<BloomeryRecipe>
 	@Override
 	public BloomeryRecipe readFromJson(ResourceLocation resourceLocation, JsonObject json, IContext iContext)
 	{
-		Lazy<ItemStack> output = readOutput(json.get("result"));
-		IngredientWithSize input = IngredientWithSize.deserialize(GsonHelper.getAsJsonObject(json, "input"));
+		TagOutput output = readOutput(json.get("result"));
+		IngredientWithSize input = IngredientWithSize.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json.get("input")).getOrThrow();
 		int time = GsonHelper.getAsInt(json, "time");
 		return new BloomeryRecipe(resourceLocation, input, output, time);
 	}
@@ -44,8 +45,8 @@ public class BloomeryRecipeSerializer extends IERecipeSerializer<BloomeryRecipe>
 	public @Nullable BloomeryRecipe fromNetwork(ResourceLocation resourceLocation, FriendlyByteBuf buffer)
 	{
 		
-		Lazy<ItemStack> output = readLazyStack(buffer);
-		IngredientWithSize input = IngredientWithSize.read(buffer);
+		TagOutput output = readLazyStack(buffer);
+		IngredientWithSize input = IngredientWithSize.STREAM_CODEC.decode((net.minecraft.network.RegistryFriendlyByteBuf)buffer);
 		int time = buffer.readInt();
 		return new BloomeryRecipe(resourceLocation, input, output, time);
 	}
@@ -55,7 +56,7 @@ public class BloomeryRecipeSerializer extends IERecipeSerializer<BloomeryRecipe>
 	{
 		
 		writeLazyStack(buffer, recipe.result);
-		recipe.input.write(buffer);
+		IngredientWithSize.STREAM_CODEC.encode((net.minecraft.network.RegistryFriendlyByteBuf)buffer, recipe.input);
 		buffer.writeInt(recipe.getTotalProcessTime());
 	}
 }

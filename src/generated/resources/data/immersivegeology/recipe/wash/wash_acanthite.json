@@ -1,0 +1,17 @@
+{
+  "type": "immersivegeology:gravity_separator",
+  "byproduct": {
+    "count": 1,
+    "id": "immersivegeology:metal_oxide_lead"
+  },
+  "byproduct_chance": 0.075,
+  "input": {
+    "tag": "c:powdered_slag/acanthite"
+  },
+  "result": {
+    "count": 1,
+    "id": "immersivegeology:metal_oxide_silver"
+  },
+  "time": 200,
+  "water": 250
+}

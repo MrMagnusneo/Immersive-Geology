@@ -15,6 +15,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.igteam.immersivegeology.common.block.multiblocks.recipe.CrystallizerRecipe;
+import com.igteam.immersivegeology.common.compat.ie.crafting.FluidTagInput;
+import com.igteam.immersivegeology.common.recipe.LegacyIERecipeSerializer;
 import com.igteam.immersivegeology.core.lib.IGLib;
 import com.igteam.immersivegeology.core.registration.IGMultiblockProvider;
 import net.minecraft.network.FriendlyByteBuf;
@@ -24,13 +26,13 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.ShapedRecipe;
-import net.minecraftforge.common.crafting.conditions.ICondition.IContext;
-import net.minecraftforge.common.util.JsonUtils;
-import net.minecraftforge.common.util.Lazy;
-import net.minecraftforge.fluids.FluidStack;
+import net.neoforged.neoforge.common.conditions.ICondition.IContext;
+import net.neoforged.neoforge.common.util.JsonUtils;
+import net.neoforged.neoforge.common.util.Lazy;
+import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.Nullable;
 
-public class CrystallizerRecipeSerializer extends IERecipeSerializer<CrystallizerRecipe>
+public class CrystallizerRecipeSerializer extends LegacyIERecipeSerializer<CrystallizerRecipe>
 {
 	@Override
 	public ItemStack getIcon()
@@ -41,30 +43,30 @@ public class CrystallizerRecipeSerializer extends IERecipeSerializer<Crystallize
 	@Override
 	public CrystallizerRecipe readFromJson(ResourceLocation resourceLocation, JsonObject json, IContext iContext)
 	{
-		Lazy<ItemStack> output = readOutput(json.get("result"));
-		FluidStack fluid_output = ApiUtils.jsonDeserializeFluidStack(GsonHelper.getAsJsonObject(json, "fluidResult"));
+		TagOutput output = readOutput(json.get("result"));
+		FluidStack fluid_output = FluidStack.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json.get("fluidResult")).getOrThrow();
 		FluidTagInput input = FluidTagInput.deserialize(GsonHelper.getAsJsonObject(json, "input"));
 		int energy = GsonHelper.getAsInt(json, "energy");
 		int time = GsonHelper.getAsInt(json, "time");
-		return new CrystallizerRecipe(resourceLocation, input, output, ()->fluid_output, energy, time);
+		return new CrystallizerRecipe(resourceLocation, input, output, Lazy.of(()->fluid_output), energy, time);
 	}
 
 	@Override
 	public @Nullable CrystallizerRecipe fromNetwork(ResourceLocation resourceLocation, FriendlyByteBuf buffer)
 	{
-		Lazy<ItemStack> output = readLazyStack(buffer);
-		FluidStack fluid_output = buffer.readFluidStack();
+		TagOutput output = readLazyStack(buffer);
+		FluidStack fluid_output = FluidStack.OPTIONAL_STREAM_CODEC.decode((net.minecraft.network.RegistryFriendlyByteBuf)buffer);
 		FluidTagInput input = FluidTagInput.read(buffer);
 		int energy = buffer.readInt();
 		int time = buffer.readInt();
-		return new CrystallizerRecipe(resourceLocation, input, output, ()->fluid_output, energy, time);
+		return new CrystallizerRecipe(resourceLocation, input, output, Lazy.of(()->fluid_output), energy, time);
 	}
 
 	@Override
 	public void toNetwork(FriendlyByteBuf buffer, CrystallizerRecipe recipe)
 	{
 		writeLazyStack(buffer, recipe.itemOutput);
-		buffer.writeFluidStack(recipe.fluidOutput.get());
+		FluidStack.OPTIONAL_STREAM_CODEC.encode((net.minecraft.network.RegistryFriendlyByteBuf)buffer, recipe.fluidOutput.get());
 		recipe.fluidIn.write(buffer);
 		buffer.writeInt(recipe.getTotalProcessEnergy());
 		buffer.writeInt(recipe.getTotalProcessTime());

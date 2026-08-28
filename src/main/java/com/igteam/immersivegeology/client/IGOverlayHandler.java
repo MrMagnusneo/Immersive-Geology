@@ -31,15 +31,12 @@ import net.minecraft.world.item.MapItem;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.saveddata.maps.MapDecoration;
-import net.minecraft.world.level.saveddata.maps.MapDecoration.Type;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.minecraftforge.client.event.RenderGuiOverlayEvent;
-import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.TickEvent.RenderTickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
+import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
+import net.neoforged.bus.api.SubscribeEvent;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -47,11 +44,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class IGOverlayHandler
 {
 	@SubscribeEvent
-	public void onRenderOverlay(RenderGuiOverlayEvent.Post event)
+	public void onRenderOverlay(RenderGuiLayerEvent.Post event)
 	{
 		int scaledWidth = ClientUtils.mc().getWindow().getGuiScaledWidth();
 		int scaledHeight = ClientUtils.mc().getWindow().getGuiScaledHeight();
-		if(ClientUtils.mc().player!=null&&event.getOverlay().id().equals(VanillaGuiOverlay.ITEM_NAME.id()))
+		if(ClientUtils.mc().player!=null&&event.getName().equals(VanillaGuiLayers.SELECTED_ITEM_NAME))
 		{
 			Player player = ClientUtils.mc().player;
 			GuiGraphics graphics = event.getGuiGraphics();
@@ -72,7 +69,7 @@ public class IGOverlayHandler
 						BlockEntity tileEntity = player.level().getBlockEntity(pos);
 						if((tileEntity instanceof IMultiblockBE<?> multiblock))
 						{
-							renderMultiblockOverlay(multiblock, hammer, transform, scaledWidth, scaledHeight);
+								renderMultiblockOverlay(multiblock, hammer, graphics, scaledWidth, scaledHeight);
 						}
 					}
 				}
@@ -81,7 +78,7 @@ public class IGOverlayHandler
 	}
 
 	private <S extends IMultiblockState> void renderMultiblockOverlay(
-			IMultiblockBE<S> be, boolean hammer, PoseStack transform, int scaledWidth, int scaledHeight
+			IMultiblockBE<S> be, boolean hammer, GuiGraphics graphics, int scaledWidth, int scaledHeight
 	)
 	{
 		final IMultiblockBEHelper<S> helper = be.getHelper();
@@ -90,6 +87,6 @@ public class IGOverlayHandler
 		final List<Component> overlayText = overlayHandler.getOverlayText(helper.getState(), ClientUtils.mc().player, be.getHelper());
 		if(overlayText==null)
 			return;
-		BlockOverlayUtils.drawBlockOverlayText(transform, overlayText, scaledWidth, scaledHeight);
+		BlockOverlayUtils.drawBlockOverlayText(graphics, overlayText, scaledWidth, scaledHeight);
 	}
 }

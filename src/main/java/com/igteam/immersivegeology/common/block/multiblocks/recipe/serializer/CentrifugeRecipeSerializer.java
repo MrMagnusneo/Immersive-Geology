@@ -9,8 +9,9 @@
 package com.igteam.immersivegeology.common.block.multiblocks.recipe.serializer;
 
 import blusunrize.immersiveengineering.api.ApiUtils;
-import blusunrize.immersiveengineering.api.crafting.FluidTagInput;
-import blusunrize.immersiveengineering.api.crafting.IERecipeSerializer;
+import blusunrize.immersiveengineering.api.crafting.TagOutput;
+import com.igteam.immersivegeology.common.compat.ie.crafting.FluidTagInput;
+import com.igteam.immersivegeology.common.recipe.LegacyIERecipeSerializer;
 import com.google.gson.JsonObject;
 import com.igteam.immersivegeology.common.block.multiblocks.recipe.CentrifugeRecipe;
 import com.igteam.immersivegeology.common.block.multiblocks.recipe.CrystallizerRecipe;
@@ -22,12 +23,12 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.crafting.conditions.ICondition.IContext;
-import net.minecraftforge.common.util.Lazy;
-import net.minecraftforge.fluids.FluidStack;
+import net.neoforged.neoforge.common.conditions.ICondition.IContext;
+import net.neoforged.neoforge.common.util.Lazy;
+import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.Nullable;
 
-public class CentrifugeRecipeSerializer extends IERecipeSerializer<CentrifugeRecipe>
+public class CentrifugeRecipeSerializer extends LegacyIERecipeSerializer<CentrifugeRecipe>
 {
 	@Override
 	public ItemStack getIcon()
@@ -39,25 +40,25 @@ public class CentrifugeRecipeSerializer extends IERecipeSerializer<CentrifugeRec
 	public CentrifugeRecipe readFromJson(ResourceLocation resourceLocation, JsonObject json, IContext iContext)
 	{
 		FluidTagInput input = FluidTagInput.deserialize(GsonHelper.getAsJsonObject(json, "fluid_input"));
-		Lazy<ItemStack> output = readOutput(json.get("item_output"));
-		FluidStack primary_fluid_output = ApiUtils.jsonDeserializeFluidStack(GsonHelper.getAsJsonObject(json, "primary_fluid_out"));
-		FluidStack secondary_fluid_output = ApiUtils.jsonDeserializeFluidStack(GsonHelper.getAsJsonObject(json, "secondary_fluid_out"));
+		TagOutput output = readOutput(json.get("item_output"));
+		FluidStack primary_fluid_output = FluidStack.OPTIONAL_CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json.get("primary_fluid_out")).getOrThrow();
+		FluidStack secondary_fluid_output = FluidStack.OPTIONAL_CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json.get("secondary_fluid_out")).getOrThrow();
 		int energy = GsonHelper.getAsInt(json, "energy");
 		int time = GsonHelper.getAsInt(json, "time");
 
-		return new CentrifugeRecipe(resourceLocation, input, output, () -> primary_fluid_output, () -> secondary_fluid_output, energy, time);
+		return new CentrifugeRecipe(resourceLocation, input, output, Lazy.of(() -> primary_fluid_output), Lazy.of(() -> secondary_fluid_output), energy, time);
 	}
 
 	@Override
 	public @Nullable CentrifugeRecipe fromNetwork(ResourceLocation resourceLocation, FriendlyByteBuf buffer)
 	{
 		FluidTagInput input = FluidTagInput.read(buffer);
-		Lazy<ItemStack> output = readLazyStack(buffer);
-		FluidStack primaryFluidOutput = buffer.readFluidStack();
-		FluidStack secondaryFluidOutput = buffer.readFluidStack();
+		TagOutput output = readLazyStack(buffer);
+		FluidStack primaryFluidOutput = FluidStack.OPTIONAL_STREAM_CODEC.decode((net.minecraft.network.RegistryFriendlyByteBuf)buffer);
+		FluidStack secondaryFluidOutput = FluidStack.OPTIONAL_STREAM_CODEC.decode((net.minecraft.network.RegistryFriendlyByteBuf)buffer);
 		int energy = buffer.readInt();
 		int time = buffer.readInt();
-		return new CentrifugeRecipe(resourceLocation, input, output, () -> primaryFluidOutput, () -> secondaryFluidOutput, energy, time);
+		return new CentrifugeRecipe(resourceLocation, input, output, Lazy.of(() -> primaryFluidOutput), Lazy.of(() -> secondaryFluidOutput), energy, time);
 	}
 
 	@Override
@@ -65,8 +66,8 @@ public class CentrifugeRecipeSerializer extends IERecipeSerializer<CentrifugeRec
 	{
 		recipe.fluidIn.write(buffer);
 		writeLazyStack(buffer, recipe.itemOutput);
-		buffer.writeFluidStack(recipe.primaryFluidOutput.get());
-		buffer.writeFluidStack(recipe.secondaryFluidOutput.get());
+		FluidStack.OPTIONAL_STREAM_CODEC.encode((net.minecraft.network.RegistryFriendlyByteBuf)buffer, recipe.primaryFluidOutput.get());
+		FluidStack.OPTIONAL_STREAM_CODEC.encode((net.minecraft.network.RegistryFriendlyByteBuf)buffer, recipe.secondaryFluidOutput.get());
 		buffer.writeInt(recipe.getTotalProcessEnergy());
 		buffer.writeInt(recipe.getTotalProcessTime());
 	}

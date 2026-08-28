@@ -1,0 +1,17 @@
+{
+  "type": "immersivegeology:gravity_separator",
+  "byproduct": {
+    "count": 1,
+    "id": "immersivegeology:metal_oxide_iron"
+  },
+  "byproduct_chance": 0.075,
+  "input": {
+    "tag": "c:powders/pyrolusite"
+  },
+  "result": {
+    "count": 1,
+    "id": "immersivegeology:metal_oxide_manganese"
+  },
+  "time": 200,
+  "water": 250
+}

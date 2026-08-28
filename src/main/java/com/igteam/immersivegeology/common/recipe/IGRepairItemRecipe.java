@@ -4,12 +4,12 @@ import com.igteam.immersivegeology.common.item.IGGenericItem;
 import com.igteam.immersivegeology.core.registration.IGRecipeSerializers;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CustomRecipe;
+import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
 
@@ -19,20 +19,20 @@ import java.util.Optional;
 
 public class IGRepairItemRecipe extends CustomRecipe
 {
-	public IGRepairItemRecipe(ResourceLocation name)
+	public IGRepairItemRecipe(CraftingBookCategory category)
 	{
-		super(name, CraftingBookCategory.MISC);
+		super(category);
 	}
 
 	@Override
-	public boolean matches(@Nonnull CraftingContainer inv, @Nonnull Level worldIn)
+	public boolean matches(@Nonnull CraftingInput inv, @Nonnull Level worldIn)
 	{
 		return findInputSlots(inv).isPresent();
 	}
 
 	@Nonnull
 	@Override
-	public ItemStack assemble(@Nonnull CraftingContainer inv, RegistryAccess access)
+	public ItemStack assemble(@Nonnull CraftingInput inv, HolderLookup.Provider access)
 	{
 		return findInputSlots(inv)
 				.map(p -> combineStacks(p.getFirst(), p.getSecond()))
@@ -47,9 +47,9 @@ public class IGRepairItemRecipe extends CustomRecipe
 
 	@Nonnull
 	@Override
-	public NonNullList<ItemStack> getRemainingItems(CraftingContainer inv)
+	public NonNullList<ItemStack> getRemainingItems(CraftingInput inv)
 	{
-		return NonNullList.withSize(inv.getHeight()*inv.getWidth(), ItemStack.EMPTY);
+		return NonNullList.withSize(inv.size(), ItemStack.EMPTY);
 	}
 
 	@Nonnull
@@ -59,11 +59,11 @@ public class IGRepairItemRecipe extends CustomRecipe
 		return Objects.requireNonNull(IGRecipeSerializers.IG_REPAIR_SERIALIZER.get());
 	}
 
-	private Optional<Pair<ItemStack, ItemStack>> findInputSlots(CraftingContainer inv)
+	private Optional<Pair<ItemStack, ItemStack>> findInputSlots(CraftingInput inv)
 	{
 		Optional<ItemStack> first = Optional.empty();
 		Optional<ItemStack> second = Optional.empty();
-		for(int slot = 0; slot < inv.getContainerSize(); ++slot)
+		for(int slot = 0; slot < inv.size(); ++slot)
 		{
 			ItemStack stack = inv.getItem(slot);
 			if(!stack.isEmpty())

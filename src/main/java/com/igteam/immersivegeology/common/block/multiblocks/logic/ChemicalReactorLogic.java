@@ -8,8 +8,10 @@
 
 package com.igteam.immersivegeology.common.block.multiblocks.logic;
 
+import blusunrize.immersiveengineering.api.multiblocks.blocks.component.IMultiblockComponent;
+
 import blusunrize.immersiveengineering.api.crafting.BlastFurnaceFuel;
-import blusunrize.immersiveengineering.api.crafting.FluidTagInput;
+import com.igteam.immersivegeology.common.compat.ie.crafting.FluidTagInput;
 import blusunrize.immersiveengineering.api.crafting.IngredientWithSize;
 import blusunrize.immersiveengineering.api.energy.AveragingEnergyStorage;
 import blusunrize.immersiveengineering.api.multiblocks.blocks.component.IClientTickableComponent;
@@ -22,7 +24,6 @@ import blusunrize.immersiveengineering.api.multiblocks.blocks.env.IMultiblockLev
 import blusunrize.immersiveengineering.api.multiblocks.blocks.logic.IMultiblockLogic;
 import blusunrize.immersiveengineering.api.multiblocks.blocks.logic.IMultiblockState;
 import blusunrize.immersiveengineering.api.multiblocks.blocks.util.*;
-import blusunrize.immersiveengineering.api.utils.CapabilityReference;
 import blusunrize.immersiveengineering.client.BlockOverlayUtils;
 import blusunrize.immersiveengineering.client.ClientUtils;
 import blusunrize.immersiveengineering.client.utils.TextUtils;
@@ -57,6 +58,7 @@ import com.igteam.immersivegeology.common.block.multiblocks.skins.IGGravitySepar
 import com.igteam.immersivegeology.common.item.IGMultiblockSkinItem;
 import com.igteam.immersivegeology.core.lib.IGLib;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
@@ -68,17 +70,15 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.energy.IEnergyStorage;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.FluidType;
-import net.minecraftforge.fluids.IFluidTank;
-import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.fluids.capability.IFluidHandler.FluidAction;
-import net.minecraftforge.fluids.capability.templates.FluidTank;
-import net.minecraftforge.items.IItemHandler;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.FluidType;
+import net.neoforged.neoforge.fluids.IFluidTank;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction;
+import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
+import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -180,11 +180,11 @@ public class ChemicalReactorLogic implements IMultiblockLogic<ChemicalReactorLog
 		IMultiblockLevel mbLevel = ctx.getLevel();
 		Level level = mbLevel.getRawLevel();
 		ChemicalReactorTanks fluidTanks = state.tanks;
-		ChemicalRecipe recipe = state.getRecipeForInputs(level);
+		net.minecraft.world.item.crafting.RecipeHolder<ChemicalRecipe> recipe = state.getRecipeForInputs(level);
 		if(recipe!=null)
 		{
 			MultiblockProcessInMachine<ChemicalRecipe> process = new MultiblockProcessInMachine<>(recipe, 0);
-			process.setInputAmounts(recipe.itemInput.getCount());
+			process.setInputAmounts(recipe.value().itemInput.getCount());
 			int size = (fluidTanks.leftInput.isEmpty()?0: 1)
 					+(fluidTanks.backInput.isEmpty()?0: 1)
 					+(fluidTanks.rightInput.isEmpty()?0: 1);
@@ -210,7 +210,7 @@ public class ChemicalReactorLogic implements IMultiblockLogic<ChemicalReactorLog
 				}
 			}
 
-			boolean hasInputForNewRecipe = inputStack.getCount() >= (recipeInputRequirements + recipe.itemInput.getCount());
+			boolean hasInputForNewRecipe = inputStack.getCount() >= (recipeInputRequirements + recipe.value().itemInput.getCount());
 
 			if(hasInputForNewRecipe)
 			{
@@ -238,52 +238,32 @@ public class ChemicalReactorLogic implements IMultiblockLogic<ChemicalReactorLog
 	}
 
 	@Override
-	public <T> LazyOptional<T> getCapability(IMultiblockContext<State> ctx, CapabilityPosition position, Capability<T> cap)
+	public void registerCapabilities(IMultiblockComponent.CapabilityRegistrar<State> register)
 	{
-		final State state = ctx.getState();
-		if(cap==ForgeCapabilities.ENERGY&&(position.side()==null||ENERGY_POS.contains(position)))
-		{
-			return state.energyCap.cast(ctx);
-		}
-
-		if(cap==ForgeCapabilities.FLUID_HANDLER)
-		{
-			if(FLUID_INPUT_CAPS.contains(position))
-			{
-				if(position.side()!=null)
-				{
-					// Things are strange, it detects things BACKWARDS, so RIGHT is the 'LEFT' Input and so on.
-					if(position.side().equals(RelativeBlockFace.LEFT)) return state.inputCapRight.cast(ctx);
-					if(position.side().equals(RelativeBlockFace.RIGHT)) return state.inputCapLeft.cast(ctx);
-					if(position.side().equals(RelativeBlockFace.FRONT)) return state.inputCapBack.cast(ctx);
-				}
+		register.register(Capabilities.EnergyStorage.BLOCK, (state, position) ->
+				position.side()==null || ENERGY_POS.contains(position) ? state.energyCap : null);
+		register.register(Capabilities.FluidHandler.BLOCK, (state, position) -> {
+			if(FLUID_INPUT_CAPS.contains(position) && position.side()!=null) {
+				// Inputs are intentionally mirrored to preserve the original machine orientation.
+				if(position.side().equals(RelativeBlockFace.LEFT)) return state.inputCapRight;
+				if(position.side().equals(RelativeBlockFace.RIGHT)) return state.inputCapLeft;
+				if(position.side().equals(RelativeBlockFace.FRONT)) return state.inputCapBack;
 			}
-
-			if(FLUID_OUTPUT_CAP.equals(position))
-			{
-				return state.outputCap.cast(ctx);
-			}
-		}
-
-		if(cap==ForgeCapabilities.ITEM_HANDLER)
-		{
-			if(position.posInMultiblock().equals(ITEM_INPUT))
-			{
-				return state.itemInputCap.cast(ctx);
-			}
-			if(position.posInMultiblock().equals(ITEM_OUTPUT.posInMultiblock()) && position.side() == ITEM_OUTPUT.face()){
-				return state.outputHandler.cast(ctx);
-			}
-		}
-
-		return LazyOptional.empty();
+			if(FLUID_OUTPUT_CAP.equals(position)) return state.outputCap;
+			return null;
+		});
+		register.register(Capabilities.ItemHandler.BLOCK, (state, position) -> {
+			if(position.posInMultiblock().equals(ITEM_INPUT)) return state.itemInputCap;
+			if(position.posInMultiblock().equals(ITEM_OUTPUT.posInMultiblock()) && position.side()==ITEM_OUTPUT.face()) return state.outputHandler;
+			return null;
+		});
 	}
 
-	private void drainOutputTank(ChemicalReactorLogic.State state, IMultiblockContext<ChemicalReactorLogic.State> context, CapabilityReference<IFluidHandler> outputRef)
+	private void drainOutputTank(ChemicalReactorLogic.State state, IMultiblockContext<ChemicalReactorLogic.State> context, Supplier<IFluidHandler> outputRef)
 	{
 		int outSize = Math.min(FluidType.BUCKET_VOLUME, state.tanks.output.getFluidAmount());
 		FluidStack out = Utils.copyFluidStackWithAmount(state.tanks.output.getFluid(), outSize, false);
-		IFluidHandler output = outputRef.getNullable();
+		IFluidHandler output = outputRef.get();
 
 		if(output==null)
 			return;
@@ -343,20 +323,20 @@ public class ChemicalReactorLogic implements IMultiblockLogic<ChemicalReactorLog
 		public final RedstoneControl.RSState rsState = RedstoneControl.RSState.enabledByDefault();
 		public final ChemicalReactorTanks tanks = new ChemicalReactorTanks();
 		private final MultiblockProcessor.InMachineProcessor<ChemicalRecipe> processor;
-		private final StoredCapability<IEnergyStorage> energyCap;
-		private final StoredCapability<IFluidHandler> outputCap;
+		private final IEnergyStorage energyCap;
+		private final IFluidHandler outputCap;
 
 		public final SlotwiseItemHandler inventory;
-		private final StoredCapability<IItemHandler> itemInputCap;
-		private final CapabilityReference<IItemHandler> input_output;
-		private final StoredCapability<IItemHandler> outputHandler;
+		private final IItemHandler itemInputCap;
+		private final Supplier<IItemHandler> input_output;
+		private final IItemHandler outputHandler;
 
-		private final Supplier<ChemicalRecipe> cachedRecipe;
-		private final StoredCapability<IFluidHandler> inputCapLeft;
-		private final StoredCapability<IFluidHandler> inputCapBack;
-		private final StoredCapability<IFluidHandler> inputCapRight;
+		private final Supplier<net.minecraft.world.item.crafting.RecipeHolder<ChemicalRecipe>> cachedRecipe;
+		private final IFluidHandler inputCapLeft;
+		private final IFluidHandler inputCapBack;
+		private final IFluidHandler inputCapRight;
 
-		private final CapabilityReference<IFluidHandler> fluidOutput;
+		private final Supplier<IFluidHandler> fluidOutput;
 
 		private final MultiblockProcessor.InMachineProcessor<ChemicalRecipe> dummy;
 
@@ -364,63 +344,63 @@ public class ChemicalReactorLogic implements IMultiblockLogic<ChemicalReactorLog
 		{
 			final Supplier<@Nullable Level> getLevel = ctx.levelSupplier();
 			final Runnable markDirty = ctx.getMarkDirtyRunnable();
-			this.energyCap = new StoredCapability<>(this.energy);
+			this.energyCap = this.energy;
 
 			this.inventory = new SlotwiseItemHandler(List.of(
 					new IOConstraint(true, i -> ChemicalRecipe.acceptableCatalyst(getLevel.get(), i)),
 					IOConstraint.OUTPUT
 			), ctx.getMarkDirtyRunnable());
-			this.input_output = ctx.getCapabilityAt(ForgeCapabilities.ITEM_HANDLER, ITEM_INPUT_OUTPUT);
+			this.input_output = ctx.getCapabilityAt(Capabilities.ItemHandler.BLOCK, ITEM_INPUT_OUTPUT);
 
-			this.outputHandler = new StoredCapability<>(new WrappingItemHandler(
+			this.outputHandler = new WrappingItemHandler(
 					inventory, false, true, new IntRange(1, 2)
-			));
+			);
 
-			this.fluidOutput = ctx.getCapabilityAt(ForgeCapabilities.FLUID_HANDLER, new MultiblockFace(FLUID_OUTPUT_CAP.side(), FLUID_OUTPUT_CAP.posInMultiblock().south()));
+			this.fluidOutput = ctx.getCapabilityAt(Capabilities.FluidHandler.BLOCK, new MultiblockFace(FLUID_OUTPUT_CAP.side(), FLUID_OUTPUT_CAP.posInMultiblock().south()));
 			this.processor = new InMachineProcessor<>(4, 0, 4, ctx.getMarkDirtyRunnable(), ChemicalRecipe.RECIPES::getById);
 
-			this.inputCapLeft = new StoredCapability<>(new ArrayFluidHandler(true, true, markDirty, this.tanks.leftInput));
-			this.inputCapBack = new StoredCapability<>(new ArrayFluidHandler(true, true, markDirty, this.tanks.backInput));
-			this.inputCapRight = new StoredCapability<>(new ArrayFluidHandler(true, true, markDirty, this.tanks.rightInput));
-			this.outputCap = new StoredCapability<>(ArrayFluidHandler.drainOnly(this.tanks.output, markDirty));
+			this.inputCapLeft = new ArrayFluidHandler(true, true, markDirty, this.tanks.leftInput);
+			this.inputCapBack = new ArrayFluidHandler(true, true, markDirty, this.tanks.backInput);
+			this.inputCapRight = new ArrayFluidHandler(true, true, markDirty, this.tanks.rightInput);
+			this.outputCap = ArrayFluidHandler.drainOnly(this.tanks.output, markDirty);
 			cachedRecipe = () -> ChemicalRecipe.findRecipe(getLevel.get(), tanks.leftInput.getFluid(), tanks.backInput.getFluid(), tanks.rightInput.getFluid(), inventory.getStackInSlot(0));
-			this.itemInputCap = new StoredCapability<>(this.inventory);
+			this.itemInputCap = this.inventory;
 			this.dummy = new InMachineProcessor<>(4, 0, 4, ctx.getMarkDirtyRunnable(), ChemicalRecipe.RECIPES::getById);
 		}
 
 		@Override
-		public void readSaveNBT(CompoundTag nbt)
+		public void readSaveNBT(CompoundTag nbt, HolderLookup.Provider provider)
 		{
-			this.energy.deserializeNBT(nbt.get("energy"));
-			this.tanks.readNBT(nbt.getCompound("tanks"));
-			this.inventory.deserializeNBT(nbt.getCompound("inventory"));
-			this.processor.fromNBT(nbt.get("processor"), MultiblockProcessInMachine::new);
+			this.energy.deserializeNBT(provider, nbt.getCompound("energy"));
+			this.tanks.readNBT(nbt.getCompound("tanks"), provider);
+			this.inventory.deserializeNBT(provider, nbt.getCompound("inventory"));
+			this.processor.fromNBT(nbt.getList("processor", Tag.TAG_COMPOUND), (getter, data, registries) -> new MultiblockProcessInMachine<>(getter, data), provider);
 		}
 
 		public void clearProcessor()
 		{
-			this.processor.fromNBT(dummy.toNBT(), MultiblockProcessInMachine::new);
+			this.processor.getQueue().clear();
 		}
 
 		@Override
-		public void writeSaveNBT(CompoundTag nbt)
+		public void writeSaveNBT(CompoundTag nbt, HolderLookup.Provider provider)
 		{
-			nbt.put("energy", this.energy.serializeNBT());
-			nbt.put("tanks", this.tanks.toNBT());
-			nbt.put("processor", this.processor.toNBT());
-			nbt.put("inventory", this.inventory.serializeNBT());
+			nbt.put("energy", this.energy.serializeNBT(provider));
+			nbt.put("tanks", this.tanks.toNBT(provider));
+			nbt.put("processor", this.processor.toNBT(provider));
+			nbt.put("inventory", this.inventory.serializeNBT(provider));
 		}
 
 		@Override
-		public void writeSyncNBT(CompoundTag nbt)
+		public void writeSyncNBT(CompoundTag nbt, HolderLookup.Provider provider)
 		{
-			writeSaveNBT(nbt);
+			writeSaveNBT(nbt, provider);
 		}
 
 		@Override
-		public void readSyncNBT(CompoundTag nbt)
+		public void readSyncNBT(CompoundTag nbt, HolderLookup.Provider provider)
 		{
-			readSaveNBT(nbt);
+			readSaveNBT(nbt, provider);
 		}
 
 		@Override
@@ -448,7 +428,8 @@ public class ChemicalReactorLogic implements IMultiblockLogic<ChemicalReactorLog
 				}
 			}
 
-			boolean item_pass = recipe.itemOutput.equals(ItemStack.EMPTY) || getInventory().insertItem(1, recipe.itemOutput, true) != ItemStack.EMPTY;
+			ItemStack itemOutput = recipe.itemOutput.get();
+			boolean item_pass = itemOutput.equals(ItemStack.EMPTY) || getInventory().insertItem(1, itemOutput, true) != ItemStack.EMPTY;
 
 			return fluid_pass && item_pass;
 		}
@@ -482,22 +463,11 @@ public class ChemicalReactorLogic implements IMultiblockLogic<ChemicalReactorLog
 			return inventory;
 		}
 
-		public @Nullable ChemicalRecipe getRecipeForInputs(Level level)
+		public @Nullable net.minecraft.world.item.crafting.RecipeHolder<ChemicalRecipe> getRecipeForInputs(Level level)
 		{
 			return ChemicalRecipe.findRecipe(level, tanks.leftInput.getFluid(), tanks.backInput.getFluid(), tanks.rightInput.getFluid(), inventory.getStackInSlot(0));
 		}
 
-		@Override
-		public void invalidate(@NotNull IMultiblockContext<?> context)
-		{
-			this.inputCapRight.get(context).invalidate();
-			this.inputCapLeft.get(context).invalidate();
-			this.inputCapBack.get(context).invalidate();
-			this.outputCap.get(context).invalidate();
-			this.outputHandler.get(context).invalidate();
-			this.itemInputCap.get(context).invalidate();
-			this.energyCap.get(context).invalidate();
-		}
 	}
 
 	public record ChemicalReactorTanks(FluidTank leftInput, FluidTank rightInput, FluidTank backInput, FluidTank output)
@@ -517,22 +487,22 @@ public class ChemicalReactorLogic implements IMultiblockLogic<ChemicalReactorLog
 			this.output = output;
 		}
 
-		public Tag toNBT()
+		public Tag toNBT(HolderLookup.Provider provider)
 		{
 			CompoundTag tag = new CompoundTag();
-			tag.put("leftIn", this.leftInput.writeToNBT(new CompoundTag()));
-			tag.put("rightIn", this.rightInput.writeToNBT(new CompoundTag()));
-			tag.put("backIn", this.backInput.writeToNBT(new CompoundTag()));
-			tag.put("out", this.output.writeToNBT(new CompoundTag()));
+			tag.put("leftIn", this.leftInput.writeToNBT(provider, new CompoundTag()));
+			tag.put("rightIn", this.rightInput.writeToNBT(provider, new CompoundTag()));
+			tag.put("backIn", this.backInput.writeToNBT(provider, new CompoundTag()));
+			tag.put("out", this.output.writeToNBT(provider, new CompoundTag()));
 			return tag;
 		}
 
-		public void readNBT(CompoundTag tag)
+		public void readNBT(CompoundTag tag, HolderLookup.Provider provider)
 		{
-			this.leftInput.readFromNBT(tag.getCompound("leftIn"));
-			this.rightInput.readFromNBT(tag.getCompound("rightIn"));
-			this.backInput.readFromNBT(tag.getCompound("backIn"));
-			this.output.readFromNBT(tag.getCompound("out"));
+			this.leftInput.readFromNBT(provider, tag.getCompound("leftIn"));
+			this.rightInput.readFromNBT(provider, tag.getCompound("rightIn"));
+			this.backInput.readFromNBT(provider, tag.getCompound("backIn"));
+			this.output.readFromNBT(provider, tag.getCompound("out"));
 		}
 
 		public FluidTank leftInput()

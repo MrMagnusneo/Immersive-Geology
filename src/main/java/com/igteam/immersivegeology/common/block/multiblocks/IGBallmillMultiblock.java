@@ -30,7 +30,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.client.model.data.ModelData;
+import net.neoforged.neoforge.client.model.data.ModelData;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -45,7 +45,7 @@ public class IGBallmillMultiblock extends IGTemplateMultiblock {
     public static final IGBallmillMultiblock INSTANCE = new IGBallmillMultiblock();
 
     public IGBallmillMultiblock() {
-        super(new ResourceLocation(IGLib.MODID, "multiblocks/ballmill"), new BlockPos(2,0,1), new BlockPos(4,1,3), new BlockPos(5,4, 4), IGMultiblockProvider.BALLMILL);
+        super(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "multiblocks/ballmill"), new BlockPos(2,0,1), new BlockPos(4,1,3), new BlockPos(5,4, 4), IGMultiblockProvider.BALLMILL);
     }
 
     @Override

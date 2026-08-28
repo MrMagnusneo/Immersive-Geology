@@ -1,0 +1,12 @@
+{
+  "type": "immersivegeology:pelletizer",
+  "energy": 4100,
+  "input": {
+    "tag": "c:powders/hematite"
+  },
+  "result": {
+    "count": 1,
+    "id": "immersivegeology:pellet_hematite"
+  },
+  "time": 600
+}

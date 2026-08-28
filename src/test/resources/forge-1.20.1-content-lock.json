@@ -1,0 +1,29 @@
+{
+  "baseline_branch": "forge-1.20.1",
+  "baseline_commit": "cfa6707983bbdac2bb5c2a740d2bff8942b1cb28",
+  "canonical_manifest_sha256": "ff69262379e30605d96dd5aca91b0710c82a4394f1caf8f524410f367ef25bc1",
+  "counts": {
+    "materials": 125,
+    "blocks": 1716,
+    "items": 2362,
+    "fluids": 145,
+    "fluid_types": 145,
+    "block_entities": 1,
+    "menus": 8,
+    "particles": 1,
+    "recipe_types": 21,
+    "recipe_serializers": 22,
+    "multiblocks": 15,
+    "creative_tabs": 1,
+    "loot_entries": 1,
+    "biome_modifiers": 1,
+    "features": 9,
+    "placements": 2,
+    "structures": 5,
+    "config_keys": 39,
+    "network_messages": 1,
+    "integrations": 17,
+    "java_sources": 510,
+    "resource_paths": 21300
+  }
+}

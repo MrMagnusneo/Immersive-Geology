@@ -9,8 +9,8 @@
 package com.igteam.immersivegeology.core.material.helper.material.recipe.methods;
 
 import blusunrize.immersiveengineering.api.crafting.IngredientWithSize;
-import blusunrize.immersiveengineering.api.crafting.builders.CrusherRecipeBuilder;
-import blusunrize.immersiveengineering.api.crafting.builders.SqueezerRecipeBuilder;
+import com.igteam.immersivegeology.common.compat.ie.crafting.builders.CrusherRecipeBuilder;
+import com.igteam.immersivegeology.common.compat.ie.crafting.builders.SqueezerRecipeBuilder;
 import blusunrize.immersiveengineering.common.blocks.multiblocks.IEMultiblocks;
 import blusunrize.lib.manual.ManualUtils;
 import blusunrize.lib.manual.gui.ManualScreen;
@@ -23,11 +23,11 @@ import com.igteam.immersivegeology.core.material.helper.material.recipe.IGRecipe
 import com.igteam.immersivegeology.core.material.helper.material.recipe.IGRecipeStage;
 import com.igteam.immersivegeology.core.material.helper.material.recipe.IGStageDesignation;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.data.recipes.FinishedRecipe;
+import com.igteam.immersivegeology.client.helper.FinishedRecipe;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraftforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;

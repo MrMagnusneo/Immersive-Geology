@@ -8,15 +8,15 @@
 
 package com.igteam.immersivegeology.core.registration.helper;
 
-import blusunrize.immersiveengineering.api.crafting.IERecipeSerializer;
+import com.igteam.immersivegeology.common.recipe.LegacyIERecipeSerializer;
 import com.google.gson.JsonObject;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.crafting.conditions.ICondition.IContext;
+import net.neoforged.neoforge.common.conditions.ICondition.IContext;
 import org.jetbrains.annotations.Nullable;
 
-public class EmptySerializer extends IERecipeSerializer<EmptyRecipe>
+public class EmptySerializer extends LegacyIERecipeSerializer<EmptyRecipe>
 {
 	@Override
 	public ItemStack getIcon()

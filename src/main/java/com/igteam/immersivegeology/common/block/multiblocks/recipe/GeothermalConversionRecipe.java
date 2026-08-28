@@ -13,18 +13,19 @@ import blusunrize.immersiveengineering.api.crafting.cache.CachedRecipeList;
 import com.igteam.immersivegeology.core.lib.IGLib;
 import com.igteam.immersivegeology.core.registration.IGRecipeTypes;
 import com.mojang.datafixers.util.Pair;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraftforge.common.util.Lazy;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.neoforge.common.util.Lazy;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,7 +34,7 @@ import java.util.List;
 
 public class GeothermalConversionRecipe extends IESerializableRecipe implements IJEIRecipe
 {
-	public static RegistryObject<IERecipeSerializer<GeothermalConversionRecipe>> SERIALIZER;
+	public static DeferredHolder<RecipeSerializer<?>, ? extends IERecipeSerializer<GeothermalConversionRecipe>> SERIALIZER;
 	public static final CachedRecipeList<GeothermalConversionRecipe> RECIPES = new CachedRecipeList<>(IGRecipeTypes.GEOTHERMAL_EXCHANGER_CONVERTION);
 
 	private static HashSet<Block> usedBlocks = new HashSet<>();
@@ -51,9 +52,9 @@ public class GeothermalConversionRecipe extends IESerializableRecipe implements 
 	@Nullable
 	public Integer lowerHeat;
 
-	public <T extends Recipe<?>> GeothermalConversionRecipe(ResourceLocation id, Lazy<Block> transitionaryBlock, int blockHeat, @Nullable Pair<Block, Integer> upperBound, @Nullable Pair<Block, Integer> lowerBound)
+	public GeothermalConversionRecipe(ResourceLocation id, Lazy<Block> transitionaryBlock, int blockHeat, @Nullable Pair<Block, Integer> upperBound, @Nullable Pair<Block, Integer> lowerBound)
 	{
-		super(LAZY_EMPTY, IGRecipeTypes.GEOTHERMAL_EXCHANGER_CONVERTION, id);
+		super(TagOutput.EMPTY, IGRecipeTypes.GEOTHERMAL_EXCHANGER_CONVERTION);
 		this.transitionBlock = transitionaryBlock;
 		this.blockHeat = blockHeat;
 
@@ -72,7 +73,9 @@ public class GeothermalConversionRecipe extends IESerializableRecipe implements 
 
 	public static GeothermalConversionRecipe findRecipe(Level level, Block block)
 	{
-		for(GeothermalConversionRecipe recipe : RECIPES.getRecipes(level))
+		for(RecipeHolder<GeothermalConversionRecipe> holder : RECIPES.getRecipes(level))
+		{
+			GeothermalConversionRecipe recipe = holder.value();
 			if(recipe.transitionBlock.get().equals(block))
 			{
 				FluidState fluidState = block.defaultBlockState().getFluidState();
@@ -86,6 +89,7 @@ public class GeothermalConversionRecipe extends IESerializableRecipe implements 
 				}
 				return recipe;
 			}
+		}
 		return null;
 	}
 
@@ -93,8 +97,9 @@ public class GeothermalConversionRecipe extends IESerializableRecipe implements 
 	{
 		if(blockIndex == -1) return null;
 		int i = 0;
-		for(GeothermalConversionRecipe recipe : RECIPES.getRecipes(level))
+		for(RecipeHolder<GeothermalConversionRecipe> holder : RECIPES.getRecipes(level))
 		{
+			GeothermalConversionRecipe recipe = holder.value();
 			if(i == blockIndex) return recipe;
 			i++;
 		}
@@ -115,7 +120,7 @@ public class GeothermalConversionRecipe extends IESerializableRecipe implements 
 	}
 
 	@Override
-	public @NotNull ItemStack getResultItem(@NotNull RegistryAccess registryAccess)
+	public @NotNull ItemStack getResultItem(@NotNull HolderLookup.Provider registryAccess)
 	{
 		return ItemStack.EMPTY;
 	}

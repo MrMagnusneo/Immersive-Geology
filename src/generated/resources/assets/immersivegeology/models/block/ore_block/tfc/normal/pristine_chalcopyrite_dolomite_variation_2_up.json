@@ -3,6 +3,6 @@
   "textures": {
     "ore_up": "immersivegeology:palette/block/ore_bearing/layered/normal_2_pristine_chalcopyrite",
     "side": "tfc:block/rock/raw/dolomite",
-    "top": "tfc:block/rock/raw/dolomite"
+    "top": "tfc:block/rock/raw/dolomite_top"
   }
 }

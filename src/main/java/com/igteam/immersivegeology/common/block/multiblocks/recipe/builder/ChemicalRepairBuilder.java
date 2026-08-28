@@ -8,7 +8,7 @@
 
 package com.igteam.immersivegeology.common.block.multiblocks.recipe.builder;
 
-import blusunrize.immersiveengineering.api.crafting.builders.IEFinishedRecipe;
+import com.igteam.immersivegeology.common.compat.ie.crafting.builders.IEFinishedRecipe;
 import com.igteam.immersivegeology.common.block.multiblocks.recipe.BloomeryFuel;
 import com.igteam.immersivegeology.common.block.multiblocks.recipe.ChemicalRepairRecipe;
 import net.minecraft.tags.TagKey;

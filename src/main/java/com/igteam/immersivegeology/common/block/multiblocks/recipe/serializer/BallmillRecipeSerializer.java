@@ -8,7 +8,7 @@
 
 package com.igteam.immersivegeology.common.block.multiblocks.recipe.serializer;
 
-import blusunrize.immersiveengineering.api.crafting.IERecipeSerializer;
+import com.igteam.immersivegeology.common.recipe.LegacyIERecipeSerializer;
 import blusunrize.immersiveengineering.api.crafting.IngredientWithSize;
 import com.google.gson.JsonObject;
 import com.igteam.immersivegeology.common.block.multiblocks.recipe.BallmillRecipe;
@@ -19,11 +19,11 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.crafting.conditions.ICondition.IContext;
-import net.minecraftforge.common.util.Lazy;
+import net.neoforged.neoforge.common.conditions.ICondition.IContext;
+import net.neoforged.neoforge.common.util.Lazy;
 import org.jetbrains.annotations.Nullable;
 
-public class BallmillRecipeSerializer extends IERecipeSerializer<BallmillRecipe>
+public class BallmillRecipeSerializer extends LegacyIERecipeSerializer<BallmillRecipe>
 {
 	@Override
 	public ItemStack getIcon()
@@ -34,8 +34,8 @@ public class BallmillRecipeSerializer extends IERecipeSerializer<BallmillRecipe>
 	@Override
 	public BallmillRecipe readFromJson(ResourceLocation resourceLocation, JsonObject json, IContext iContext)
 	{
-		IngredientWithSize output = IngredientWithSize.deserialize(GsonHelper.getAsJsonObject(json, "result"));
-		IngredientWithSize input = IngredientWithSize.deserialize(GsonHelper.getAsJsonObject(json, "input"));
+		IngredientWithSize output = IngredientWithSize.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json.get("result")).getOrThrow();
+		IngredientWithSize input = IngredientWithSize.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json.get("input")).getOrThrow();
 		int energy = GsonHelper.getAsInt(json, "energy");
 		int time = GsonHelper.getAsInt(json, "time");
 		return new BallmillRecipe(resourceLocation, input, output, energy, time);
@@ -44,8 +44,8 @@ public class BallmillRecipeSerializer extends IERecipeSerializer<BallmillRecipe>
 	@Override
 	public @Nullable BallmillRecipe fromNetwork(ResourceLocation resourceLocation, FriendlyByteBuf buffer)
 	{
-		IngredientWithSize output = IngredientWithSize.read(buffer);
-		IngredientWithSize input = IngredientWithSize.read(buffer);
+		IngredientWithSize output = IngredientWithSize.STREAM_CODEC.decode((net.minecraft.network.RegistryFriendlyByteBuf)buffer);
+		IngredientWithSize input = IngredientWithSize.STREAM_CODEC.decode((net.minecraft.network.RegistryFriendlyByteBuf)buffer);
 		int energy = buffer.readInt();
 		int time = buffer.readInt();
 		return new BallmillRecipe(resourceLocation, input, output, energy, time);
@@ -54,8 +54,8 @@ public class BallmillRecipeSerializer extends IERecipeSerializer<BallmillRecipe>
 	@Override
 	public void toNetwork(FriendlyByteBuf buffer, BallmillRecipe recipe)
 	{
-		recipe.itemOutput.write(buffer);
-		recipe.itemIn.write(buffer);
+		IngredientWithSize.STREAM_CODEC.encode((net.minecraft.network.RegistryFriendlyByteBuf)buffer, recipe.itemOutput);
+		IngredientWithSize.STREAM_CODEC.encode((net.minecraft.network.RegistryFriendlyByteBuf)buffer, recipe.itemIn);
 		buffer.writeInt(recipe.getTotalProcessEnergy());
 		buffer.writeInt(recipe.getTotalProcessTime());
 	}

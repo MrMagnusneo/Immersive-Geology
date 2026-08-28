@@ -29,8 +29,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ScreenEffectRenderer;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.BlockSource;
 import net.minecraft.core.Direction;
+import net.minecraft.core.dispenser.BlockSource;
 import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.core.particles.ParticleOptions;
@@ -62,10 +62,9 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
-import net.minecraftforge.event.ForgeEventFactory;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.FluidType;
+import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.FluidType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -86,9 +85,9 @@ public abstract class IGFluid extends FlowingFluid implements IGBlockType
 
 		public ItemStack execute(BlockSource source, ItemStack stack) {
 			BucketItem bucketitem = (BucketItem)stack.getItem();
-			BlockPos blockpos = source.getPos().relative((Direction)source.getBlockState().getValue(DispenserBlock.FACING));
-			Level world = source.getLevel();
-			if (bucketitem.emptyContents((Player)null, world, blockpos, (BlockHitResult)null)) {
+			BlockPos blockpos = source.pos().relative(source.state().getValue(DispenserBlock.FACING));
+			Level world = source.level();
+			if (bucketitem.emptyContents(null, world, blockpos, null, stack)) {
 				bucketitem.checkExtraContent((Player)null, world, stack, blockpos);
 				return new ItemStack(Items.BUCKET);
 			} else {

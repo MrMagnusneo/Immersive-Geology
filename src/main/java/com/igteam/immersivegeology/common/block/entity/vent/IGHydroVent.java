@@ -29,7 +29,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -41,7 +41,7 @@ public class IGHydroVent extends IEEntityBlock<IGHydroVentEntity> implements IGB
 	protected final Map<MaterialTexture, MaterialInterface<?>> materialMap = new HashMap<>();
 	protected final BlockCategoryFlags category;
 
-	public IGHydroVent(BlockCategoryFlags flag, MaterialInterface<?> material, RegistryObject<BlockEntityType<IGHydroVentEntity>> TYPE)
+	public IGHydroVent(BlockCategoryFlags flag, MaterialInterface<?> material, DeferredHolder<BlockEntityType<?>, BlockEntityType<IGHydroVentEntity>> TYPE)
 	{
 		super(TYPE, METAL_PROPERTIES_NO_OCCLUSION.get());
 		this.registerDefaultState(this.defaultBlockState().setValue(BlockStateProperties.WATERLOGGED, false));
@@ -56,7 +56,7 @@ public class IGHydroVent extends IEEntityBlock<IGHydroVentEntity> implements IGB
 		BlockEntity entity = world.getBlockEntity(pos);
 		if(entity instanceof IGHydroVentEntity vent)
 		{
-			vent.invalidateCaps();
+			world.invalidateCapabilities(pos);
 		}
 	}
 

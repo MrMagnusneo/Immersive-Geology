@@ -23,7 +23,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
-import net.minecraftforge.client.model.data.ModelData;
+import net.neoforged.neoforge.client.model.data.ModelData;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -38,7 +38,7 @@ public class IGGeothermalExchangerMultiblock extends IGTemplateMultiblock {
     public static final IGGeothermalExchangerMultiblock INSTANCE = new IGGeothermalExchangerMultiblock();
 
     public IGGeothermalExchangerMultiblock() {
-        super(new ResourceLocation(IGLib.MODID, "multiblocks/geothermal_exchanger"),
+        super(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "multiblocks/geothermal_exchanger"),
                 new BlockPos(2,3,1),
                 new BlockPos(3,4,2),
                 new BlockPos(5, 7, 3), IGMultiblockProvider.GEOTHERMAL_EXCHANGER);

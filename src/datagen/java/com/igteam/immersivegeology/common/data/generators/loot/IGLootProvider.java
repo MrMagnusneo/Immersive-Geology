@@ -9,22 +9,20 @@
 package com.igteam.immersivegeology.common.data.generators.loot;
 
 import com.google.common.collect.ImmutableList;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.loot.LootTableProvider;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 public class IGLootProvider extends LootTableProvider
 {
-	public IGLootProvider(PackOutput output)
+	public IGLootProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> registries)
 	{
-		super(output, Set.of(), List.of());
+		super(output, Set.of(), List.of(), registries);
 	}
 
 	@Override
@@ -34,11 +32,5 @@ public class IGLootProvider extends LootTableProvider
 				new SubProviderEntry(IGBlockLootProvider::new, LootContextParamSets.BLOCK),
 				new SubProviderEntry(IGChestLootProvider::new, LootContextParamSets.CHEST)
 		);
-	}
-
-	@Override
-	protected void validate(Map<ResourceLocation, LootTable> map, ValidationContext validationtracker)
-	{
-		map.forEach((p_218436_2_, p_218436_3_) -> p_218436_3_.validate(validationtracker));
 	}
 }

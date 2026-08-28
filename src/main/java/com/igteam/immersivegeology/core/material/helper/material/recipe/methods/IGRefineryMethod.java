@@ -8,9 +8,9 @@
 
 package com.igteam.immersivegeology.core.material.helper.material.recipe.methods;
 
-import blusunrize.immersiveengineering.api.crafting.FluidTagInput;
-import blusunrize.immersiveengineering.api.crafting.builders.RefineryRecipeBuilder;
-import blusunrize.immersiveengineering.client.gui.info.FluidInfoArea;
+import com.igteam.immersivegeology.common.compat.ie.crafting.FluidTagInput;
+import com.igteam.immersivegeology.common.compat.ie.crafting.builders.RefineryRecipeBuilder;
+import com.igteam.immersivegeology.client.menu.IGFluidInfoArea;
 import blusunrize.immersiveengineering.common.blocks.multiblocks.IEMultiblocks;
 import blusunrize.lib.manual.gui.ManualScreen;
 import com.igteam.immersivegeology.core.lib.IGLib;
@@ -20,14 +20,14 @@ import com.igteam.immersivegeology.core.material.helper.material.recipe.IGRecipe
 import com.igteam.immersivegeology.core.material.helper.material.recipe.IGStageDesignation;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.Rect2i;
-import net.minecraft.data.recipes.FinishedRecipe;
+import com.igteam.immersivegeology.client.helper.FinishedRecipe;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.templates.FluidTank;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Consumer;
@@ -96,7 +96,7 @@ public class IGRefineryMethod extends IGRecipeMethod
 		FluidTank tank = new FluidTank(1000);
 		tank.setFluid(output);
 
-		FluidInfoArea fluid = new FluidInfoArea(tank, new Rect2i(x, y, 16, 16), 0,0,0,0,  IGLib.makeTextureLocation("reverberation_furnace"));
+		IGFluidInfoArea fluid = new IGFluidInfoArea(tank, new Rect2i(x, y, 16, 16), 0,0,0,0,  IGLib.makeTextureLocation("reverberation_furnace"));
 		fluid.draw(graphics);
 		render_x_space = 48;
 	}

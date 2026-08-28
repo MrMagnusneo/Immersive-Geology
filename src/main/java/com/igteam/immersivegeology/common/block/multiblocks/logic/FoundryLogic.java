@@ -8,6 +8,8 @@
 
 package com.igteam.immersivegeology.common.block.multiblocks.logic;
 
+import blusunrize.immersiveengineering.api.multiblocks.blocks.component.IMultiblockComponent;
+
 import blusunrize.immersiveengineering.api.energy.AveragingEnergyStorage;
 import blusunrize.immersiveengineering.api.multiblocks.blocks.component.IClientTickableComponent;
 import blusunrize.immersiveengineering.api.multiblocks.blocks.component.IServerTickableComponent;
@@ -17,7 +19,6 @@ import blusunrize.immersiveengineering.api.multiblocks.blocks.env.IMultiblockCon
 import blusunrize.immersiveengineering.api.multiblocks.blocks.logic.IMultiblockLogic;
 import blusunrize.immersiveengineering.api.multiblocks.blocks.logic.IMultiblockState;
 import blusunrize.immersiveengineering.api.multiblocks.blocks.util.*;
-import blusunrize.immersiveengineering.api.utils.CapabilityReference;
 import blusunrize.immersiveengineering.client.utils.TextUtils;
 import blusunrize.immersiveengineering.common.blocks.multiblocks.logic.interfaces.MBOverlayText;
 import blusunrize.immersiveengineering.common.blocks.multiblocks.process.MultiblockProcessInMachine;
@@ -35,28 +36,30 @@ import com.igteam.immersivegeology.common.block.multiblocks.recipe.CrystallizerR
 import com.igteam.immersivegeology.common.block.multiblocks.recipe.FoundryRecipe;
 import com.igteam.immersivegeology.common.block.multiblocks.shapes.FoundryShape;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.energy.IEnergyStorage;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.FluidType;
-import net.minecraftforge.fluids.IFluidTank;
-import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.fluids.capability.IFluidHandler.FluidAction;
-import net.minecraftforge.fluids.capability.templates.FluidTank;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.IItemHandlerModifiable;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.FluidType;
+import net.neoforged.neoforge.fluids.IFluidTank;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction;
+import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
+import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.IItemHandlerModifiable;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -91,16 +94,16 @@ public class FoundryLogic implements IMultiblockLogic<FoundryLogic.State>, IServ
 
         final FluidStack input = state.tank.getFluid();
         if(input.isEmpty()) return;
-        FoundryRecipe recipe = FoundryRecipe.findRecipe(level, input);
+        net.minecraft.world.item.crafting.RecipeHolder<FoundryRecipe> recipe = FoundryRecipe.findRecipe(level, input);
         if(recipe == null) return;
         MultiblockProcessInMachine<FoundryRecipe> process = new MultiblockProcessInMachine<>(recipe);
         if(input.isEmpty()) process.setInputTanks(1);
-        int drainSimulation = state.tank.drain(recipe.fluidIn.getAmount(), FluidAction.SIMULATE).getAmount();
-        int drainAmount = recipe.fluidIn.getAmount();
+        int drainSimulation = state.tank.drain(recipe.value().fluidIn.getAmount(), FluidAction.SIMULATE).getAmount();
+        int drainAmount = recipe.value().fluidIn.getAmount();
         if(state.processor.addProcessToQueue(process, level, true) && drainSimulation == drainAmount)
         {
             state.processor.addProcessToQueue(process, level, false);
-            state.tank.drain(recipe.fluidIn.getAmount(), FluidAction.EXECUTE).getAmount();
+            state.tank.drain(recipe.value().fluidIn.getAmount(), FluidAction.EXECUTE).getAmount();
         }
     }
 
@@ -116,34 +119,19 @@ public class FoundryLogic implements IMultiblockLogic<FoundryLogic.State>, IServ
     }
 
     @Override
-    public <T> LazyOptional<T> getCapability(IMultiblockContext<State> ctx, CapabilityPosition position, Capability<T> cap)
+    public void registerCapabilities(IMultiblockComponent.CapabilityRegistrar<State> register)
     {
-        final State state = ctx.getState();
-        if(cap == ForgeCapabilities.ENERGY && (position.side()==null || ENERGY_INPUT.equals(position)))
-        {
-            return state.energyCap.cast(ctx);
-        }
-
-        if(cap == ForgeCapabilities.FLUID_HANDLER)
-        {
-            if(FLUID_INPUT_CAP.equals(position))
-            {
-                return state.fInputCap.cast(ctx);
-            }
-        }
-
-        if(cap==ForgeCapabilities.ITEM_HANDLER)
-        {
-            if(ITEM_OUTPUT_CAP.equals(position))
-                return state.itemOutputCap.cast(ctx);
-        }
-
-        return LazyOptional.empty();
+        register.register(Capabilities.EnergyStorage.BLOCK, (state, position) ->
+                position.side()==null || ENERGY_INPUT.equals(position) ? state.energyCap : null);
+        register.register(Capabilities.FluidHandler.BLOCK, (state, position) ->
+                FLUID_INPUT_CAP.equals(position) ? state.fInputCap : null);
+        register.register(Capabilities.ItemHandler.BLOCK, (state, position) ->
+                ITEM_OUTPUT_CAP.equals(position) ? state.itemOutputCap : null);
     }
 
     @Nullable
     @Override
-    public List<Component> getOverlayText(FoundryLogic.State state, Player player, boolean b)
+    public List<Component> getOverlayText(FoundryLogic.State state, BlockPos pos, BlockHitResult hit, Player player, boolean b)
     {
         if(Utils.isFluidRelatedItemStack(player.getItemInHand(InteractionHand.MAIN_HAND)))
             return List.of(TextUtils.formatFluidStack(state.tank.getFluid()));
@@ -161,15 +149,15 @@ public class FoundryLogic implements IMultiblockLogic<FoundryLogic.State>, IServ
         public final AveragingEnergyStorage energy = new AveragingEnergyStorage(ENERGY_CAPACITY);
         private final MultiblockProcessor<FoundryRecipe, ProcessContextInMachine<FoundryRecipe>> processor;
         public final SlotwiseItemHandler inventory;
-        private final StoredCapability<IFluidHandler> fInputCap;
-        private final StoredCapability<IItemHandler> itemOutputCap;
-        private final StoredCapability<IEnergyStorage> energyCap;
-        private final CapabilityReference<IItemHandler> output;
+        private final IFluidHandler fInputCap;
+        private final IItemHandler itemOutputCap;
+        private final IEnergyStorage energyCap;
+        private final Supplier<IItemHandler> output;
         public final FluidTank tank = new FluidTank(TANK_VOLUME);
 
         public State(IInitialMultiblockContext<State> ctx){
-            this.energyCap = new StoredCapability<>(this.energy);
-            this.output = ctx.getCapabilityAt(ForgeCapabilities.ITEM_HANDLER, OUTPUT_POS);
+            this.energyCap = this.energy;
+            this.output = ctx.getCapabilityAt(Capabilities.ItemHandler.BLOCK, OUTPUT_POS);
             this.processor = new MultiblockProcessor<>(
                     1, 0, 1, ctx.getMarkDirtyRunnable(), FoundryRecipe.RECIPES::getById
             );
@@ -180,38 +168,38 @@ public class FoundryLogic implements IMultiblockLogic<FoundryLogic.State>, IServ
                 ctx.getSyncRunnable().run();
                 ctx.getMarkDirtyRunnable().run();
             };
-            this.itemOutputCap = new StoredCapability<>(new WrappingItemHandler(
+            this.itemOutputCap = new WrappingItemHandler(
                     inventory, false, true, new IntRange(0, 1)
-            ));
-            this.fInputCap = new StoredCapability<>(new ArrayFluidHandler(tank, true, true, changedAndSync));
+            );
+            this.fInputCap = new ArrayFluidHandler(tank, true, true, changedAndSync);
         }
 
         @Override
-        public void writeSaveNBT(CompoundTag nbt){
-            nbt.put("energy", energy.serializeNBT());
-            nbt.put("processor", processor.toNBT());
-            nbt.put("tank", tank.writeToNBT(new CompoundTag()));
-            nbt.put("inventory", inventory.serializeNBT());
+        public void writeSaveNBT(CompoundTag nbt, HolderLookup.Provider provider){
+            nbt.put("energy", energy.serializeNBT(provider));
+            nbt.put("processor", processor.toNBT(provider));
+            nbt.put("tank", tank.writeToNBT(provider, new CompoundTag()));
+            nbt.put("inventory", inventory.serializeNBT(provider));
         }
 
         @Override
-        public void readSaveNBT(CompoundTag nbt){
-            energy.deserializeNBT(nbt.get("energy"));
-            tank.readFromNBT(nbt.getCompound("tank"));
-            inventory.deserializeNBT(nbt.getCompound("inventory"));
-            processor.fromNBT(nbt.get("processor"), MultiblockProcessInMachine::new);
+        public void readSaveNBT(CompoundTag nbt, HolderLookup.Provider provider){
+            energy.deserializeNBT(provider, nbt.getCompound("energy"));
+            tank.readFromNBT(provider, nbt.getCompound("tank"));
+            inventory.deserializeNBT(provider, nbt.getCompound("inventory"));
+            processor.fromNBT(nbt.getList("processor", Tag.TAG_COMPOUND), (getter, data, registries) -> new MultiblockProcessInMachine<>(getter, data), provider);
         }
 
         @Override
-        public void writeSyncNBT(CompoundTag nbt)
+        public void writeSyncNBT(CompoundTag nbt, HolderLookup.Provider provider)
         {
-            writeSaveNBT(nbt);
+            writeSaveNBT(nbt, provider);
         }
 
         @Override
-        public void readSyncNBT(CompoundTag nbt)
+        public void readSyncNBT(CompoundTag nbt, HolderLookup.Provider provider)
         {
-            readSaveNBT(nbt);
+            readSaveNBT(nbt, provider);
         }
 
         @Override

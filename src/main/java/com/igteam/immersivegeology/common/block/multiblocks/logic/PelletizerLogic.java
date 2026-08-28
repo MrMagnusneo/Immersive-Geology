@@ -8,6 +8,8 @@
 
 package com.igteam.immersivegeology.common.block.multiblocks.logic;
 
+import blusunrize.immersiveengineering.api.multiblocks.blocks.component.IMultiblockComponent;
+
 import blusunrize.immersiveengineering.api.energy.AveragingEnergyStorage;
 import blusunrize.immersiveengineering.api.multiblocks.blocks.component.IClientTickableComponent;
 import blusunrize.immersiveengineering.api.multiblocks.blocks.component.IServerTickableComponent;
@@ -37,30 +39,31 @@ import com.igteam.immersivegeology.core.material.data.enums.ChemicalEnum;
 import com.igteam.immersivegeology.core.material.helper.flags.BlockCategoryFlags;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.energy.IEnergyStorage;
-import net.minecraftforge.fluids.FluidType;
-import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.fluids.capability.IFluidHandler.FluidAction;
-import net.minecraftforge.fluids.capability.templates.FluidTank;
-import net.minecraftforge.items.IItemHandler;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.fluids.FluidType;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction;
+import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
+import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
@@ -143,13 +146,13 @@ public class PelletizerLogic implements ISkinnableMultiblockLogic<State>, IServe
             bindingAgent = ChemicalEnum.BindingAgent.getFluid(BlockCategoryFlags.FLUID);
             if(bindingAgent.isSame(state.tank.getFluid().getFluid()))
             {
-                PelletizerRecipe recipe = PelletizerRecipe.findRecipe(level, inputStack);
+                net.minecraft.world.item.crafting.RecipeHolder<PelletizerRecipe> recipe = PelletizerRecipe.findRecipe(level, inputStack);
                 if(recipe == null) return;
                 MultiblockProcessInWorld<PelletizerRecipe> process = new MultiblockProcessInWorld<>(recipe, inputStack);
                 if(state.processor.addProcessToQueue(process, level, true))
                 {
                     state.processor.addProcessToQueue(process, level, false);
-                    inputStack.shrink(recipe.itemIn.getCount());
+                    inputStack.shrink(recipe.value().itemIn.getCount());
                 }
                 return;
             }
@@ -216,34 +219,22 @@ public class PelletizerLogic implements ISkinnableMultiblockLogic<State>, IServe
     private static boolean insertItemToInventory(ItemStack stack, State state, Level level, boolean simulate)
     {
         if(PelletizerRecipe.findRecipe(level, stack) == null) return false;
-        ItemStack remaining = state.insertionHandler.getValue().insertItem(0, new ItemStack(stack.getItem()) , simulate);
+        ItemStack remaining = state.insertionHandler.insertItem(0, new ItemStack(stack.getItem()) , simulate);
         return remaining.isEmpty();
     }
 
     @Override
-    public <T> LazyOptional<T> getCapability(IMultiblockContext<State> ctx, CapabilityPosition position, Capability<T> cap)
+    public void registerCapabilities(IMultiblockComponent.CapabilityRegistrar<State> register)
     {
-        final PelletizerLogic.State state = ctx.getState();
-        if(cap == ForgeCapabilities.ENERGY)
-        {
-            if((position.side()==null || ENERGY_INPUTS.contains(position))) return state.energyCap.cast(ctx);
-        }
-        if(cap == ForgeCapabilities.FLUID_HANDLER)
-        {
-            if(FLUID_INPUT_CAP.equals(position))
-            {
-                return state.fInputCap.cast(ctx);
-            }
-        }
-//        if (cap == ForgeCapabilities.ITEM_HANDLER) {
-//            return state.insertionHandler.cast(ctx);
-//        }
-        return LazyOptional.empty();
+        register.register(Capabilities.EnergyStorage.BLOCK, (state, position) ->
+                position.side()==null || ENERGY_INPUTS.contains(position) ? state.energyCap : null);
+        register.register(Capabilities.FluidHandler.BLOCK, (state, position) ->
+                FLUID_INPUT_CAP.equals(position) ? state.fInputCap : null);
     }
 
     @Nullable
     @Override
-    public List<Component> getOverlayText(State state, Player player, boolean b)
+    public List<Component> getOverlayText(State state, BlockPos pos, BlockHitResult hit, Player player, boolean b)
     {
         if(state == null) return null;
         if(!state.tank.getFluid().getFluid().equals(ChemicalEnum.BindingAgent.getFluid(BlockCategoryFlags.FLUID)))
@@ -263,10 +254,10 @@ public class PelletizerLogic implements ISkinnableMultiblockLogic<State>, IServe
         public final RedstoneControl.RSState rsState = RedstoneControl.RSState.enabledByDefault();
 
         public final FluidTank tank = new FluidTank(TANK_VOLUME);
-        private final StoredCapability<IFluidHandler> fInputCap;
+        private final IFluidHandler fInputCap;
 
-        private final StoredCapability<IEnergyStorage> energyCap;
-        private final StoredCapability<IItemHandler> insertionHandler;
+        private final IEnergyStorage energyCap;
+        private final IItemHandler insertionHandler;
         public final SlotwiseItemHandler inventory;
         private final DroppingMultiblockOutput output;
         private final MultiblockProcessor<PelletizerRecipe, ProcessContextInWorld<PelletizerRecipe>> processor;
@@ -285,13 +276,13 @@ public class PelletizerLogic implements ISkinnableMultiblockLogic<State>, IServe
                     IOConstraint.OUTPUT
             ), markDirty);
 
-            this.energyCap = new StoredCapability<>(this.energy);
+            this.energyCap = this.energy;
             this.output = new DroppingMultiblockOutput(OUTPUT_POS, ctx);
             this.processor = new MultiblockProcessor<>(64, 0, 8, ctx.getMarkDirtyRunnable(), PelletizerRecipe.RECIPES::getById);
 
-            this.insertionHandler = new StoredCapability<>(inventory);
+            this.insertionHandler = inventory;
             this.rotation = 0;
-            this.fInputCap = new StoredCapability<>(new ArrayFluidHandler(tank, true, true, changedAndSync));
+            this.fInputCap = new ArrayFluidHandler(tank, true, true, changedAndSync);
         }
 
         @Override
@@ -301,11 +292,11 @@ public class PelletizerLogic implements ISkinnableMultiblockLogic<State>, IServe
         }
 
         @Override
-        public void readSaveNBT(CompoundTag nbt){
-            this.tank.readFromNBT(nbt.getCompound("tank"));
-            this.energy.deserializeNBT(nbt.get("energy"));
-            this.processor.fromNBT(nbt.get("processor"), MultiblockProcessInWorld::new);
-            this.inventory.deserializeNBT(nbt.getCompound("inventory"));
+        public void readSaveNBT(CompoundTag nbt, HolderLookup.Provider provider){
+            this.tank.readFromNBT(provider, nbt.getCompound("tank"));
+            this.energy.deserializeNBT(provider, nbt.getCompound("energy"));
+            this.processor.fromNBT(nbt.getList("processor", Tag.TAG_COMPOUND), MultiblockProcessInWorld::new, provider);
+            this.inventory.deserializeNBT(provider, nbt.getCompound("inventory"));
         }
 
         @Override
@@ -315,24 +306,24 @@ public class PelletizerLogic implements ISkinnableMultiblockLogic<State>, IServe
         }
 
         @Override
-        public void writeSaveNBT(CompoundTag nbt){
-            nbt.put("tank", this.tank.writeToNBT(new CompoundTag()));
-            nbt.put("energy", energy.serializeNBT());
-            nbt.put("processor", processor.toNBT());
-            nbt.put("inventory", inventory.serializeNBT());
+        public void writeSaveNBT(CompoundTag nbt, HolderLookup.Provider provider){
+            nbt.put("tank", this.tank.writeToNBT(provider, new CompoundTag()));
+            nbt.put("energy", energy.serializeNBT(provider));
+            nbt.put("processor", processor.toNBT(provider));
+            nbt.put("inventory", inventory.serializeNBT(provider));
         }
 
         @Override
-        public void writeSyncNBT(CompoundTag nbt)
+        public void writeSyncNBT(CompoundTag nbt, HolderLookup.Provider provider)
         {
-            writeSaveNBT(nbt);
+            writeSaveNBT(nbt, provider);
             nbt.putBoolean("renderActive", renderAsActive);
         }
 
         @Override
-        public void readSyncNBT(CompoundTag nbt)
+        public void readSyncNBT(CompoundTag nbt, HolderLookup.Provider provider)
         {
-            readSaveNBT(nbt);
+            readSaveNBT(nbt, provider);
             renderAsActive = nbt.getBoolean("renderActive");
         }
 
@@ -356,13 +347,6 @@ public class PelletizerLogic implements ISkinnableMultiblockLogic<State>, IServe
             return this.processor.getQueue();
         }
 
-        @Override
-        public void invalidate(@NotNull IMultiblockContext<?> ctx)
-        {
-            this.energyCap.get(ctx).invalidate();
-            this.fInputCap.get(ctx).invalidate();
-            this.insertionHandler.get(ctx).invalidate();
-        }
     }
 
 }

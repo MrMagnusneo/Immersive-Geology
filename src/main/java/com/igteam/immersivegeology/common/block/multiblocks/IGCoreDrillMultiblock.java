@@ -33,7 +33,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.client.model.data.ModelData;
+import net.neoforged.neoforge.client.model.data.ModelData;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -47,7 +47,7 @@ public class IGCoreDrillMultiblock extends IGTemplateMultiblock {
     public static IGCoreDrillMultiblock INSTANCE = new IGCoreDrillMultiblock();
 
     public IGCoreDrillMultiblock() {
-        super(new ResourceLocation(IGLib.MODID, "multiblocks/coredrill"), new BlockPos(7,7,7), new BlockPos(3,1,8), new BlockPos(9,11,9), IGMultiblockProvider.COREDRILL);
+        super(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "multiblocks/coredrill"), new BlockPos(7,7,7), new BlockPos(3,1,8), new BlockPos(9,11,9), IGMultiblockProvider.COREDRILL);
     }
 
     @Override

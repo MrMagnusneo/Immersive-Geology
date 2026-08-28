@@ -10,9 +10,10 @@ package com.igteam.immersivegeology.common.block.multiblocks.recipe.serializer;
 
 import blusunrize.immersiveengineering.api.ApiUtils;
 import blusunrize.immersiveengineering.api.IEApi;
-import blusunrize.immersiveengineering.api.crafting.FluidTagInput;
-import blusunrize.immersiveengineering.api.crafting.IERecipeSerializer;
+import com.igteam.immersivegeology.common.compat.ie.crafting.FluidTagInput;
+import com.igteam.immersivegeology.common.recipe.LegacyIERecipeSerializer;
 import blusunrize.immersiveengineering.api.crafting.IngredientWithSize;
+import blusunrize.immersiveengineering.api.crafting.TagOutput;
 import com.google.gson.JsonObject;
 import com.igteam.immersivegeology.common.block.multiblocks.recipe.ChemicalRecipe;
 import com.igteam.immersivegeology.core.lib.IGLib;
@@ -23,9 +24,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraftforge.common.crafting.conditions.ICondition.IContext;
-import net.minecraftforge.common.util.Lazy;
-import net.minecraftforge.fluids.FluidStack;
+import net.neoforged.neoforge.common.conditions.ICondition.IContext;
+import net.neoforged.neoforge.common.util.Lazy;
+import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.Nullable;
 
 import javax.print.attribute.SetOfIntegerSyntax;
@@ -33,7 +34,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-public class ChemicalRecipeSerializer extends IERecipeSerializer<ChemicalRecipe>
+public class ChemicalRecipeSerializer extends LegacyIERecipeSerializer<ChemicalRecipe>
 {
 	@Override
 	public ItemStack getIcon()
@@ -44,9 +45,9 @@ public class ChemicalRecipeSerializer extends IERecipeSerializer<ChemicalRecipe>
 	@Override
 	public ChemicalRecipe readFromJson(ResourceLocation resourceLocation, JsonObject json, IContext iContext)
 	{
-		Lazy<ItemStack> output = readOutput(json.get("result"));
-		FluidStack fluidOut = ApiUtils.jsonDeserializeFluidStack(GsonHelper.getAsJsonObject(json, "fluidResult"));
-		IngredientWithSize itemInput = IngredientWithSize.deserialize(json.get("itemInput"));
+		TagOutput output = readOutput(json.get("result"));
+		FluidStack fluidOut = FluidStack.OPTIONAL_CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json.get("fluidResult")).getOrThrow();
+		IngredientWithSize itemInput = IngredientWithSize.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json.get("itemInput")).getOrThrow();
 		Set<FluidTagInput> fluidSet = new HashSet<>();
 
 		if(GsonHelper.isValidNode(json, "fluidInputA"))
@@ -59,21 +60,15 @@ public class ChemicalRecipeSerializer extends IERecipeSerializer<ChemicalRecipe>
 		int energy = GsonHelper.getAsInt(json, "energy");
 		int time = GsonHelper.getAsInt(json, "time");
 
-		ItemStack outputStack = ItemStack.EMPTY;
-		try
-		{
-			outputStack = output.get();
-		} catch(RuntimeException ignore) {}
-
-		return new ChemicalRecipe(resourceLocation, itemInput, fluidSet, outputStack, fluidOut, energy, time);
+		return new ChemicalRecipe(resourceLocation, itemInput, fluidSet, output, fluidOut, energy, time);
 	}
 
 	@Override
 	public @Nullable ChemicalRecipe fromNetwork(ResourceLocation resourceLocation, FriendlyByteBuf buffer)
 	{
-		ItemStack output = buffer.readItem();
-		FluidStack fluidOut = FluidStack.readFromPacket(buffer);
-		IngredientWithSize itemInput = IngredientWithSize.read(buffer);
+		ItemStack output = ItemStack.OPTIONAL_STREAM_CODEC.decode((net.minecraft.network.RegistryFriendlyByteBuf) buffer);
+		FluidStack fluidOut = FluidStack.OPTIONAL_STREAM_CODEC.decode((net.minecraft.network.RegistryFriendlyByteBuf) buffer);
+		IngredientWithSize itemInput = IngredientWithSize.STREAM_CODEC.decode((net.minecraft.network.RegistryFriendlyByteBuf)buffer);
 		HashSet<FluidTagInput> fluidSet = new HashSet<>();
 		int fluid_input_size = buffer.readInt();
 		for(int i = 0; i < fluid_input_size; i++) {
@@ -83,16 +78,16 @@ public class ChemicalRecipeSerializer extends IERecipeSerializer<ChemicalRecipe>
 
 		int energy = buffer.readInt();
 		int time = buffer.readInt();
-		return new ChemicalRecipe(resourceLocation, itemInput, fluidSet, output, fluidOut, energy, time);
+		return new ChemicalRecipe(resourceLocation, itemInput, fluidSet, new TagOutput(output), fluidOut, energy, time);
 	}
 
 	@Override
 	public void toNetwork(FriendlyByteBuf buffer, ChemicalRecipe recipe)
 	{
 		
-		buffer.writeItemStack(recipe.itemOutput, false);
-		recipe.fluidOutput.writeToPacket(buffer);
-		recipe.itemInput.write(buffer);
+		ItemStack.OPTIONAL_STREAM_CODEC.encode((net.minecraft.network.RegistryFriendlyByteBuf) buffer, recipe.itemOutput.get());
+		FluidStack.OPTIONAL_STREAM_CODEC.encode((net.minecraft.network.RegistryFriendlyByteBuf) buffer, recipe.fluidOutput);
+		IngredientWithSize.STREAM_CODEC.encode((net.minecraft.network.RegistryFriendlyByteBuf)buffer, recipe.itemInput);
 		buffer.writeInt(recipe.fluidIn.size());
 		recipe.fluidIn.forEach(f -> f.write(buffer));
 		buffer.writeInt(recipe.getTotalProcessEnergy());

@@ -8,12 +8,22 @@
 
 package com.igteam.immersivegeology.gametest.tests;
 
+import blusunrize.immersiveengineering.api.crafting.TagOutput;
+import com.google.gson.JsonParser;
+import com.igteam.immersivegeology.common.compat.ie.crafting.FluidTagInput;
+import com.igteam.immersivegeology.common.block.multiblocks.recipe.CentrifugeRecipe;
 import com.igteam.immersivegeology.core.lib.IGLib;
+import com.mojang.serialization.JsonOps;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.gametest.framework.TestFunction;
 import net.minecraft.server.MinecraftServer;
-import net.minecraftforge.server.ServerLifecycleHooks;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.material.Fluids;
+import net.neoforged.neoforge.common.util.Lazy;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.server.ServerLifecycleHooks;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +51,15 @@ public class ServerTests
 				200, 0, true, ServerTests::testNetworkConnectivity
 		));
 
+		tests.add(new TestFunction(
+				"server", "optional_fluid_recipe_outputs", TEST_AREA,
+				200, 0, true, ServerTests::testOptionalFluidRecipeOutputs
+		));
+		tests.add(new TestFunction(
+				"server", "tag_output_resolves_after_recipe_construction", TEST_AREA,
+				200, 0, true, ServerTests::testTagOutputResolvesAfterRecipeConstruction
+		));
+
 		return tests;
 	}
 
@@ -62,5 +81,35 @@ public class ServerTests
 				helper.fail("Network test failed: " + e.getMessage());
 			}
 		});
+	}
+
+	private static void testOptionalFluidRecipeOutputs(GameTestHelper helper)
+	{
+		CentrifugeRecipe recipe = CentrifugeRecipe.RECIPES.getRecipes(helper.getLevel()).stream()
+				.map(holder -> holder.value())
+				.filter(value -> value.secondaryFluidOutput.get().isEmpty())
+				.findFirst()
+				.orElse(null);
+		helper.assertTrue(recipe != null, "Missing centrifuge recipe with an empty optional fluid output");
+		helper.assertTrue(!recipe.itemOutput.get().isEmpty(), "Centrifuge recipe resolved an item output as empty");
+		helper.succeed();
+	}
+
+	private static void testTagOutputResolvesAfterRecipeConstruction(GameTestHelper helper)
+	{
+		TagOutput tagOutput = TagOutput.CODECS.codec().parse(
+				JsonOps.INSTANCE, JsonParser.parseString("{\"tag\": \"c:ingots/iron\"}")
+		).getOrThrow();
+		CentrifugeRecipe recipe = new CentrifugeRecipe(
+				ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "tag_output_deferred_test"),
+				new FluidTagInput(ResourceLocation.fromNamespaceAndPath("minecraft", "water"), 1),
+				tagOutput,
+				Lazy.of(() -> new FluidStack(Fluids.WATER, 1)),
+				Lazy.of(() -> FluidStack.EMPTY),
+				1, 1
+		);
+		helper.assertTrue(recipe.itemOutput.get().is(Items.IRON_INGOT),
+				"Tag-backed output did not resolve after recipe construction");
+		helper.succeed();
 	}
 }

@@ -1,0 +1,17 @@
+{
+  "type": "immersivegeology:gravity_separator",
+  "byproduct": {
+    "count": 1,
+    "id": "minecraft:gravel"
+  },
+  "byproduct_chance": 0.33,
+  "input": {
+    "tag": "c:dirty_crushed_ore/fluorite"
+  },
+  "result": {
+    "count": 1,
+    "id": "immersivegeology:crushed_ore_fluorite"
+  },
+  "time": 100,
+  "water": 100
+}

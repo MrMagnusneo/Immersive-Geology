@@ -16,7 +16,7 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.material.MapColor;
-import net.minecraftforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.energy.IEnergyStorage;
 import org.slf4j.Logger;
 import org.slf4j.Marker;
 
@@ -119,7 +119,7 @@ public class IGLib {
 
     public static ResourceLocation rl(String name)
     {
-        return new ResourceLocation(IGLib.MODID, name);
+        return ResourceLocation.fromNamespaceAndPath(IGLib.MODID, name);
     }
 
     public static ResourceLocation makeTextureLocation(String name) {

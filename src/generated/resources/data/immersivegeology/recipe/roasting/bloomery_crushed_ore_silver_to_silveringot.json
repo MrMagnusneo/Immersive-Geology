@@ -1,0 +1,14 @@
+{
+  "type": "immersivegeology:bloomery",
+  "input": {
+    "basePredicate": {
+      "tag": "c:crushed_ore/silver"
+    },
+    "count": 2
+  },
+  "result": {
+    "count": 1,
+    "id": "immersiveengineering:ingot_silver"
+  },
+  "time": 200
+}

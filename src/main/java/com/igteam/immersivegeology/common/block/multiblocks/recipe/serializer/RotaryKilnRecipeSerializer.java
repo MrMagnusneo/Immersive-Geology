@@ -8,8 +8,9 @@
 
 package com.igteam.immersivegeology.common.block.multiblocks.recipe.serializer;
 
-import blusunrize.immersiveengineering.api.crafting.IERecipeSerializer;
+import com.igteam.immersivegeology.common.recipe.LegacyIERecipeSerializer;
 import blusunrize.immersiveengineering.api.crafting.IngredientWithSize;
+import blusunrize.immersiveengineering.api.crafting.TagOutput;
 import com.google.gson.JsonObject;
 import com.igteam.immersivegeology.common.block.multiblocks.recipe.RotaryKilnRecipe;
 import com.igteam.immersivegeology.core.lib.IGLib;
@@ -18,11 +19,11 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.crafting.conditions.ICondition.IContext;
-import net.minecraftforge.common.util.Lazy;
+import net.neoforged.neoforge.common.conditions.ICondition.IContext;
+import net.neoforged.neoforge.common.util.Lazy;
 import org.jetbrains.annotations.Nullable;
 
-public class RotaryKilnRecipeSerializer extends IERecipeSerializer<RotaryKilnRecipe>
+public class RotaryKilnRecipeSerializer extends LegacyIERecipeSerializer<RotaryKilnRecipe>
 {
 	@Override
 	public ItemStack getIcon()
@@ -33,8 +34,8 @@ public class RotaryKilnRecipeSerializer extends IERecipeSerializer<RotaryKilnRec
 	@Override
 	public RotaryKilnRecipe readFromJson(ResourceLocation resourceLocation, JsonObject json, IContext iContext)
 	{
-		Lazy<ItemStack> output = readOutput(json.get("result"));
-		IngredientWithSize input = IngredientWithSize.deserialize(GsonHelper.getAsJsonObject(json, "input"));
+		TagOutput output = readOutput(json.get("result"));
+		IngredientWithSize input = IngredientWithSize.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json.get("input")).getOrThrow();
 		int time = GsonHelper.getAsInt(json, "time");
 		int heat = GsonHelper.getAsInt(json, "heat");
 		return new RotaryKilnRecipe(resourceLocation, input, output, time, heat);
@@ -43,8 +44,8 @@ public class RotaryKilnRecipeSerializer extends IERecipeSerializer<RotaryKilnRec
 	@Override
 	public @Nullable RotaryKilnRecipe fromNetwork(ResourceLocation resourceLocation, FriendlyByteBuf buffer)
 	{
-		Lazy<ItemStack> output = readLazyStack(buffer);
-		IngredientWithSize input = IngredientWithSize.read(buffer);
+		TagOutput output = readLazyStack(buffer);
+		IngredientWithSize input = IngredientWithSize.STREAM_CODEC.decode((net.minecraft.network.RegistryFriendlyByteBuf)buffer);
 		int time = buffer.readInt();
 		int heat = buffer.readInt();
 		return new RotaryKilnRecipe(resourceLocation, input, output, time, heat);
@@ -54,7 +55,7 @@ public class RotaryKilnRecipeSerializer extends IERecipeSerializer<RotaryKilnRec
 	public void toNetwork(FriendlyByteBuf buffer, RotaryKilnRecipe recipe)
 	{
 		writeLazyStack(buffer, recipe.itemOutput);
-		recipe.itemIn.write(buffer);
+		IngredientWithSize.STREAM_CODEC.encode((net.minecraft.network.RegistryFriendlyByteBuf)buffer, recipe.itemIn);
 		buffer.writeInt(recipe.getTotalProcessTime());
 		buffer.writeInt(recipe.getHeatRequired());
 	}

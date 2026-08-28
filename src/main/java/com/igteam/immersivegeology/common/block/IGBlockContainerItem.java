@@ -14,12 +14,16 @@ import com.igteam.immersivegeology.common.block.helper.IGBlockType;
 import com.igteam.immersivegeology.common.item.IGGenericBlockItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.tooltip.BundleTooltip;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.BundleContents;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -67,20 +71,21 @@ public class IGBlockContainerItem extends IGGenericBlockItem
 	@Override
 	public Optional<TooltipComponent> getTooltipImage(@Nonnull ItemStack stack)
 	{
-		if(stack.hasTag())
+		if(stack.has(DataComponents.CUSTOM_DATA))
 		{
-			CompoundTag tag = stack.getOrCreateTag();
+			CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
 			if(tag.contains("Items"))
 			{
 				// manual readout, skipping empty slots
 				ListTag list = tag.getList("Items", 10);
 				NonNullList<ItemStack> items = NonNullList.create();
 				list.forEach(e -> {
-					ItemStack s = ItemStack.of((CompoundTag)e);
+					ItemStack s = ItemStack.CODEC.parse(NbtOps.INSTANCE, (CompoundTag)e)
+							.result().orElse(ItemStack.EMPTY);
 					if(!s.isEmpty())
 						items.add(s);
 				});
-				return Optional.of(new BundleTooltip(items, 0));
+				return Optional.of(new BundleTooltip(new BundleContents(items)));
 			}
 		}
 		return super.getTooltipImage(stack);

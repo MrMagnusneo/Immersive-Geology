@@ -14,7 +14,7 @@ import com.igteam.immersivegeology.common.block.multiblocks.recipe.CrystallizerR
 import com.igteam.immersivegeology.common.block.multiblocks.recipe.GravitySeparatorRecipe;
 import com.igteam.immersivegeology.core.lib.IGLib;
 import com.igteam.immersivegeology.core.registration.IGMultiblockProvider;
-import mezz.jei.api.forge.ForgeTypes;
+import mezz.jei.api.neoforge.NeoForgeTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.drawable.IDrawableStatic;
@@ -24,7 +24,7 @@ import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraftforge.fluids.FluidType;
+import net.neoforged.neoforge.fluids.FluidType;
 
 import java.util.Arrays;
 
@@ -33,7 +33,7 @@ public class IGCrystallizerCategory extends IGRecipeCategory<CrystallizerRecipe>
 	public IGCrystallizerCategory(IGuiHelper helper)
 	{
 		super(helper, JEIRecipeTypes.CRYSTALLIZER, "block.immersivegeology.crystallizer");
-		ResourceLocation background = new ResourceLocation(IGLib.MODID, "textures/gui/jei/crystalizer.png");
+		ResourceLocation background = ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "textures/gui/jei/crystalizer.png");
 		IDrawableStatic back = guiHelper.drawableBuilder(background, 0, 0, 101, 101).setTextureSize(101,101).build();
 		setBackground(back);
 		setIcon(IGMultiblockProvider.CRYSTALLIZER.iconStack());
@@ -45,15 +45,15 @@ public class IGCrystallizerCategory extends IGRecipeCategory<CrystallizerRecipe>
 		int tankSize = Math.max(2*FluidType.BUCKET_VOLUME,  Math.max(recipe.fluidIn.getAmount(),recipe.fluidIn.getAmount()));
 		builder.addSlot(RecipeIngredientRole.INPUT, 15, 27)
 				.setFluidRenderer(tankSize, false, 16, 47)
-				.addIngredients(ForgeTypes.FLUID_STACK, recipe.fluidIn.getMatchingFluidStacks())
-				.addTooltipCallback(JEIHelper.fluidTooltipCallback);
+				.addIngredients(NeoForgeTypes.FLUID_STACK, recipe.fluidIn.getMatchingFluidStacks())
+				.addRichTooltipCallback(JEIHelper.fluidTooltipCallback);
 
 		if(!recipe.fluidOutput.get().isEmpty())
 		{
 			builder.addSlot(RecipeIngredientRole.OUTPUT, 41, 71)
 					.setFluidRenderer(432, false, 16, 20)
 					.addFluidStack(recipe.fluidOutput.get().getFluid(), recipe.fluidOutput.get().getAmount())
-					.addTooltipCallback(JEIHelper.fluidTooltipCallback);
+					.addRichTooltipCallback(JEIHelper.fluidTooltipCallback);
 		}
 
 		builder.addSlot(RecipeIngredientRole.OUTPUT, 66, 49)

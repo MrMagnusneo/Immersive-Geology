@@ -8,36 +8,31 @@
 
 package com.igteam.immersivegeology.common.network.msg;
 
-import blusunrize.immersiveengineering.ImmersiveEngineering;
-import blusunrize.immersiveengineering.api.multiblocks.blocks.env.IMultiblockContext;
-import blusunrize.immersiveengineering.api.multiblocks.blocks.logic.IMultiblockBE;
-import blusunrize.immersiveengineering.api.multiblocks.blocks.registry.MultiblockBlockEntityDummy;
-import blusunrize.immersiveengineering.common.blocks.IEBaseBlockEntity;
-import blusunrize.immersiveengineering.common.network.IMessage;
 import com.igteam.immersivegeology.common.block.multiblocks.logic.SmallChemicalReactorLogic;
-import com.igteam.immersivegeology.common.block.multiblocks.logic.SmallChemicalReactorLogic.State;
-import com.igteam.immersivegeology.common.block.multiblocks.part.SmallChemicalReactorPart;
+import com.igteam.immersivegeology.common.network.INetMessage;
+import com.igteam.immersivegeology.core.lib.IGLib;
 import com.igteam.immersivegeology.core.material.data.enums.MiscEnum;
 import com.igteam.immersivegeology.core.material.helper.flags.BlockCategoryFlags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.EntityBlock;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.fml.LogicalSide;
-import net.minecraftforge.network.NetworkEvent;
-import net.minecraftforge.network.NetworkEvent.Context;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.Objects;
-import java.util.function.Supplier;
-
-public class MessageSCRFail implements IMessage
+public class MessageSCRFail implements INetMessage
 {
+	public static final CustomPacketPayload.Type<MessageSCRFail> TYPE =
+			new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "scr_fail"));
+	public static final StreamCodec<FriendlyByteBuf, MessageSCRFail> STREAM_CODEC =
+			StreamCodec.ofMember(MessageSCRFail::toBytes, MessageSCRFail::new);
+
 	private final BlockPos pos;
 	private final float damage;
 
@@ -61,12 +56,17 @@ public class MessageSCRFail implements IMessage
 	}
 
 	@Override
-	public void process(Supplier<Context> context)
+	public CustomPacketPayload.@NotNull Type<MessageSCRFail> type()
 	{
-		NetworkEvent.Context ctx = context.get();
-		if (ctx.getDirection().getReceptionSide() == LogicalSide.SERVER) {
-			ctx.enqueueWork(() -> {
-				ServerLevel world = ((ServerPlayer)Objects.requireNonNull(ctx.getSender())).serverLevel();
+		return TYPE;
+	}
+
+	@Override
+	public void process(IPayloadContext context)
+	{
+		context.enqueueWork(() -> {
+			if (context.player() instanceof ServerPlayer player) {
+				ServerLevel world = player.serverLevel();
 				if (world.isAreaLoaded(this.pos, 1)) {
 					BlockState blockState = world.getBlockState(this.pos);
 					MutableBlockPos b = new MutableBlockPos();
@@ -87,7 +87,7 @@ public class MessageSCRFail implements IMessage
 						}
 					}
 				}
-			});
-		}
+			}
+		});
 	}
 }

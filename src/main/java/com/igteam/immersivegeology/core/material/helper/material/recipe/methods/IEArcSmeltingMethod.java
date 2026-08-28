@@ -9,7 +9,7 @@
 package com.igteam.immersivegeology.core.material.helper.material.recipe.methods;
 
 import blusunrize.immersiveengineering.api.crafting.IngredientWithSize;
-import blusunrize.immersiveengineering.api.crafting.builders.ArcFurnaceRecipeBuilder;
+import com.igteam.immersivegeology.common.compat.ie.crafting.builders.ArcFurnaceRecipeBuilder;
 import blusunrize.immersiveengineering.common.blocks.multiblocks.IEMultiblocks;
 import blusunrize.immersiveengineering.common.register.IEItems.Ingredients;
 import blusunrize.lib.manual.gui.ManualScreen;
@@ -22,7 +22,7 @@ import com.igteam.immersivegeology.core.material.helper.material.recipe.IGRecipe
 import com.igteam.immersivegeology.core.material.helper.material.recipe.IGStageDesignation;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.data.recipes.FinishedRecipe;
+import com.igteam.immersivegeology.client.helper.FinishedRecipe;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;

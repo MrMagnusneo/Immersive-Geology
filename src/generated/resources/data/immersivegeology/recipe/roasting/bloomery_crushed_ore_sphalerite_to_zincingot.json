@@ -1,0 +1,14 @@
+{
+  "type": "immersivegeology:bloomery",
+  "input": {
+    "basePredicate": {
+      "tag": "c:crushed_ore/sphalerite"
+    },
+    "count": 2
+  },
+  "result": {
+    "count": 1,
+    "id": "immersivegeology:ingot_zinc"
+  },
+  "time": 400
+}

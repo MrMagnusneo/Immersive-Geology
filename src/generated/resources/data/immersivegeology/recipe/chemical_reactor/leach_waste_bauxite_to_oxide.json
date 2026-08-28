@@ -1,0 +1,28 @@
+{
+  "type": "immersivegeology:chemical_reactor",
+  "energy": 51200,
+  "fluidInputA": {
+    "amount": 144,
+    "tag": "c:hydrochloric_acid"
+  },
+  "fluidInputB": {
+    "amount": 144,
+    "tag": "c:cloudy_chemical_waste_bauxite"
+  },
+  "fluidInputC": {
+    "amount": 144,
+    "tag": "c:sulfuric_acid"
+  },
+  "fluidResult": {
+    "amount": 250,
+    "id": "immersivegeology:fluid_chemical_waste"
+  },
+  "itemInput": {
+    "tag": "c:compound_dust/calcium"
+  },
+  "result": {
+    "count": 1,
+    "id": "immersivegeology:metal_oxide_iron"
+  },
+  "time": 200
+}

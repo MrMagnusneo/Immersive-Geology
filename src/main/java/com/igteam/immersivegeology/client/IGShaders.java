@@ -13,11 +13,11 @@ import com.mojang.blaze3d.shaders.AbstractUniform;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RegisterShadersEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.neoforge.client.event.RegisterShadersEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.EventBusSubscriber.Bus;
 
 import java.io.IOException;
 
@@ -35,7 +35,7 @@ public class IGShaders
 	@SubscribeEvent
 	public static void registerShaders(RegisterShadersEvent event) throws IOException
 	{
-		ShaderInstance instance = new ShaderInstance(event.getResourceProvider(), new ResourceLocation(IGLib.MODID, "rendertype_gui_display"), DefaultVertexFormat.POSITION_COLOR_TEX);
+		ShaderInstance instance = new ShaderInstance(event.getResourceProvider(), ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "rendertype_gui_display"), DefaultVertexFormat.POSITION_TEX_COLOR);
 
 		event.registerShader(instance, s ->
 		{

@@ -8,7 +8,6 @@
 
 package com.igteam.immersivegeology.common.block.entity.vent;
 
-import blusunrize.immersiveengineering.api.utils.CapabilityReference;
 import blusunrize.immersiveengineering.common.blocks.IEBaseBlockEntity;
 import blusunrize.immersiveengineering.common.blocks.ticking.IEClientTickableBE;
 import blusunrize.immersiveengineering.common.blocks.ticking.IEServerTickableBE;
@@ -21,6 +20,7 @@ import com.igteam.immersivegeology.core.material.helper.material.MaterialTexture
 import com.igteam.immersivegeology.core.registration.IGRegistrationHolder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
@@ -29,33 +29,29 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
-import net.minecraftforge.common.util.Lazy;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.fluids.capability.IFluidHandler.FluidAction;
-import net.minecraftforge.fluids.capability.templates.FluidTank;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.common.util.Lazy;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction;
+import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import java.util.Random;
+import java.util.function.Supplier;
 
-public class IGHydroVentEntity extends IEBaseBlockEntity implements ICapabilityProvider, IEServerTickableBE, IEClientTickableBE
+public class IGHydroVentEntity extends IEBaseBlockEntity implements IEServerTickableBE, IEClientTickableBE
 {
 	public final FluidTank tank = new FluidTank(250);;
-	CapabilityReference<IFluidHandler> ventOutput;
-	private final LazyOptional<IFluidHandler> holder = LazyOptional.of(() -> {
-		return this.tank;
-	});
+	Supplier<IFluidHandler> ventOutput;
 	private final Lazy<Fluid> ventType;
 
 	public IGHydroVentEntity(BlockPos pos, BlockState state)
 	{
 		super(resolveEntityType(state), pos, state);
-		this.ventType = () -> state.getBlock() instanceof IGBlockType type ? type.getMaterial(MaterialTexture.base).getFluid(BlockCategoryFlags.FLUID) : null;
-		this.ventOutput = CapabilityReference.forNeighbor(this, ForgeCapabilities.FLUID_HANDLER, Direction.UP);
+		this.ventType = Lazy.of(() -> state.getBlock() instanceof IGBlockType type ? type.getMaterial(MaterialTexture.base).getFluid(BlockCategoryFlags.FLUID) : null);
+		this.ventOutput = () -> level==null?null:level.getCapability(
+				Capabilities.FluidHandler.BLOCK, worldPosition.above(), Direction.DOWN);
 	}
 
 	private static BlockEntityType<?> resolveEntityType(BlockState state) {
@@ -73,27 +69,20 @@ public class IGHydroVentEntity extends IEBaseBlockEntity implements ICapabilityP
 	}
 
 	@Override
-	public void invalidateCaps()
-	{
-		super.invalidateCaps();
-	}
-
-	@Override
-	public void readCustomNBT(CompoundTag compoundTag, boolean b)
+	public void readCustomNBT(CompoundTag compoundTag, boolean b, HolderLookup.Provider registries)
 	{
 
 	}
 
 	@Override
-	public void writeCustomNBT(CompoundTag compoundTag, boolean b)
+	public void writeCustomNBT(CompoundTag compoundTag, boolean b, HolderLookup.Provider registries)
 	{
 
 	}
 
-	@Override
-	public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> capability, @Nullable Direction facing)
+	public @Nullable IFluidHandler getFluidHandler(@Nullable Direction facing)
 	{
-		return capability == ForgeCapabilities.FLUID_HANDLER  && (facing == null || facing.equals(Direction.UP)) ? this.holder.cast() : super.getCapability(capability, facing);
+		return facing==null||facing==Direction.UP?tank: null;
 	}
 
 	int tick_count = 0;
@@ -112,7 +101,7 @@ public class IGHydroVentEntity extends IEBaseBlockEntity implements ICapabilityP
 		if(this.tank.getFluidAmount() > 0)
 		{
 			int out = Math.min(1000, this.tank.getFluidAmount());
-			IFluidHandler handler = ventOutput.getNullable();
+			IFluidHandler handler = ventOutput.get();
 			if(handler!=null)
 			{
 				int accepted = handler.fill(Utils.copyFluidStackWithAmount(this.tank.getFluid(), out, false), FluidAction.SIMULATE);

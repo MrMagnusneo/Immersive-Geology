@@ -8,6 +8,8 @@
 
 package com.igteam.immersivegeology.common.block.multiblocks.logic;
 
+import blusunrize.immersiveengineering.api.multiblocks.blocks.component.IMultiblockComponent;
+
 import blusunrize.immersiveengineering.api.energy.IRotationAcceptor;
 import blusunrize.immersiveengineering.api.energy.NullEnergyStorage;
 import blusunrize.immersiveengineering.api.multiblocks.blocks.component.IClientTickableComponent;
@@ -18,7 +20,6 @@ import blusunrize.immersiveengineering.api.multiblocks.blocks.env.IMultiblockCon
 import blusunrize.immersiveengineering.api.multiblocks.blocks.logic.IMultiblockLogic;
 import blusunrize.immersiveengineering.api.multiblocks.blocks.logic.IMultiblockState;
 import blusunrize.immersiveengineering.api.multiblocks.blocks.util.*;
-import blusunrize.immersiveengineering.api.utils.CapabilityReference;
 import blusunrize.immersiveengineering.client.utils.TextUtils;
 import blusunrize.immersiveengineering.common.blocks.multiblocks.logic.interfaces.MBOverlayText;
 import blusunrize.immersiveengineering.common.fluids.ArrayFluidHandler;
@@ -33,29 +34,30 @@ import com.igteam.immersivegeology.common.block.multiblocks.recipe.TurbineFuel;
 import com.igteam.immersivegeology.common.block.multiblocks.shapes.SteamTurbineShape;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.energy.IEnergyStorage;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.FluidType;
-import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.fluids.capability.IFluidHandler.FluidAction;
-import net.minecraftforge.fluids.capability.templates.FluidTank;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.FluidType;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction;
+import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Supplier;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -153,7 +155,7 @@ public class SteamTurbineLogic implements ISkinnableMultiblockLogic<State>, MBOv
 
         if(state.rotation_speed > 0)
         {
-            IRotationAcceptor alternator = (IRotationAcceptor)state.outputCap.getNullable();
+            IRotationAcceptor alternator = (IRotationAcceptor)state.outputCap.get();
             if(alternator != null)
             {
                 float rotationPerTick = state.rotation_speed / 360f;
@@ -164,10 +166,10 @@ public class SteamTurbineLogic implements ISkinnableMultiblockLogic<State>, MBOv
         context.requestMasterBESync();
     }
 
-    private void drainOutputTank(SteamTurbineLogic.State state, int amount, CapabilityReference<IFluidHandler> output_reference)
+    private void drainOutputTank(SteamTurbineLogic.State state, int amount, Supplier<IFluidHandler> output_reference)
     {
 		FluidStack out = Utils.copyFluidStackWithAmount(state.water_tank.getFluid(), amount, false);
-        IFluidHandler output = output_reference.getNullable();
+        IFluidHandler output = output_reference.get();
 
         if(output==null)
             return;
@@ -187,7 +189,7 @@ public class SteamTurbineLogic implements ISkinnableMultiblockLogic<State>, MBOv
 
     @Nullable
     @Override
-    public List<Component> getOverlayText(State state, Player player, boolean b)
+    public List<Component> getOverlayText(State state, BlockPos pos, BlockHitResult hit, Player player, boolean b)
     {
         if(state != null && state.water_tank.getSpace() < 50) return List.of(Component.translatable("immersivegeology.steam_turbine.water_warning").withStyle(ChatFormatting.BOLD).withStyle(ChatFormatting.RED));
         if(Utils.isFluidRelatedItemStack(player.getItemInHand(InteractionHand.MAIN_HAND)))
@@ -196,14 +198,13 @@ public class SteamTurbineLogic implements ISkinnableMultiblockLogic<State>, MBOv
     }
 
     @Override
-    public <T> LazyOptional<T> getCapability(IMultiblockContext<State> ctx, CapabilityPosition position, Capability<T> cap)
+    public void registerCapabilities(IMultiblockComponent.CapabilityRegistrar<State> register)
     {
-        if (cap != ForgeCapabilities.FLUID_HANDLER || !FLUID_INPUT.equalsOrNullFace(position) && !FLUID_OUTPUT_A.equalsOrNullFace(position) && !FLUID_OUTPUT_B.equalsOrNullFace(position)) {
-            return LazyOptional.empty();
-        } else {
-            if(position.equals(FLUID_OUTPUT_A) || position.equals(FLUID_OUTPUT_B)) return ((State)ctx.getState()).waterFluidCap.cast(ctx);
-            return ((SteamTurbineLogic.State)ctx.getState()).steamFluidCap.cast(ctx);
-        }
+        register.register(Capabilities.FluidHandler.BLOCK, (state, position) -> {
+            if(position.equals(FLUID_OUTPUT_A) || position.equals(FLUID_OUTPUT_B)) return state.waterFluidCap;
+            if(FLUID_INPUT.equalsOrNullFace(position)) return state.steamFluidCap;
+            return null;
+        });
     }
 
     @Override
@@ -220,7 +221,7 @@ public class SteamTurbineLogic implements ISkinnableMultiblockLogic<State>, MBOv
 
     public static class State implements IGMultiblockState
     {
-        private final CapabilityReference<IRotationAcceptor> outputCap;
+        private final Supplier<IRotationAcceptor> outputCap;
         public final RedstoneControl.RSState rsState = RedstoneControl.RSState.enabledByDefault();
         public final FluidTank steam_tank = new FluidTank(STEAM_CAPACITY);
         public final FluidTank water_tank = new FluidTank(WATER_CAPACITY);
@@ -230,9 +231,9 @@ public class SteamTurbineLogic implements ISkinnableMultiblockLogic<State>, MBOv
         private float target_rotation = 0;
         private float rotation_speed = 0;
         private final BiFunction<Level, Fluid, TurbineFuel> recipeGetter = CachedRecipe.cached(TurbineFuel::getRecipeFor);
-        private final StoredCapability<IFluidHandler> steamFluidCap;
-        private final StoredCapability<IFluidHandler> waterFluidCap;
-        private final List<CapabilityReference<IFluidHandler>> fluidOutputs;
+        private final IFluidHandler steamFluidCap;
+        private final IFluidHandler waterFluidCap;
+        private final List<Supplier<IFluidHandler>> fluidOutputs;
 
 
         public State(IInitialMultiblockContext<State> ctx){
@@ -241,11 +242,11 @@ public class SteamTurbineLogic implements ISkinnableMultiblockLogic<State>, MBOv
                 ctx.getMarkDirtyRunnable().run();
             };
 
-            this.steamFluidCap = new StoredCapability<>(new ArrayFluidHandler(steam_tank, true, true, changedAndSync));
-            this.waterFluidCap = new StoredCapability<>(new ArrayFluidHandler(water_tank, true, false, changedAndSync));
-            ImmutableList.Builder<CapabilityReference<IFluidHandler>> outputs = ImmutableList.builder();
-            outputs.add(ctx.getCapabilityAt(ForgeCapabilities.FLUID_HANDLER, FLUID_OUTPUT_A.posInMultiblock().east(), FLUID_OUTPUT_A.side()));
-            outputs.add(ctx.getCapabilityAt(ForgeCapabilities.FLUID_HANDLER, FLUID_OUTPUT_B.posInMultiblock().west(), FLUID_OUTPUT_B.side()));
+            this.steamFluidCap = new ArrayFluidHandler(steam_tank, true, true, changedAndSync);
+            this.waterFluidCap = new ArrayFluidHandler(water_tank, true, false, changedAndSync);
+            ImmutableList.Builder<Supplier<IFluidHandler>> outputs = ImmutableList.builder();
+            outputs.add(ctx.getCapabilityAt(Capabilities.FluidHandler.BLOCK, FLUID_OUTPUT_A.posInMultiblock().east(), FLUID_OUTPUT_A.side()));
+            outputs.add(ctx.getCapabilityAt(Capabilities.FluidHandler.BLOCK, FLUID_OUTPUT_B.posInMultiblock().west(), FLUID_OUTPUT_B.side()));
 
             this.outputCap = ctx.getCapabilityAt(IRotationAcceptor.CAPABILITY, ROTATION_OUTPUT.posInMultiblock().offset(0,0,-1), ROTATION_OUTPUT.side());
 
@@ -255,32 +256,32 @@ public class SteamTurbineLogic implements ISkinnableMultiblockLogic<State>, MBOv
         }
 
         @Override
-        public void readSaveNBT(CompoundTag nbt){
-            readSyncNBT(nbt);
+        public void readSaveNBT(CompoundTag nbt, HolderLookup.Provider provider){
+            readSyncNBT(nbt, provider);
             this.active = nbt.getBoolean("active");
             this.consumeTick = nbt.getInt("consumeTick");
             this.rotation = nbt.getFloat("rotation");
         }
 
         @Override
-        public void writeSaveNBT(CompoundTag nbt){
-            writeSyncNBT(nbt);
+        public void writeSaveNBT(CompoundTag nbt, HolderLookup.Provider provider){
+            writeSyncNBT(nbt, provider);
             nbt.putBoolean("active", this.active);
             nbt.putInt("consumeTick", this.consumeTick);
             nbt.putFloat("rotation", this.rotation);
         }
 
-        public void writeSyncNBT(CompoundTag nbt) {
-            nbt.put("steam_tank", this.steam_tank.writeToNBT(new CompoundTag()));
-            nbt.put("water_tank", this.water_tank.writeToNBT(new CompoundTag()));
+        public void writeSyncNBT(CompoundTag nbt, HolderLookup.Provider provider) {
+            nbt.put("steam_tank", this.steam_tank.writeToNBT(provider, new CompoundTag()));
+            nbt.put("water_tank", this.water_tank.writeToNBT(provider, new CompoundTag()));
             nbt.putBoolean("active", this.active);
             nbt.putFloat("target_rotation", this.target_rotation);
             nbt.putFloat("rotation_speed", this.rotation_speed);
         }
 
-        public void readSyncNBT(CompoundTag nbt) {
-            this.steam_tank.readFromNBT(nbt.getCompound("steam_tank"));
-            this.water_tank.readFromNBT(nbt.getCompound("water_tank"));
+        public void readSyncNBT(CompoundTag nbt, HolderLookup.Provider provider) {
+            this.steam_tank.readFromNBT(provider, nbt.getCompound("steam_tank"));
+            this.water_tank.readFromNBT(provider, nbt.getCompound("water_tank"));
             this.active = nbt.getBoolean("active");
             this.target_rotation = nbt.getFloat("target_rotation");
             this.rotation_speed = nbt.getFloat("rotation_speed");
@@ -301,12 +302,6 @@ public class SteamTurbineLogic implements ISkinnableMultiblockLogic<State>, MBOv
             return this.rotation_speed;
         }
 
-        @Override
-        public void invalidate(@NotNull IMultiblockContext<?> ctx)
-        {
-            this.waterFluidCap.get(ctx).invalidate();
-            this.steamFluidCap.get(ctx).invalidate();
-        }
     }
 
 }

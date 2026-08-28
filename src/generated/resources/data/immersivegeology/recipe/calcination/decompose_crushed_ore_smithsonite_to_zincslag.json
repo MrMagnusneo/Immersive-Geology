@@ -1,0 +1,12 @@
+{
+  "type": "immersivegeology:rotary_kiln",
+  "heat": 30,
+  "input": {
+    "tag": "c:crushed_ore/smithsonite"
+  },
+  "result": {
+    "count": 1,
+    "id": "immersivegeology:slag_smithsonite"
+  },
+  "time": 300
+}

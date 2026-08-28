@@ -9,7 +9,6 @@
 package com.igteam.immersivegeology.common.block.entity.crate;
 
 import blusunrize.immersiveengineering.api.IEApi;
-import blusunrize.immersiveengineering.api.utils.CapabilityUtils;
 import blusunrize.immersiveengineering.common.blocks.IEBlockInterfaces;
 import blusunrize.immersiveengineering.common.util.Utils;
 import blusunrize.immersiveengineering.common.util.inventory.IEInventoryHandler;
@@ -25,7 +24,9 @@ import com.igteam.immersivegeology.core.registration.IGMenuTypes;
 import com.igteam.immersivegeology.core.registration.IGRegistrationHolder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
@@ -34,16 +35,14 @@ import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.IItemHandler;
+import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
@@ -55,12 +54,12 @@ public class IGCrateEntity extends RandomizableContainerBlockEntity implements I
 	public static final int CONTAINER_SIZE = 36;
 	private NonNullList<ItemStack> inventory;
 	private ListTag enchantments;
-	private final LazyOptional<IItemHandler> inventoryCap;
+	private final IItemHandler inventoryCap;
 
 	public IGCrateEntity(BlockPos pos, BlockState state) {
 		super(resolveEntityType(state), pos, state);
 		this.inventory = NonNullList.withSize(CONTAINER_SIZE, ItemStack.EMPTY);
-		this.inventoryCap = CapabilityUtils.constantOptional(new IEInventoryHandler(CONTAINER_SIZE, this));
+		this.inventoryCap = new IEInventoryHandler(CONTAINER_SIZE, this);
 	}
 
 	private static BlockEntityType<?> resolveEntityType(BlockState state) {
@@ -95,12 +94,13 @@ public class IGCrateEntity extends RandomizableContainerBlockEntity implements I
 		return new IGCrateMenu(IGMenuTypes.CRATE.get(), pContainerId, pInventory, this);
 	}
 
-	public void load(CompoundTag nbt) {
-		super.load(nbt);
-		this.loadIEData(nbt);
+	@Override
+	protected void loadAdditional(CompoundTag nbt, HolderLookup.Provider registries) {
+		super.loadAdditional(nbt, registries);
+		this.loadIEData(nbt, registries);
 	}
 
-	private void loadIEData(CompoundTag nbt) {
+	private void loadIEData(CompoundTag nbt, HolderLookup.Provider registries) {
 		if (nbt.contains("enchantments", 9)) {
 			this.enchantments = nbt.getList("enchantments", 10);
 		}
@@ -110,19 +110,20 @@ public class IGCrateEntity extends RandomizableContainerBlockEntity implements I
 		}
 
 		if (!this.tryLoadLootTable(nbt)) {
-			ContainerHelper.loadAllItems(nbt, this.inventory);
+			ContainerHelper.loadAllItems(nbt, this.inventory, registries);
 		}
 
 	}
 
-	protected void saveAdditional(CompoundTag nbt) {
-		super.saveAdditional(nbt);
+	@Override
+	protected void saveAdditional(CompoundTag nbt, HolderLookup.Provider registries) {
+		super.saveAdditional(nbt, registries);
 		if (this.enchantments != null && this.enchantments.size() > 0) {
 			nbt.put("enchantments", this.enchantments);
 		}
 
 		if (!this.trySaveLootTable(nbt)) {
-			ContainerHelper.saveAllItems(nbt, this.inventory);
+			ContainerHelper.saveAllItems(nbt, this.inventory, registries);
 		}
 	}
 
@@ -154,19 +155,18 @@ public class IGCrateEntity extends RandomizableContainerBlockEntity implements I
 	public void getBlockEntityDrop(LootContext context, Consumer<ItemStack> drop) {
 		ItemStack stack = new ItemStack(this.getBlockState().getBlock(), 1);
 		CompoundTag tag = new CompoundTag();
-		ContainerHelper.saveAllItems(tag, this.inventory, false);
-		if (!tag.isEmpty()) {
-			stack.setTag(tag);
-		}
+		ContainerHelper.saveAllItems(tag, this.inventory, false, context.getLevel().registryAccess());
 
 		Component customName = this.getCustomName();
 		if (customName != null) {
-			stack.setHoverName(customName);
+			stack.set(DataComponents.CUSTOM_NAME, customName);
 		}
 
 		if (this.enchantments != null && this.enchantments.size() > 0) {
-			stack.getOrCreateTag().put("ench", this.enchantments);
+			tag.put("ench", this.enchantments);
 		}
+		if (!tag.isEmpty())
+			stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
 
 		drop.accept(stack);
 	}
@@ -176,25 +176,21 @@ public class IGCrateEntity extends RandomizableContainerBlockEntity implements I
 	}
 
 	public void onBEPlaced(ItemStack stack) {
-		if (stack.hasTag()) {
-			this.loadIEData(stack.getOrCreateTag());
-			if (stack.hasCustomHoverName()) {
-				this.setCustomName(stack.getHoverName());
+		if (stack.has(DataComponents.CUSTOM_DATA) && level != null) {
+			CompoundTag customData = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+			this.loadIEData(customData, level.registryAccess());
+			if (stack.has(DataComponents.CUSTOM_NAME)) {
+				this.applyComponents(net.minecraft.core.component.DataComponentMap.builder().set(DataComponents.CUSTOM_NAME, stack.getHoverName()).build(), net.minecraft.core.component.DataComponentPatch.EMPTY);
 			}
 
-			this.enchantments = stack.getEnchantmentTags();
+			if(customData.contains("ench", 9))
+				this.enchantments = customData.getList("ench", 10);
 		}
 
 	}
 
-	@Nonnull
-	public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
-		return cap == ForgeCapabilities.ITEM_HANDLER ? this.inventoryCap.cast() : super.getCapability(cap, side);
-	}
-
-	public void invalidateCaps() {
-		super.invalidateCaps();
-		this.inventoryCap.invalidate();
+	public IItemHandler getInventoryHandler() {
+		return inventoryCap;
 	}
 
 	public boolean canPlaceItem(int index, ItemStack stack) {

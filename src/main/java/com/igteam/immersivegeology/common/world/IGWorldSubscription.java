@@ -39,10 +39,10 @@ import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.dimension.BuiltinDimensionTypes;
 import net.minecraft.world.level.dimension.DimensionType;
-import net.minecraftforge.common.Tags;
-import net.minecraftforge.event.level.ChunkEvent;
-import net.minecraftforge.event.level.LevelEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.neoforge.common.Tags;
+import net.neoforged.neoforge.event.level.ChunkEvent;
+import net.neoforged.neoforge.event.level.LevelEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -92,7 +92,7 @@ public class IGWorldSubscription
 
 	private Set<ResourceLocation> getBlacklistedBiomes()
 	{
-		return IGServerConfig.REMOVAL.biome_blacklist.get().stream().map(ResourceLocation::new).collect(Collectors.toSet());
+		return IGServerConfig.REMOVAL.biome_blacklist.get().stream().map(ResourceLocation::parse).collect(Collectors.toSet());
 	}
 
 	// Okay, so, this event NEEDS to be optimized, as extra over head here, means slower chunk generation
@@ -125,7 +125,7 @@ public class IGWorldSubscription
 			replaceState = isNether ? netherStone : null;
 		}
 		Holder<Biome> holder = level.getBiome(chunk.getPos().getWorldPosition());
-		if(holder.getTagKeys().anyMatch(((b) ->
+		if(holder.tags().anyMatch(((b) ->
 		{
 			if(getBlacklistedBiomes().contains(b.location()))
 			{

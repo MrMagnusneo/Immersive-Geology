@@ -22,9 +22,12 @@ import com.google.common.base.Preconditions;
 import com.igteam.immersivegeology.common.block.multiblocks.gui.helper.IGMultiblockGUI;
 import com.igteam.immersivegeology.core.lib.IGLib;
 import com.igteam.immersivegeology.core.registration.IGMenuTypes.MultiblockContainer;
+import com.igteam.immersivegeology.core.registration.IGRegistrationHolder;
 import net.minecraft.core.BlockPos;
+import net.neoforged.bus.api.IEventBus;
 
 import java.util.ArrayList;
+import java.util.function.Consumer;
 
 import static com.igteam.immersivegeology.core.registration.IGMultiblockProvider.ALL_IG_MULTIBLOCKS;
 
@@ -36,10 +39,15 @@ public class IGMultiblockBuilder<S extends IMultiblockState>
 		super(logic, IGLib.rl(name));
 	}
 
-	@Override
 	public MultiblockRegistration<S> build()
 	{
-		MultiblockRegistration<S> b = super.build();
+		return build(registerToModBus -> registerToModBus.accept(IGRegistrationHolder.getModEventBus()));
+	}
+
+	@Override
+	public MultiblockRegistration<S> build(Consumer<Consumer<IEventBus>> finisher)
+	{
+		MultiblockRegistration<S> b = super.build(finisher);
 		ALL_IG_MULTIBLOCKS.add(b);
 		return b;
 	}

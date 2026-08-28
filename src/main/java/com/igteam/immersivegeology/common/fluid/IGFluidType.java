@@ -22,9 +22,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.FluidType;
+import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.FluidType;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -140,13 +140,13 @@ public class IGFluidType extends FluidType
 			@Override
 			public ResourceLocation getStillTexture()
 			{
-				return fluid.base.hasFlag(MaterialFlags.IS_MOLTEN_METAL) ? new ResourceLocation(IGLib.MODID, "block/fluid/molten_still") : new ResourceLocation(IGLib.MODID, "block/fluid/default_still");
+				return fluid.base.hasFlag(MaterialFlags.IS_MOLTEN_METAL) ? ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "block/fluid/molten_still") : ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "block/fluid/default_still");
 			}
 
 			@Override
 			public ResourceLocation getFlowingTexture()
 			{
-				return fluid.base.hasFlag(MaterialFlags.IS_MOLTEN_METAL) ? new ResourceLocation(IGLib.MODID, "block/fluid/molten_flow") : new ResourceLocation(IGLib.MODID, "block/fluid/default_flowing");
+				return fluid.base.hasFlag(MaterialFlags.IS_MOLTEN_METAL) ? ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "block/fluid/molten_flow") : ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "block/fluid/default_flowing");
 			}
 
 			@Override

@@ -38,14 +38,8 @@ public class GeothermalPart extends SkinableMultiblockPart<GeothermalExchangerLo
 	@Override
 	public void onRemove(BlockState state, @NotNull Level level, @NotNull BlockPos pos, BlockState newState, boolean isMoving)
 	{
-		if(level.getBlockEntity(pos) instanceof IMultiblockBE<?> be)
-		{
-			IMultiblockBEHelper<?> helper = be.getHelper();
-			if(helper.getState() instanceof GeothermalExchangerLogic.State mbState)
-			{
-				mbState.invalidate((IMultiblockContext<State>) helper.getContext());
-			}
-		}
+		if(!state.is(newState.getBlock()))
+			level.invalidateCapabilities(pos);
 		super.onRemove(state, level, pos, newState, isMoving);
 	}
 

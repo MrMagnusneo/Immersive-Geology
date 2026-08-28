@@ -1,0 +1,17 @@
+{
+  "type": "immersivegeology:gravity_separator",
+  "byproduct": {
+    "count": 1,
+    "id": "immersivegeology:metal_oxide_manganese"
+  },
+  "byproduct_chance": 0.075,
+  "input": {
+    "tag": "c:powders/cuprite"
+  },
+  "result": {
+    "count": 1,
+    "id": "immersivegeology:metal_oxide_copper"
+  },
+  "time": 200,
+  "water": 250
+}

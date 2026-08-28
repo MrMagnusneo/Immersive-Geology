@@ -54,7 +54,7 @@ public class GeothermalHeatHelper
 		if (cachedRecipes == null) {
 			Level currentLevel = level.get();
 			if (currentLevel != null) {
-				cachedRecipes = new ArrayList<>(GeothermalConversionRecipe.RECIPES.getRecipes(currentLevel));
+				cachedRecipes = new ArrayList<>(GeothermalConversionRecipe.RECIPES.getRecipes(currentLevel).stream().map(net.minecraft.world.item.crafting.RecipeHolder::value).toList());
 			}
 		}
 	}

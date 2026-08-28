@@ -3,6 +3,6 @@
   "textures": {
     "ore_down": "immersivegeology:palette/block/ore_bearing/layered/normal_2_pristine_cuprite",
     "side": "tfc:block/rock/raw/conglomerate",
-    "top": "tfc:block/rock/raw/conglomerate"
+    "top": "tfc:block/rock/raw/conglomerate_top"
   }
 }

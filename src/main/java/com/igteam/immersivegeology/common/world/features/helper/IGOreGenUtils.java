@@ -33,7 +33,7 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.levelgen.XoroshiroRandomSource;
-import net.minecraftforge.common.Tags;
+import net.neoforged.neoforge.common.Tags;
 import org.jetbrains.annotations.NotNull;
 
 public class IGOreGenUtils
@@ -74,7 +74,7 @@ public class IGOreGenUtils
 	public static BlockState oxidizeExposed(LevelAccessor level, BlockPos cursor, BlockState oreState)
 	{
 		// Check if the ore block is randomly ticking
-		if(oreState.getBlock().isRandomlyTicking(oreState))
+		if(oreState.isRandomlyTicking())
 		{
 			// Iterate over directions and corresponding oxidation properties
 			for(int i = 0; i < DIRECTIONS.length; i++)
@@ -106,9 +106,9 @@ public class IGOreGenUtils
 	}
 
 
-	static TagKey<Block> stoneTag = Tags.Blocks.STONE;
+	static TagKey<Block> stoneTag = Tags.Blocks.STONES;
 	static TagKey<Block> endStoneTag = Tags.Blocks.END_STONES;
-	static TagKey<Block> netherackTag = Tags.Blocks.NETHERRACK;
+	static TagKey<Block> netherackTag = Tags.Blocks.NETHERRACKS;
 	public static float getWorthwhileCount(LevelAccessor level, ChunkPos centerChunk, int maxY, int minY, Vein vein) {
 		int totalViableLocations = 0;
 		// Use the same 3x3 chunk area approach

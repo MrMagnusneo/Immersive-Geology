@@ -1,0 +1,12 @@
+{
+  "type": "immersivegeology:pelletizer",
+  "energy": 4100,
+  "input": {
+    "tag": "c:powders/millerite"
+  },
+  "result": {
+    "count": 1,
+    "id": "immersivegeology:pellet_millerite"
+  },
+  "time": 600
+}

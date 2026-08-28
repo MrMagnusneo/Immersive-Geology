@@ -14,13 +14,14 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.ModelEvent;
-import net.minecraftforge.client.model.data.ModelData;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.neoforge.client.event.ModelEvent;
+import net.neoforged.neoforge.client.model.data.ModelData;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.EventBusSubscriber.Bus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,22 +29,22 @@ import java.util.List;
 @EventBusSubscriber(modid = IGLib.MODID, bus = Bus.MOD, value = Dist.CLIENT)
 public class IGDynamicModel
 {
-	private static final List<ResourceLocation> MODELS = new ArrayList<>();
+	private static final List<ModelResourceLocation> MODELS = new ArrayList<>();
 	private final String raw_name;
 	@SubscribeEvent
 	public static void registerModels(ModelEvent.RegisterAdditional ev)
 	{
-		for(ResourceLocation model : MODELS)
+		for(ModelResourceLocation model : MODELS)
 			ev.register(model);
 	}
 
-	private final ResourceLocation name;
+	private final ModelResourceLocation name;
 
 	public IGDynamicModel(String desc)
 	{
 		// References a generated json file
 		raw_name = desc;
-		this.name = new ResourceLocation(IGLib.MODID, "dynamic/"+desc);
+		this.name = ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(IGLib.MODID, "dynamic/"+desc));
 		MODELS.add(this.name);
 	}
 
@@ -63,7 +64,7 @@ public class IGDynamicModel
 		return get().getQuads(null, null, ApiUtils.RANDOM_SOURCE, data, null);
 	}
 
-	public ResourceLocation getName()
+	public ModelResourceLocation getName()
 	{
 		return name;
 	}

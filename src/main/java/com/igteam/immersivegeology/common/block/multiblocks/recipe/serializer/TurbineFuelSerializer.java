@@ -8,19 +8,19 @@
 
 package com.igteam.immersivegeology.common.block.multiblocks.recipe.serializer;
 
-import blusunrize.immersiveengineering.api.crafting.IERecipeSerializer;
+import com.igteam.immersivegeology.common.recipe.LegacyIERecipeSerializer;
 import blusunrize.immersiveengineering.common.network.PacketUtils;
 import com.google.gson.JsonObject;
 import com.igteam.immersivegeology.common.block.multiblocks.recipe.TurbineFuel;
 import com.igteam.immersivegeology.core.registration.IGMultiblockProvider;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraftforge.common.crafting.conditions.ICondition.IContext;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.common.conditions.ICondition.IContext;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -29,7 +29,7 @@ import java.util.List;
 
 import static com.igteam.immersivegeology.common.block.multiblocks.recipe.builder.TurbineFuelBuilder.*;
 
-public class TurbineFuelSerializer extends IERecipeSerializer<TurbineFuel>
+public class TurbineFuelSerializer extends LegacyIERecipeSerializer<TurbineFuel>
 {
 	@Override
 	public ItemStack getIcon()
@@ -40,7 +40,7 @@ public class TurbineFuelSerializer extends IERecipeSerializer<TurbineFuel>
 	@Override
 	public TurbineFuel readFromJson(ResourceLocation recipeId, JsonObject json, IContext context)
 	{
-		ResourceLocation tagName = new ResourceLocation(json.get(FLUID_TAG_KEY).getAsString());
+		ResourceLocation tagName = ResourceLocation.parse(json.get(FLUID_TAG_KEY).getAsString());
 		TagKey<Fluid> tag = TagKey.create(Registries.FLUID, tagName);
 		int amount = json.get(CONSUME_AMOUNT_KEY).getAsInt();
 		int burn_time = json.get(BURN_TIME_KEY).getAsInt();
@@ -52,7 +52,8 @@ public class TurbineFuelSerializer extends IERecipeSerializer<TurbineFuel>
 	@Override
 	public TurbineFuel fromNetwork(@Nonnull ResourceLocation recipeId, @Nonnull FriendlyByteBuf buffer)
 	{
-		List<Fluid> fluids = PacketUtils.readList(buffer, buf -> buf.readRegistryIdUnsafe(ForgeRegistries.FLUIDS));
+		List<Fluid> fluids = PacketUtils.readList(buffer,
+				buf -> BuiltInRegistries.FLUID.get(buf.readResourceLocation()));
 		int consume_amount = buffer.readInt();
 		int burnTime = buffer.readInt();
 		float outputRatio = buffer.readFloat();
@@ -63,7 +64,8 @@ public class TurbineFuelSerializer extends IERecipeSerializer<TurbineFuel>
 	public void toNetwork(@Nonnull FriendlyByteBuf buffer, @Nonnull TurbineFuel recipe)
 	{
 		PacketUtils.writeList(
-				buffer, recipe.getFluids(), (f, buf) -> buf.writeRegistryIdUnsafe(ForgeRegistries.FLUIDS, f)
+				buffer, recipe.getFluids(),
+				(fluid, buf) -> buf.writeResourceLocation(BuiltInRegistries.FLUID.getKey(fluid))
 		);
 		buffer.writeInt(recipe.getConsumed());
 		buffer.writeInt(recipe.getBurnTime());
