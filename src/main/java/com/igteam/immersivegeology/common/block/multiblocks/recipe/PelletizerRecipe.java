@@ -36,14 +36,14 @@ public class PelletizerRecipe extends MultiblockRecipe
 	Lazy<Integer> totalProcessEnergy;
 	Lazy<Integer> totalProcessTime;
 
-	public PelletizerRecipe(ResourceLocation id, IngredientWithSize input, Lazy<ItemStack> output, int energy, int time)
+	public PelletizerRecipe(ResourceLocation id, IngredientWithSize input, TagOutput output, int energy, int time)
 	{
-		super(new TagOutput(output.get()), IGRecipeTypes.PELLETIZER, time, energy, () -> new RecipeMultiplier(() -> 1, () -> 1));
-		this.itemOutput = output;
+		super(output, IGRecipeTypes.PELLETIZER, time, energy, () -> new RecipeMultiplier(() -> 1, () -> 1));
+		this.itemOutput = Lazy.of(output::get);
 		this.itemIn = input;
 		totalProcessEnergy = Lazy.of(() -> energy);
 		totalProcessTime = Lazy.of(() -> time);
-		this.outputList = new TagOutputList(new TagOutput(output.get()));
+		this.outputList = new TagOutputList(output);
 		this.setInputListWithSizes(List.of(input));
 	}
 

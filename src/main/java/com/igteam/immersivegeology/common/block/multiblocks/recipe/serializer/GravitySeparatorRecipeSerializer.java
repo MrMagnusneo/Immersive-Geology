@@ -10,6 +10,7 @@ package com.igteam.immersivegeology.common.block.multiblocks.recipe.serializer;
 
 import com.igteam.immersivegeology.common.compat.ie.crafting.FluidTagInput;
 import com.igteam.immersivegeology.common.recipe.LegacyIERecipeSerializer;
+import blusunrize.immersiveengineering.api.crafting.TagOutput;
 import com.google.gson.JsonObject;
 import com.igteam.immersivegeology.common.block.multiblocks.recipe.CrystallizerRecipe;
 import com.igteam.immersivegeology.common.block.multiblocks.recipe.GravitySeparatorRecipe;
@@ -35,8 +36,8 @@ public class GravitySeparatorRecipeSerializer extends LegacyIERecipeSerializer<G
 	@Override
 	public GravitySeparatorRecipe readFromJson(ResourceLocation resourceLocation, JsonObject json, IContext iContext)
 	{
-		Lazy<ItemStack> output = readOutput(json.get("result"));
-		Lazy<ItemStack> byproduct = readOutput(json.get("byproduct"));
+		TagOutput output = readOutput(json.get("result"));
+		TagOutput byproduct = readOutput(json.get("byproduct"));
 		float chance = GsonHelper.getAsFloat(json, "byproduct_chance");
 		Ingredient input = Ingredient.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, GsonHelper.getAsJsonObject(json, "input")).getOrThrow();
 		int time = GsonHelper.getAsInt(json, "time");
@@ -48,8 +49,8 @@ public class GravitySeparatorRecipeSerializer extends LegacyIERecipeSerializer<G
 	public @Nullable GravitySeparatorRecipe fromNetwork(ResourceLocation resourceLocation, FriendlyByteBuf buffer)
 	{
 		
-		Lazy<ItemStack> output = readLazyStack(buffer);
-		Lazy<ItemStack> byproduct = readLazyStack(buffer);
+		TagOutput output = readLazyStack(buffer);
+		TagOutput byproduct = readLazyStack(buffer);
 		float chance = buffer.readFloat();
 		Ingredient input = Ingredient.CONTENTS_STREAM_CODEC.decode((net.minecraft.network.RegistryFriendlyByteBuf) buffer);
 		int time = buffer.readInt();

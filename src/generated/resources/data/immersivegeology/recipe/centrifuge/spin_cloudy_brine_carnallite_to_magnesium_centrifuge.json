@@ -12,9 +12,6 @@
     "amount": 976,
     "id": "immersivegeology:slurry_brine_carnallite"
   },
-  "secondary_fluid_out": {
-    "amount": 0,
-    "id": "minecraft:empty"
-  },
+  "secondary_fluid_out": {},
   "time": 1200
 }

@@ -43,7 +43,7 @@ public class CrystallizerRecipeSerializer extends LegacyIERecipeSerializer<Cryst
 	@Override
 	public CrystallizerRecipe readFromJson(ResourceLocation resourceLocation, JsonObject json, IContext iContext)
 	{
-		Lazy<ItemStack> output = readOutput(json.get("result"));
+		TagOutput output = readOutput(json.get("result"));
 		FluidStack fluid_output = FluidStack.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json.get("fluidResult")).getOrThrow();
 		FluidTagInput input = FluidTagInput.deserialize(GsonHelper.getAsJsonObject(json, "input"));
 		int energy = GsonHelper.getAsInt(json, "energy");
@@ -54,7 +54,7 @@ public class CrystallizerRecipeSerializer extends LegacyIERecipeSerializer<Cryst
 	@Override
 	public @Nullable CrystallizerRecipe fromNetwork(ResourceLocation resourceLocation, FriendlyByteBuf buffer)
 	{
-		Lazy<ItemStack> output = readLazyStack(buffer);
+		TagOutput output = readLazyStack(buffer);
 		FluidStack fluid_output = FluidStack.OPTIONAL_STREAM_CODEC.decode((net.minecraft.network.RegistryFriendlyByteBuf)buffer);
 		FluidTagInput input = FluidTagInput.read(buffer);
 		int energy = buffer.readInt();

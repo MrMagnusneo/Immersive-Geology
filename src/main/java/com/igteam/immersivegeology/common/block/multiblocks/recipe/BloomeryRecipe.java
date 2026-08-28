@@ -37,14 +37,14 @@ public class BloomeryRecipe extends MultiblockRecipe
 	public Lazy<ItemStack> result;
 	Lazy<Integer> totalProcessTime;
 
-	public BloomeryRecipe(ResourceLocation id, IngredientWithSize input, Lazy<ItemStack> result, int time)
+	public BloomeryRecipe(ResourceLocation id, IngredientWithSize input, TagOutput output, int time)
 	{
-		super(new TagOutput(result.get()), IGRecipeTypes.BLOOMERY, time, 0, () -> new RecipeMultiplier(() -> 1, () -> 1));
+		super(output, IGRecipeTypes.BLOOMERY, time, 0, () -> new RecipeMultiplier(() -> 1, () -> 1));
 		this.input = input;
-		this.result = result;
+		this.result = Lazy.of(output::get);
 		this.time = time;
 		totalProcessTime = Lazy.of(() -> time);
-		this.outputList = new TagOutputList(new TagOutput(result.get()));
+		this.outputList = new TagOutputList(output);
 		this.setInputListWithSizes(java.util.List.of(input));
 	}
 

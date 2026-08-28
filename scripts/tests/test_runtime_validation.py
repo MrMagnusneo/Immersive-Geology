@@ -186,13 +186,38 @@ class RuntimeValidationWorkflowTest(unittest.TestCase):
     def test_authored_resources_use_neoforge_condition_and_common_tag_namespaces(self):
         """Catch data files which NeoForge can no longer resolve at reload time."""
         stale_references = []
+        condition_types = set()
         data_root = ROOT / "src/main/resources/data"
+
+        def collect_condition_types(value):
+            if isinstance(value, dict):
+                if "type" in value:
+                    condition_types.add(value["type"])
+                for child in value.values():
+                    collect_condition_types(child)
+            elif isinstance(value, list):
+                for child in value:
+                    collect_condition_types(child)
+
+        def collect_conditions(value):
+            if isinstance(value, dict):
+                if "conditions" in value:
+                    for condition in value["conditions"]:
+                        collect_condition_types(condition)
+                for child in value.values():
+                    collect_conditions(child)
+            elif isinstance(value, list):
+                for child in value:
+                    collect_conditions(child)
+
         for path in data_root.rglob("*.json"):
             data = json.loads(path.read_text(encoding="utf-8"))
+            collect_conditions(data)
             for value in self._json_strings(data):
                 if value.startswith("forge:") or value.startswith("#forge:"):
                     stale_references.append(f"{path.relative_to(ROOT)}: {value}")
         self.assertFalse(stale_references, "stale Forge data references:\n" + "\n".join(stale_references))
+        self.assertEqual({"neoforge:not", "neoforge:tag_empty"}, condition_types)
 
     def test_obj_models_and_access_transformer_do_not_target_removed_forge_types(self):
         stale_models = []
@@ -244,8 +269,28 @@ class RuntimeValidationWorkflowTest(unittest.TestCase):
         serializer = (
             ROOT / "src/main/java/com/igteam/immersivegeology/common/recipe/LegacyIERecipeSerializer.java"
         ).read_text(encoding="utf-8")
-        self.assertIn("TagOutput output = TagOutput.CODECS.codec().parse", serializer)
-        self.assertIn("return Lazy.of(output::get);", serializer)
+        self.assertIn("return TagOutput.CODECS.codec().parse", serializer)
+        self.assertIn("protected static TagOutput readOutput", serializer)
+        self.assertIn("protected static TagOutput readLazyStack", serializer)
+
+        recipe_root = ROOT / "src/main/java/com/igteam/immersivegeology/common/block/multiblocks/recipe"
+        lazy_output_recipes = (
+            "BloomeryRecipe.java",
+            "CentrifugeRecipe.java",
+            "CrystallizerRecipe.java",
+            "FoundryRecipe.java",
+            "GravitySeparatorRecipe.java",
+            "IndustrialSluiceRecipe.java",
+            "PelletizerRecipe.java",
+            "RevFurnaceRecipe.java",
+            "RotaryKilnRecipe.java",
+        )
+        for filename in lazy_output_recipes:
+            source = (recipe_root / filename).read_text(encoding="utf-8")
+            with self.subTest(recipe=filename):
+                self.assertNotIn("new TagOutput(output.get())", source)
+                self.assertNotIn("new TagOutput(result.get())", source)
+                self.assertIn("Lazy.of(output::get)", source)
 
     def test_mod_metadata_marks_jei_as_an_optional_dependency(self):
         metadata = tomllib.loads(

@@ -13,6 +13,7 @@ import blusunrize.immersiveengineering.api.IEApi;
 import com.igteam.immersivegeology.common.compat.ie.crafting.FluidTagInput;
 import com.igteam.immersivegeology.common.recipe.LegacyIERecipeSerializer;
 import blusunrize.immersiveengineering.api.crafting.IngredientWithSize;
+import blusunrize.immersiveengineering.api.crafting.TagOutput;
 import com.google.gson.JsonObject;
 import com.igteam.immersivegeology.common.block.multiblocks.recipe.BasicChemicalRecipe;
 import com.igteam.immersivegeology.common.block.multiblocks.recipe.ChemicalRecipe;
@@ -40,15 +41,7 @@ public class BasicChemicalRecipeSerializer extends LegacyIERecipeSerializer<Basi
 	@Override
 	public BasicChemicalRecipe readFromJson(ResourceLocation resourceLocation, JsonObject json, IContext iContext)
 	{
-		Lazy<ItemStack> output = readOutput(GsonHelper.getAsJsonObject(json, "result"));
-		ItemStack itemOut;
-		try
-		{
-			itemOut = output.get();
-		}  catch(Exception e)
-		{
-			itemOut = ItemStack.EMPTY;
-		}
+		TagOutput output = readOutput(GsonHelper.getAsJsonObject(json, "result"));
 
 		FluidStack fluidOut = FluidStack.OPTIONAL_CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json.get("fluidResult")).getOrThrow();
 		IngredientWithSize itemInput = IngredientWithSize.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json.get("itemInput")).getOrThrow();
@@ -61,7 +54,7 @@ public class BasicChemicalRecipeSerializer extends LegacyIERecipeSerializer<Basi
 		int time = GsonHelper.getAsInt(json, "time");
 		int damage_per_second = GsonHelper.getAsInt(json, "damage_per_second");
 
-		return new BasicChemicalRecipe(resourceLocation, itemInput, fluidSet, itemOut, fluidOut, damage_per_second, energy, time);
+		return new BasicChemicalRecipe(resourceLocation, itemInput, fluidSet, output, fluidOut, damage_per_second, energy, time);
 	}
 
 	@Override
@@ -81,13 +74,13 @@ public class BasicChemicalRecipeSerializer extends LegacyIERecipeSerializer<Basi
 		int energy = buffer.readInt();
 		int time = buffer.readInt();
 		int damage_per_second = buffer.readInt();
-		return new BasicChemicalRecipe(resourceLocation, itemInput, fluidSet, output, fluidOut, damage_per_second, energy, time);
+		return new BasicChemicalRecipe(resourceLocation, itemInput, fluidSet, new TagOutput(output), fluidOut, damage_per_second, energy, time);
 	}
 
 	@Override
 	public void toNetwork(FriendlyByteBuf buffer, BasicChemicalRecipe recipe)
 	{
-		ItemStack.OPTIONAL_STREAM_CODEC.encode((net.minecraft.network.RegistryFriendlyByteBuf) buffer, recipe.itemOutput);
+		ItemStack.OPTIONAL_STREAM_CODEC.encode((net.minecraft.network.RegistryFriendlyByteBuf) buffer, recipe.itemOutput.get());
 		FluidStack.OPTIONAL_STREAM_CODEC.encode((net.minecraft.network.RegistryFriendlyByteBuf) buffer, recipe.fluidOutput);
 		IngredientWithSize.STREAM_CODEC.encode((net.minecraft.network.RegistryFriendlyByteBuf)buffer, recipe.itemInput);
 		buffer.writeInt(recipe.fluidIn.size());

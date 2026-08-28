@@ -39,17 +39,17 @@ public class CentrifugeRecipe extends MultiblockRecipe
 	Lazy<Integer> totalProcessEnergy;
 	Lazy<Integer> totalProcessTime;
 
-	public CentrifugeRecipe(ResourceLocation id, FluidTagInput fluidInput, Lazy<ItemStack> output, Lazy<FluidStack> primaryFluidOutput, Lazy<FluidStack> secondaryFluidOutput, int energy, int time)
+	public CentrifugeRecipe(ResourceLocation id, FluidTagInput fluidInput, TagOutput output, Lazy<FluidStack> primaryFluidOutput, Lazy<FluidStack> secondaryFluidOutput, int energy, int time)
 	{
-		super(new TagOutput(output.get()), IGRecipeTypes.CENTRIFUGE, time, energy, () -> new RecipeMultiplier(() -> 1, () -> 1));
-		this.itemOutput = output;
+		super(output, IGRecipeTypes.CENTRIFUGE, time, energy, () -> new RecipeMultiplier(() -> 1, () -> 1));
+		this.itemOutput = Lazy.of(output::get);
 		this.fluidIn = fluidInput;
 		totalProcessEnergy = Lazy.of(() -> energy);
 		totalProcessTime = Lazy.of(() -> time);
 		this.primaryFluidOutput = primaryFluidOutput;
 		this.secondaryFluidOutput = secondaryFluidOutput;
 
-		this.outputList = new TagOutputList(new TagOutput(output.get()));
+		this.outputList = new TagOutputList(output);
 		this.fluidOutputList = java.util.List.of(primaryFluidOutput.get(), secondaryFluidOutput.get());
 		this.fluidInputList = java.util.List.of(fluidInput.asSizedIngredient());
 	}

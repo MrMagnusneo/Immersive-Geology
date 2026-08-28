@@ -39,16 +39,16 @@ public class RotaryKilnRecipe extends MultiblockRecipe
 	Lazy<Integer> heatRequired;
 	Lazy<Integer> totalProcessTime;
 
-	public RotaryKilnRecipe(ResourceLocation id, IngredientWithSize input, Lazy<ItemStack> output, int time, int heat)
+	public RotaryKilnRecipe(ResourceLocation id, IngredientWithSize input, TagOutput output, int time, int heat)
 	{
-		super(new TagOutput(output.get()), IGRecipeTypes.ROTARYKILN, time, time, () -> new RecipeMultiplier(() -> 1, () -> 1));
-		this.itemOutput = output;
+		super(output, IGRecipeTypes.ROTARYKILN, time, time, () -> new RecipeMultiplier(() -> 1, () -> 1));
+		this.itemOutput = Lazy.of(output::get);
 		this.itemIn = input;
 		// Basic upkeep
 		totalProcessEnergy = Lazy.of(() -> time);
 		heatRequired = Lazy.of(() -> heat);
 		totalProcessTime = Lazy.of(() -> time);
-		this.outputList = new TagOutputList(new TagOutput(output.get()));
+		this.outputList = new TagOutputList(output);
 		this.setInputListWithSizes(java.util.List.of(input));
 	}
 

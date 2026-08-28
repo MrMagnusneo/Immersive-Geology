@@ -56,8 +56,9 @@ jobs:
             echo "Expected exactly one gameplay JAR, found ${#jars[@]}"
             exit 1
           fi
-          unzip -l "${jars[0]}" | grep -F 'META-INF/neoforge.mods.toml'
-          unzip -l "${jars[0]}" | grep -F 'com/igteam/immersivegeology/ImmersiveGeology.class'
+          python3 scripts/validate_gameplay_jar.py "${jars[0]}" \
+            --source-root src/main/resources \
+            --source-root src/generated/resources
           echo "GAMEPLAY_JAR=${jars[0]}" >> "$GITHUB_ENV"
           sha256sum "${jars[0]}"
 

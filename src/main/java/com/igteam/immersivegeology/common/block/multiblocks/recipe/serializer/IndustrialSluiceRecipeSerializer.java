@@ -10,6 +10,7 @@ package com.igteam.immersivegeology.common.block.multiblocks.recipe.serializer;
 
 import com.igteam.immersivegeology.common.recipe.LegacyIERecipeSerializer;
 import blusunrize.immersiveengineering.api.crafting.StackWithChance;
+import blusunrize.immersiveengineering.api.crafting.TagOutput;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.igteam.immersivegeology.common.block.multiblocks.recipe.IndustrialSluiceRecipe;
@@ -38,7 +39,7 @@ public class IndustrialSluiceRecipeSerializer extends LegacyIERecipeSerializer<I
 	{
 		Ingredient input = Ingredient.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, GsonHelper.getAsJsonObject(json, "input")).getOrThrow();
 
-		Lazy<ItemStack> primary = readOutput(json.get("result"));
+		TagOutput primary = readOutput(json.get("result"));
 
 		NonNullList<StackWithChance> byproducts = readByproductsFromJson(json);
 
@@ -68,7 +69,7 @@ public class IndustrialSluiceRecipeSerializer extends LegacyIERecipeSerializer<I
 	@Override
 	public @Nullable IndustrialSluiceRecipe fromNetwork(ResourceLocation resourceLocation, FriendlyByteBuf buffer)
 	{
-		Lazy<ItemStack> primary = readLazyStack(buffer);
+		TagOutput primary = readLazyStack(buffer);
 
 		NonNullList<StackWithChance> byproducts = readByproducts(buffer);
 

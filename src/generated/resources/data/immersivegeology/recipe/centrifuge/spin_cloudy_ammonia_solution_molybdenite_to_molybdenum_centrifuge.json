@@ -12,9 +12,6 @@
     "amount": 120,
     "id": "immersivegeology:cloudy_slurry_chemical_waste_molybdenite"
   },
-  "secondary_fluid_out": {
-    "amount": 0,
-    "id": "minecraft:empty"
-  },
+  "secondary_fluid_out": {},
   "time": 1200
 }

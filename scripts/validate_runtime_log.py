@@ -8,7 +8,7 @@ from pathlib import Path
 
 
 FAILURE = re.compile(
-    r"\[[^\]\n]*/(?:ERROR|FATAL)\]"
+    r"\[(?:[^\]\n]*/)?(?:ERROR|FATAL)\]"
     r"|Not all defined tags for registry"
     r"|Failed to build Recipe Method"
     r"|Failed Recipe for"

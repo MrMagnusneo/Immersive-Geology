@@ -36,16 +36,16 @@ public class GravitySeparatorRecipe extends MultiblockRecipe
 	Lazy<Integer> totalProcessTime;
 	Lazy<Float> byproductChance;
 
-	public GravitySeparatorRecipe(ResourceLocation id, Ingredient itemIn, Lazy<ItemStack> output, Lazy<ItemStack> byproduct, float chance, int water, int time)
+	public GravitySeparatorRecipe(ResourceLocation id, Ingredient itemIn, TagOutput output, TagOutput byproduct, float chance, int water, int time)
 	{
-		super(new TagOutput(output.get()), IGRecipeTypes.GRAVITYSEPARATOR, time, 0, () -> new RecipeMultiplier(() -> 1, () -> 1));
-		this.itemOutput = output;
-		this.itemByproduct = byproduct;
+		super(output, IGRecipeTypes.GRAVITYSEPARATOR, time, 0, () -> new RecipeMultiplier(() -> 1, () -> 1));
+		this.itemOutput = Lazy.of(output::get);
+		this.itemByproduct = Lazy.of(byproduct::get);
 		this.itemIn = itemIn;
 		byproductChance = Lazy.of(() -> chance);
 		totalProcessWater = Lazy.of(() -> water);
 		totalProcessTime = Lazy.of(() -> time);
-		this.outputList = new TagOutputList(new TagOutput(output.get()));
+		this.outputList = new TagOutputList(output);
 		this.setInputList(java.util.List.of(itemIn));
 	}
 

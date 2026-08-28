@@ -36,15 +36,15 @@ public class CrystallizerRecipe extends MultiblockRecipe
 	Lazy<Integer> totalProcessEnergy;
 	Lazy<Integer> totalProcessTime;
 
-	public CrystallizerRecipe(ResourceLocation id, FluidTagInput fluidInput, Lazy<ItemStack> output, Lazy<FluidStack> fluid_output, int energy, int time)
+	public CrystallizerRecipe(ResourceLocation id, FluidTagInput fluidInput, TagOutput output, Lazy<FluidStack> fluid_output, int energy, int time)
 	{
-		super(new TagOutput(output.get()), IGRecipeTypes.CRYSTALLIZER, time, energy, () -> new RecipeMultiplier(() -> 1, () -> 1));
-		this.itemOutput = output;
+		super(output, IGRecipeTypes.CRYSTALLIZER, time, energy, () -> new RecipeMultiplier(() -> 1, () -> 1));
+		this.itemOutput = Lazy.of(output::get);
 		this.fluidIn = fluidInput;
 		totalProcessEnergy = Lazy.of(() -> energy);
 		totalProcessTime = Lazy.of(() -> time);
 		this.fluidOutput = fluid_output;
-		this.outputList = new TagOutputList(new TagOutput(output.get()));
+		this.outputList = new TagOutputList(output);
 		this.fluidOutputList = java.util.List.of(fluid_output.get());
 		this.fluidInputList = java.util.List.of(fluidInput.asSizedIngredient());
 	}

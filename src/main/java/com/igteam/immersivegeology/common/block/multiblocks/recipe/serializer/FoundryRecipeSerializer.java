@@ -9,6 +9,7 @@
 package com.igteam.immersivegeology.common.block.multiblocks.recipe.serializer;
 
 import blusunrize.immersiveengineering.api.ApiUtils;
+import blusunrize.immersiveengineering.api.crafting.TagOutput;
 import com.igteam.immersivegeology.common.compat.ie.crafting.FluidTagInput;
 import com.igteam.immersivegeology.common.recipe.LegacyIERecipeSerializer;
 import blusunrize.immersiveengineering.common.crafting.serializers.MetalPressRecipeSerializer;
@@ -39,7 +40,7 @@ public class FoundryRecipeSerializer extends LegacyIERecipeSerializer<FoundryRec
 	@Override
 	public FoundryRecipe readFromJson(ResourceLocation resourceLocation, JsonObject json, IContext iContext)
 	{
-		Lazy<ItemStack> output = readOutput(json.get("result"));
+		TagOutput output = readOutput(json.get("result"));
 		FluidTagInput input = FluidTagInput.deserialize(GsonHelper.getAsJsonObject(json, "input"));
 		int energy = GsonHelper.getAsInt(json, "energy");
 		int time = GsonHelper.getAsInt(json, "time");
@@ -50,7 +51,7 @@ public class FoundryRecipeSerializer extends LegacyIERecipeSerializer<FoundryRec
 	@Override
 	public @Nullable FoundryRecipe fromNetwork(ResourceLocation resourceLocation, FriendlyByteBuf buffer)
 	{
-		Lazy<ItemStack> output = readLazyStack(buffer);
+		TagOutput output = readLazyStack(buffer);
 		FluidTagInput input = FluidTagInput.read(buffer);
 		int energy = buffer.readInt();
 		int time = buffer.readInt();

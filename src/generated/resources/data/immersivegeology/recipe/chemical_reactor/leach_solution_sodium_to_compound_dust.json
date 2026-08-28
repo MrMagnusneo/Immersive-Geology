@@ -9,13 +9,10 @@
     "amount": 120,
     "tag": "c:sulfuric_acid"
   },
-  "fluidResult": {
-    "amount": 0,
-    "id": "minecraft:empty"
-  },
+  "fluidResult": {},
   "itemInput": {
-    "count": 0,
-    "basePredicate": []
+    "basePredicate": [],
+    "count": 0
   },
   "result": {
     "count": 3,

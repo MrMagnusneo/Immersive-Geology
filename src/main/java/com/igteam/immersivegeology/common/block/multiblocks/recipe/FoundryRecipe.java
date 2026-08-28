@@ -40,15 +40,15 @@ public class FoundryRecipe extends MultiblockRecipe
 	Lazy<Integer> totalProcessTime;
 	public final Item mold;
 
-	public FoundryRecipe(ResourceLocation id, FluidTagInput fluidInput, Lazy<ItemStack> output, Item mold, int energy, int time)
+	public FoundryRecipe(ResourceLocation id, FluidTagInput fluidInput, TagOutput output, Item mold, int energy, int time)
 	{
-		super(new TagOutput(output.get()), IGRecipeTypes.FOUNDRY, time, energy, () -> new RecipeMultiplier(() -> 1, () -> 1));
-		this.itemOutput = output;
+		super(output, IGRecipeTypes.FOUNDRY, time, energy, () -> new RecipeMultiplier(() -> 1, () -> 1));
+		this.itemOutput = Lazy.of(output::get);
 		this.fluidIn = fluidInput;
 		this.mold = mold;
 		totalProcessEnergy = Lazy.of(() -> energy);
 		totalProcessTime = Lazy.of(() -> time);
-		this.outputList = new TagOutputList(new TagOutput(output.get()));
+		this.outputList = new TagOutputList(output);
 		this.fluidInputList = java.util.List.of(fluidInput.asSizedIngredient());
 
 	}

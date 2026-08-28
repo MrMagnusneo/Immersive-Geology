@@ -18,9 +18,9 @@
       "chance": 0.3,
       "conditions": [
         {
-          "type": "neoc:not",
+          "type": "neoforge:not",
           "value": {
-            "type": "neoc:tag_empty",
+            "type": "neoforge:tag_empty",
             "tag": "c:ores/mercury"
           }
         }

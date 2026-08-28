@@ -30,9 +30,9 @@
       "chance": 0.2,
       "conditions": [
         {
-          "type": "neoc:not",
+          "type": "neoforge:not",
           "value": {
-            "type": "neoc:tag_empty",
+            "type": "neoforge:tag_empty",
             "tag": "c:dusts/phosphorus"
           }
         }

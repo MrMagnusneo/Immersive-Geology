@@ -9,6 +9,7 @@
 package com.igteam.immersivegeology.common.block.multiblocks.recipe.serializer;
 
 import blusunrize.immersiveengineering.api.ApiUtils;
+import blusunrize.immersiveengineering.api.crafting.TagOutput;
 import com.igteam.immersivegeology.common.compat.ie.crafting.FluidTagInput;
 import com.igteam.immersivegeology.common.recipe.LegacyIERecipeSerializer;
 import com.google.gson.JsonObject;
@@ -39,7 +40,7 @@ public class CentrifugeRecipeSerializer extends LegacyIERecipeSerializer<Centrif
 	public CentrifugeRecipe readFromJson(ResourceLocation resourceLocation, JsonObject json, IContext iContext)
 	{
 		FluidTagInput input = FluidTagInput.deserialize(GsonHelper.getAsJsonObject(json, "fluid_input"));
-		Lazy<ItemStack> output = readOutput(json.get("item_output"));
+		TagOutput output = readOutput(json.get("item_output"));
 		FluidStack primary_fluid_output = FluidStack.OPTIONAL_CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json.get("primary_fluid_out")).getOrThrow();
 		FluidStack secondary_fluid_output = FluidStack.OPTIONAL_CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json.get("secondary_fluid_out")).getOrThrow();
 		int energy = GsonHelper.getAsInt(json, "energy");
@@ -52,7 +53,7 @@ public class CentrifugeRecipeSerializer extends LegacyIERecipeSerializer<Centrif
 	public @Nullable CentrifugeRecipe fromNetwork(ResourceLocation resourceLocation, FriendlyByteBuf buffer)
 	{
 		FluidTagInput input = FluidTagInput.read(buffer);
-		Lazy<ItemStack> output = readLazyStack(buffer);
+		TagOutput output = readLazyStack(buffer);
 		FluidStack primaryFluidOutput = FluidStack.OPTIONAL_STREAM_CODEC.decode((net.minecraft.network.RegistryFriendlyByteBuf)buffer);
 		FluidStack secondaryFluidOutput = FluidStack.OPTIONAL_STREAM_CODEC.decode((net.minecraft.network.RegistryFriendlyByteBuf)buffer);
 		int energy = buffer.readInt();

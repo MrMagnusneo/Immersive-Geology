@@ -40,23 +40,18 @@ public class IndustrialSluiceRecipe extends MultiblockRecipe
 	Lazy<Integer> totalProcessEnergy;
 	Lazy<NonNullList<StackWithChance>> byproducts;
 
-	public IndustrialSluiceRecipe(ResourceLocation id, Ingredient itemIn, Lazy<ItemStack> output, NonNullList<StackWithChance> byproducts, int water, int time, int energy)
+	public IndustrialSluiceRecipe(ResourceLocation id, Ingredient itemIn, TagOutput output, NonNullList<StackWithChance> byproducts, int water, int time, int energy)
 	{
-		super(new TagOutput(output.get()), IGRecipeTypes.SLUICE, time, energy, () -> new RecipeMultiplier(() -> 1, () -> 1));
-		this.itemOutput = output;
+		super(output, IGRecipeTypes.SLUICE, time, energy, () -> new RecipeMultiplier(() -> 1, () -> 1));
+		this.itemOutput = Lazy.of(output::get);
 		this.itemIn = itemIn;
 		this.byproducts = Lazy.of(() -> byproducts);
 		this.totalProcessWater = Lazy.of(() -> water);
 		this.totalProcessTime = Lazy.of(() -> time);;
 		this.totalProcessEnergy = Lazy.of(() -> energy);
 
-		NonNullList<ItemStack> outputs = NonNullList.createWithCapacity(byproducts.size() + 1);
-		List<ItemStack> stacks = byproducts.stream().map((s) -> s.stack().get()).toList();
-		outputs.add(output.get());
-		outputs.addAll(stacks);
-
 		this.outputList = new TagOutputList(java.util.stream.Stream.concat(
-				java.util.stream.Stream.of(new TagOutput(output.get())), byproducts.stream().map(StackWithChance::stack)
+				java.util.stream.Stream.of(output), byproducts.stream().map(StackWithChance::stack)
 		).toList());
 		this.setInputList(java.util.List.of(itemIn));
 	}

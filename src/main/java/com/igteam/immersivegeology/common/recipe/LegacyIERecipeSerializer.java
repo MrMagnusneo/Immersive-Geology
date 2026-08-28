@@ -48,16 +48,15 @@ public abstract class LegacyIERecipeSerializer<R extends Recipe<?>> extends IERe
     public abstract @Nullable R fromNetwork(ResourceLocation id, FriendlyByteBuf buffer);
     public abstract void toNetwork(FriendlyByteBuf buffer, R recipe);
 
-    protected static Lazy<ItemStack> readOutput(JsonElement json)
+    protected static TagOutput readOutput(JsonElement json)
     {
-        TagOutput output = TagOutput.CODECS.codec().parse(JsonOps.INSTANCE, json).getOrThrow();
-        return Lazy.of(output::get);
+        return TagOutput.CODECS.codec().parse(JsonOps.INSTANCE, json).getOrThrow();
     }
 
-    protected static Lazy<ItemStack> readLazyStack(FriendlyByteBuf buffer)
+    protected static TagOutput readLazyStack(FriendlyByteBuf buffer)
     {
         ItemStack stack = ItemStack.OPTIONAL_STREAM_CODEC.decode((RegistryFriendlyByteBuf)buffer);
-        return Lazy.of(() -> stack);
+        return new TagOutput(stack);
     }
 
     protected static void writeLazyStack(FriendlyByteBuf buffer, Lazy<ItemStack> stack)

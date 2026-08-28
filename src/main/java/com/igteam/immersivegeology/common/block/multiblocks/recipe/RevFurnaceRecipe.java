@@ -36,15 +36,15 @@ public class RevFurnaceRecipe extends MultiblockRecipe
 	public Lazy<ItemStack> result;
 	Lazy<Integer> totalProcessTime;
 
-	public RevFurnaceRecipe(ResourceLocation id, IngredientWithSize input, Lazy<ItemStack> result, int waste_amount, int time)
+	public RevFurnaceRecipe(ResourceLocation id, IngredientWithSize input, TagOutput output, int waste_amount, int time)
 	{
-		super(new TagOutput(result.get()), IGRecipeTypes.REVFURNACE, time, 0, () -> new RecipeMultiplier(() -> 1, () -> 1));
+		super(output, IGRecipeTypes.REVFURNACE, time, 0, () -> new RecipeMultiplier(() -> 1, () -> 1));
 		this.input = input;
-		this.result = result;
+		this.result = Lazy.of(output::get);
 		this.waste = waste_amount;
 		this.time = time;
 		totalProcessTime = Lazy.of(() -> time);
-		this.outputList = new TagOutputList(new TagOutput(result.get()));
+		this.outputList = new TagOutputList(output);
 		this.setInputListWithSizes(java.util.List.of(input));
 	}
 

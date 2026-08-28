@@ -65,6 +65,6 @@ public class IGChemicalCategory extends IGRecipeCategory<ChemicalRecipe>
 					.addRichTooltipCallback(JEIHelper.fluidTooltipCallback);
 		}
 		builder.addSlot(RecipeIngredientRole.OUTPUT, 55, 77)
-				.addItemStack(recipe.itemOutput);
+				.addItemStack(recipe.itemOutput.get());
 	}
 }
