@@ -2,6 +2,6 @@
   "parent": "immersivegeology:block/base/scaffolding/ig_scaffolding_wooden_top",
   "render_type": "minecraft:cutout",
   "textures": {
-    "top_cover": "immersivegeology:block/scaffolding/scaffolding_top_wooden_cover"
+    "top_cover": "immersivegeology:block/greyscale/scaffolding/scaffolding_top_wooden_top"
   }
 }

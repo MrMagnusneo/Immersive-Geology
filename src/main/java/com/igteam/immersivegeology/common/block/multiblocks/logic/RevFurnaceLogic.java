@@ -117,6 +117,7 @@ public class RevFurnaceLogic implements IMultiblockLogic<RevFurnaceLogic.State>,
     public void tickServer(IMultiblockContext<RevFurnaceLogic.State> context) {
         final State state = context.getState();
         final IMultiblockLevel level = context.getLevel();
+        state.mirrored = level.getOrientation().mirrored();
         state.active_left = state.furnace.tickServerLeft(context);
         state.active_right = state.furnace.tickServerRight(context);
         outputItems(state);
@@ -199,11 +200,11 @@ public class RevFurnaceLogic implements IMultiblockLogic<RevFurnaceLogic.State>,
     public void registerCapabilities(IMultiblockComponent.CapabilityRegistrar<State> register)
     {
         register.register(Capabilities.ItemHandler.BLOCK, (state, position) -> {
-            // Mirroring is represented by the transformed capability position in the 1.21.1 API.
-            if(SLOT_1_INPUT_POSITION.equals(position)) return state.invCapLeft;
-            if(SLOT_2_INPUT_POSITION.equals(position)) return state.invCapRight;
-            if(SLOT_1_OUTPUT_POSITION.posInMultiblock().equals(position.posInMultiblock())) return state.outputHandlerLeft;
-            if(SLOT_2_OUTPUT_POSITION.posInMultiblock().equals(position.posInMultiblock())) return state.outputHandlerRight;
+            // Capability positions are relative to the unmirrored template, so the sides swap when mirrored
+            if(SLOT_1_INPUT_POSITION.equals(position)) return state.slot1InputCap;
+            if(SLOT_2_INPUT_POSITION.equals(position)) return state.slot2InputCap;
+            if(SLOT_1_OUTPUT_POSITION.posInMultiblock().equals(position.posInMultiblock())) return state.slot1OutputCap;
+            if(SLOT_2_OUTPUT_POSITION.posInMultiblock().equals(position.posInMultiblock())) return state.slot2OutputCap;
             return null;
         });
         register.register(Capabilities.FluidHandler.BLOCK, (state, position) ->
@@ -283,6 +284,11 @@ public class RevFurnaceLogic implements IMultiblockLogic<RevFurnaceLogic.State>,
         private final IItemHandler invCapRight;
         private final IItemHandler outputHandlerLeft;
         private final IItemHandler outputHandlerRight;
+        private boolean mirrored = false;
+        private final IItemHandler slot1InputCap;
+        private final IItemHandler slot2InputCap;
+        private final IItemHandler slot1OutputCap;
+        private final IItemHandler slot2OutputCap;
 
         private final Supplier<IItemHandler> outputLeft;
         private final Supplier<IItemHandler> outputRight;
@@ -346,6 +352,10 @@ public class RevFurnaceLogic implements IMultiblockLogic<RevFurnaceLogic.State>,
             this.invCapRight = new WrappingItemHandler(
                     inventory, true, true, new IntRange(3,5)
             );
+            this.slot1InputCap = new MirrorAwareItemHandler(() -> mirrored ? invCapRight : invCapLeft);
+            this.slot2InputCap = new MirrorAwareItemHandler(() -> mirrored ? invCapLeft : invCapRight);
+            this.slot1OutputCap = new MirrorAwareItemHandler(() -> mirrored ? outputHandlerRight : outputHandlerLeft);
+            this.slot2OutputCap = new MirrorAwareItemHandler(() -> mirrored ? outputHandlerLeft : outputHandlerRight);
             this.fluidCap =
                     new ArrayFluidHandler(new IFluidTank[]{tank}, true, false, ctx.getMarkDirtyRunnable())
             ;
@@ -368,6 +378,7 @@ public class RevFurnaceLogic implements IMultiblockLogic<RevFurnaceLogic.State>,
             nbt.put("furnace", furnace.toNBT());
             nbt.putBoolean("active_left", active_left);
             nbt.putBoolean("active_right", active_right);
+            nbt.putBoolean("mirrored", mirrored);
         }
 
         @Override
@@ -378,6 +389,7 @@ public class RevFurnaceLogic implements IMultiblockLogic<RevFurnaceLogic.State>,
             tank.readFromNBT(provider, nbt.getCompound("tank"));
             active_left = nbt.getBoolean("active_left");
             active_right = nbt.getBoolean("active_right");
+            mirrored = nbt.getBoolean("mirrored");
         }
 
         @Override
@@ -483,5 +495,44 @@ public class RevFurnaceLogic implements IMultiblockLogic<RevFurnaceLogic.State>,
             return this.tank;
 		}
 
+    }
+
+    private record MirrorAwareItemHandler(Supplier<IItemHandler> delegate) implements IItemHandler
+    {
+        @Override
+        public int getSlots()
+        {
+            return delegate.get().getSlots();
+        }
+
+        @Override
+        public ItemStack getStackInSlot(int slot)
+        {
+            return delegate.get().getStackInSlot(slot);
+        }
+
+        @Override
+        public ItemStack insertItem(int slot, ItemStack stack, boolean simulate)
+        {
+            return delegate.get().insertItem(slot, stack, simulate);
+        }
+
+        @Override
+        public ItemStack extractItem(int slot, int amount, boolean simulate)
+        {
+            return delegate.get().extractItem(slot, amount, simulate);
+        }
+
+        @Override
+        public int getSlotLimit(int slot)
+        {
+            return delegate.get().getSlotLimit(slot);
+        }
+
+        @Override
+        public boolean isItemValid(int slot, ItemStack stack)
+        {
+            return delegate.get().isItemValid(slot, stack);
+        }
     }
 }

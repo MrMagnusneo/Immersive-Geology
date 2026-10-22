@@ -143,7 +143,7 @@ public class PelletizerLogic implements ISkinnableMultiblockLogic<State>, IServe
         ItemStack inputStack = state.inventory.getStackInSlot(0);
         if(!inputStack.isEmpty())
         {
-            bindingAgent = ChemicalEnum.BindingAgent.getFluid(BlockCategoryFlags.FLUID);
+            Fluid bindingAgent = ChemicalEnum.BindingAgent.getFluid(BlockCategoryFlags.FLUID);
             if(bindingAgent.isSame(state.tank.getFluid().getFluid()))
             {
                 net.minecraft.world.item.crafting.RecipeHolder<PelletizerRecipe> recipe = PelletizerRecipe.findRecipe(level, inputStack);
@@ -174,7 +174,6 @@ public class PelletizerLogic implements ISkinnableMultiblockLogic<State>, IServe
     public Function<BlockPos, VoxelShape> shapeGetter(ShapeType shapeType) {
         return PelletizerShape.GETTER;
     }
-    private static Fluid bindingAgent = ChemicalEnum.BindingAgent.getFluid(BlockCategoryFlags.FLUID);
     @Override
     public void onEntityCollision(IMultiblockContext<State> ctx, BlockPos posInMultiblock, Entity collided)
     {

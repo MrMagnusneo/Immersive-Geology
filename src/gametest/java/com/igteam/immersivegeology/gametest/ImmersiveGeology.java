@@ -10,6 +10,7 @@ package com.igteam.immersivegeology.gametest;
 import com.igteam.immersivegeology.core.lib.IGLib;
 import com.igteam.immersivegeology.gametest.tests.ClientTests;
 import com.igteam.immersivegeology.gametest.tests.CommonTests;
+import com.igteam.immersivegeology.gametest.tests.AssetTests;
 import com.igteam.immersivegeology.gametest.tests.ServerTests;
 import net.minecraft.gametest.framework.*;
 import net.neoforged.neoforge.gametest.GameTestHolder;
@@ -27,6 +28,7 @@ public class ImmersiveGeology
 		tests.addAll(CommonTests.all());
 		tests.addAll(ClientTests.all());
 		tests.addAll(ServerTests.all());
+		tests.addAll(AssetTests.all());
 
 		return tests;
 	}

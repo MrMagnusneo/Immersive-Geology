@@ -36,7 +36,9 @@ public class MaterialTFCRawStone extends MaterialStone
 	@Override
 	public ResourceLocation getTextureLocation(IFlagType<?> flag) {
 		ResourceLocation texture = ResourceLocation.fromNamespaceAndPath("tfc", "block/rock/raw/"+getName());
-		GeologyMaterial.trackOptionalTexture(texture.withSuffix("_top"));
+		// TFC 1.21 only ships separate top textures for claystone and shale
+		if(getName().equals("claystone")||getName().equals("shale"))
+			GeologyMaterial.trackOptionalTexture(texture.withSuffix("_top"));
 		GeologyMaterial.trackOptionalTexture(texture.withSuffix("_side"));
 		return GeologyMaterial.trackOptionalTexture(texture);
 	}
