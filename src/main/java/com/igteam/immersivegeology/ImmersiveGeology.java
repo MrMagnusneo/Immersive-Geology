@@ -100,7 +100,8 @@ public class ImmersiveGeology {
         supplyMaterialTint();
 
         IGLib.IG_LOGGER.info("- Custom IE Manual Entry Registration");
-        IGContent.initializeManualEntries();
+        // Client setup runs in parallel with IE's, which fills the same (non thread-safe) manual tree
+        event.enqueueWork(IGContent::initializeManualEntries);
     }
 
     private void enqueueIMC(final InterModEnqueueEvent event)
