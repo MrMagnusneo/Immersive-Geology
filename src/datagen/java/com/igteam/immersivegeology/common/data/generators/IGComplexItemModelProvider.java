@@ -46,7 +46,7 @@ public class IGComplexItemModelProvider extends ModelProvider<TRSRModelBuilder>
 	{
 		IGLib.IG_LOGGER.info("Started Registration of Immersive Geology Complex Item Models");
 		generateCrystallizerModel("crystallizer", IGMultiblockProvider.CRYSTALLIZER.block());
-		generateCoredrillMultiblock("coredrill_item", IGMultiblockProvider.COREDRILL.block());
+		generateCoredrillMultiblock("coredrill", IGMultiblockProvider.COREDRILL.block());
 		generateSeparatorModel("gravity_separator", IGMultiblockProvider.GRAVITY_SEPARATOR.block());
 		generateRotaryKilnModel("rotary_kiln_item", IGMultiblockProvider.ROTARYKILN.block());
 		generateReverberationFurnaceModel("reverberation_furnace", IGMultiblockProvider.REVERBERATION_FURNACE.block());
@@ -60,6 +60,7 @@ public class IGComplexItemModelProvider extends ModelProvider<TRSRModelBuilder>
 		generatePelletizerModel("pelletizer_item", IGMultiblockProvider.PELLETIZER.block());
 		generateBallmillModel("display_ballmill", IGMultiblockProvider.BALLMILL.block());
 		generateCentrifugeMultiblock("centrifuge", IGMultiblockProvider.CENTRIFUGE.block());
+		generateCentrifugeMultiblock("foundry", IGMultiblockProvider.FOUNDRY.block());
 		IGLib.IG_LOGGER.info("Finished Registration of Immersive Geology Complex Item Models");
 	}
 
@@ -109,6 +110,7 @@ public class IGComplexItemModelProvider extends ModelProvider<TRSRModelBuilder>
 	private void generateCoredrillMultiblock(String id, Supplier<? extends ItemLike> block)
 	{
 		TRSRModelBuilder model = obj(block, "block/multiblock/obj/coredrill/"+id+".obj");
+		model.texture("coredrill", "block/multiblock/coredrill/default");
 
 		ModelBuilder<?>.TransformsBuilder trans = model.transforms();
 		doTransform(trans, ItemDisplayContext.FIRST_PERSON_LEFT_HAND, new Vector3f(-1.75F, 2.5F, 1.25F), new Vector3f(0, 225, 0), 0.03125F);

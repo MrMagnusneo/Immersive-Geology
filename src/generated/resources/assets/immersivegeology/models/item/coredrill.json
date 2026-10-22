@@ -124,5 +124,8 @@
   },
   "flip_v": true,
   "loader": "neoforge:obj",
-  "model": "immersivegeology:models/block/multiblock/obj/coredrill/coredrill_item.obj"
+  "model": "immersivegeology:models/block/multiblock/obj/coredrill/coredrill.obj",
+  "textures": {
+    "coredrill": "immersivegeology:block/multiblock/coredrill/default"
+  }
 }

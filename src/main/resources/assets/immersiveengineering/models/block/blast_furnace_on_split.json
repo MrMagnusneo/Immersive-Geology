@@ -153,6 +153,6 @@
     ]
   ],
   "textures": {
-    "particle": "immersiveengineering:block/multiblocks/blast_furnace_on"
+    "particle": "immersivegeology:block/multiblock/neoie/peters_blastfurnace_front_on"
   }
 }

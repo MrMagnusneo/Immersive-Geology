@@ -153,6 +153,6 @@
     ]
   ],
   "textures": {
-    "particle": "immersiveengineering:block/multiblock/coke_oven_on"
+    "particle": "immersivegeology:block/multiblock/neoie/peters_coke_oven_front_on"
   }
 }
