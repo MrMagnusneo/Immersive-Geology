@@ -15,11 +15,14 @@ import com.igteam.immersivegeology.core.lib.IGLib;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.gametest.framework.TestFunction;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LiquidBlock;
+import net.minecraft.world.level.storage.loot.BuiltInLootTables;
+import net.minecraft.world.level.storage.loot.LootTable;
 import net.neoforged.fml.ModList;
 import net.neoforged.neoforgespi.locating.IModFile;
 
@@ -43,10 +46,16 @@ public class AssetTests
 
 	public static List<TestFunction> all()
 	{
-		return List.of(new TestFunction(
-				"assets", "registered_content_has_models_and_textures", TEST_AREA,
-				200, 0, true, AssetTests::testRegisteredContentHasAssets
-		));
+		return List.of(
+				new TestFunction(
+						"assets", "registered_content_has_models_and_textures", TEST_AREA,
+						200, 0, true, AssetTests::testRegisteredContentHasAssets
+				),
+				new TestFunction(
+						"assets", "registered_blocks_have_loot_tables", TEST_AREA,
+						200, 0, true, AssetTests::testRegisteredBlocksHaveLootTables
+				)
+		);
 	}
 
 	private static void testRegisteredContentHasAssets(GameTestHelper helper)
@@ -80,6 +89,28 @@ public class AssetTests
 			List<String> shown = problems.stream().distinct().limit(40).toList();
 			IGLib.IG_LOGGER.error("Missing client assets ({}):\n{}", problems.size(), String.join("\n", problems.stream().distinct().toList()));
 			helper.fail(problems.size()+" missing client assets, first: "+String.join("; ", shown));
+			return;
+		}
+		helper.succeed();
+	}
+
+	private static void testRegisteredBlocksHaveLootTables(GameTestHelper helper)
+	{
+		List<String> missing = new ArrayList<>();
+		for(Block block : BuiltInRegistries.BLOCK)
+		{
+			ResourceLocation id = BuiltInRegistries.BLOCK.getKey(block);
+			ResourceKey<LootTable> lootTable = block.getLootTable();
+			if(!IGLib.MODID.equals(id.getNamespace())||block instanceof LiquidBlock||lootTable==BuiltInLootTables.EMPTY)
+				continue;
+			// Without a loot table the block (and, for multiblocks, the stored inventory) is lost when broken
+			if(helper.getLevel().getServer().reloadableRegistries().getLootTable(lootTable)==LootTable.EMPTY)
+				missing.add(id.toString());
+		}
+		if(!missing.isEmpty())
+		{
+			IGLib.IG_LOGGER.error("Blocks without loot tables ({}): {}", missing.size(), missing);
+			helper.fail(missing.size()+" blocks without loot tables: "+String.join(", ", missing.stream().limit(40).toList()));
 			return;
 		}
 		helper.succeed();
