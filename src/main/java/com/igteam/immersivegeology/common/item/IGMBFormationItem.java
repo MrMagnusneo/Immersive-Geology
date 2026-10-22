@@ -64,7 +64,6 @@ import java.util.function.Supplier;
 
 public class IGMBFormationItem extends IGGenericItem
 {
-	private static final MultiblockAdvancementTrigger MULTIBLOCK_ADVANCEMENT = new MultiblockAdvancementTrigger();
 	BiPredicate<IMultiblock, MaterialInterface<?>> validPredicate = (multiblock, material) -> material.canFormMB(multiblock);
 	public IGMBFormationItem(ItemCategoryFlags flag, MaterialInterface<?> material, int max_durability)
 	{
@@ -140,7 +139,7 @@ public class IGMBFormationItem extends IGGenericItem
 					if(mb.createStructure(world, pos, multiblockSide, player))
 					{
 						if(player instanceof ServerPlayer sPlayer)
-							MULTIBLOCK_ADVANCEMENT.trigger(sPlayer, mb, stack);
+							MultiblockAdvancementTrigger.INSTANCE.get().trigger(sPlayer, mb, stack);
 
 
 						if(player != null)
