@@ -8,6 +8,12 @@ ROOT = Path(__file__).resolve().parents[2]
 RESOURCE_ROOTS = [ROOT / "src" / "main" / "resources", ROOT / "src" / "generated" / "resources"]
 NAMESPACE = "immersivegeology"
 RESOURCE_LOCATION = re.compile(r"[a-z0-9_.-]+:[a-z0-9_./-]+")
+# assets/tfc/textures/block/rock/raw in TerraFirmaCraft 1.21.x: only claystone and shale have a separate top texture
+TFC_RAW_ROCK_TEXTURES = {
+    "andesite", "basalt", "chalk", "chert", "claystone", "claystone_top", "conglomerate", "dacite", "diorite",
+    "dolomite", "gabbro", "gneiss", "granite", "limestone", "marble", "phyllite", "quartzite", "rhyolite",
+    "schist", "shale", "shale_top", "slate", "tuff",
+}
 
 
 def _location(value, default_namespace="minecraft"):
@@ -168,6 +174,19 @@ class ClientAssetTest(unittest.TestCase):
                     missing.append(name)
         self.assertEqual([], missing)
 
+
+    def test_tfc_rock_textures_exist_in_terrafirmacraft(self):
+        problems = set()
+        for model in _model_files():
+            def visit(key, value):
+                if key == "textures" and isinstance(value, dict):
+                    for texture in value.values():
+                        if isinstance(texture, str) and texture.startswith("tfc:block/rock/raw/") \
+                                and texture[len("tfc:block/rock/raw/"):] not in TFC_RAW_ROCK_TEXTURES:
+                            problems.add(texture)
+
+            _walk(json.loads(model.read_text(encoding="utf-8")), visit)
+        self.assertEqual([], sorted(problems))
 
 if __name__ == "__main__":
     unittest.main()

@@ -27,6 +27,7 @@ import com.igteam.immersivegeology.common.fluid.IGFluid;
 import com.igteam.immersivegeology.core.lib.IGLib;
 import com.igteam.immersivegeology.core.material.GeologyMaterial;
 import com.igteam.immersivegeology.core.material.data.enums.StoneEnum;
+import com.igteam.immersivegeology.core.material.data.stone.compat.tfc.MaterialTFCRawStone;
 import com.igteam.immersivegeology.core.material.data.stone.vanilla.MaterialMCBasalt;
 import com.igteam.immersivegeology.core.material.data.types.MaterialStone;
 import com.igteam.immersivegeology.core.material.helper.flags.BlockCategoryFlags;
@@ -640,6 +641,16 @@ public class IGBlockStateProvider extends BlockStateProvider {
         }
     }
 
+    private static ResourceLocation sedimentaryTopTexture(MaterialInterface<?> stone, IFlagType<?> flag)
+    {
+        ResourceLocation texture = stone.getTextureLocation(flag);
+        ResourceLocation side = ResourceLocation.fromNamespaceAndPath(texture.getNamespace(), texture.getPath().toLowerCase());
+        // TFC only has separate top textures for claystone and shale; its other raw rocks use one texture on all faces
+        if(stone.instance() instanceof MaterialTFCRawStone&&!stone.equals(StoneEnum.Claystone)&&!stone.equals(StoneEnum.Shale))
+            return side;
+        return side.withSuffix("_top");
+    }
+
     private void implementOrePaletteTexture(BlockModelBuilder baseModel, IGOreBlock block, StoneFormation formation, int variant)
     {
         MineralWeathering weathering = MineralWeathering.PRISTINE;
@@ -651,7 +662,7 @@ public class IGBlockStateProvider extends BlockStateProvider {
             if(formation.equals(StoneFormation.SEDIMENTARY) || block.getMaterial(MaterialTexture.base).useSedimentaryTextures(block.getFlag()))
             {
                 baseModel.texture("side", block.getMaterial(MaterialTexture.base).getTextureLocation(block.getFlag()) + (block.getMaterial(MaterialTexture.base).useSedimentaryTextures(block.getFlag()) ? "_side" : ""));
-                baseModel.texture("top", ResourceLocation.fromNamespaceAndPath(block.getMaterial(MaterialTexture.base).getTextureLocation(block.getFlag()).getNamespace(),block.getMaterial(MaterialTexture.base).getTextureLocation(block.getFlag()).getPath().toLowerCase() + "_top"));
+                baseModel.texture("top", sedimentaryTopTexture(block.getMaterial(MaterialTexture.base), block.getFlag()));
             }
             else
             {
@@ -688,7 +699,7 @@ public class IGBlockStateProvider extends BlockStateProvider {
             if(formation.equals(StoneFormation.SEDIMENTARY) || block.getMaterial(MaterialTexture.base).useSedimentaryTextures(block.getFlag()))
             {
                 baseModel.texture("side", block.getMaterial(MaterialTexture.base).getTextureLocation(block.getFlag()) + (block.getMaterial(MaterialTexture.base).useSedimentaryTextures(block.getFlag()) ? "_side" : ""));
-                baseModel.texture("top", ResourceLocation.fromNamespaceAndPath(block.getMaterial(MaterialTexture.base).getTextureLocation(block.getFlag()).getNamespace(),block.getMaterial(MaterialTexture.base).getTextureLocation(block.getFlag()).getPath().toLowerCase() + "_top"));
+                baseModel.texture("top", sedimentaryTopTexture(block.getMaterial(MaterialTexture.base), block.getFlag()));
             }
             else
             {
@@ -738,7 +749,7 @@ public class IGBlockStateProvider extends BlockStateProvider {
             if(formation.equals(StoneFormation.SEDIMENTARY) || block.getMaterial(MaterialTexture.base).useSedimentaryTextures(block.getFlag()))
             {
                 baseModel.texture("side", block.getMaterial(MaterialTexture.base).getTextureLocation(block.getFlag()) + (block.getMaterial(MaterialTexture.base).useSedimentaryTextures(block.getFlag()) ? "_side" : ""));
-                baseModel.texture("top", ResourceLocation.fromNamespaceAndPath(block.getMaterial(MaterialTexture.base).getTextureLocation(block.getFlag()).getNamespace(),block.getMaterial(MaterialTexture.base).getTextureLocation(block.getFlag()).getPath().toLowerCase() + "_top"));
+                baseModel.texture("top", sedimentaryTopTexture(block.getMaterial(MaterialTexture.base), block.getFlag()));
             }
             else
             {
@@ -776,7 +787,7 @@ public class IGBlockStateProvider extends BlockStateProvider {
             if(formation.equals(StoneFormation.SEDIMENTARY) || block.getMaterial(MaterialTexture.base).useSedimentaryTextures(block.getFlag()))
             {
                 baseModel.texture("side", block.getMaterial(MaterialTexture.base).getTextureLocation(block.getFlag()) + (block.getMaterial(MaterialTexture.base).useSedimentaryTextures(block.getFlag()) ? "_side" : ""));
-                baseModel.texture("top", ResourceLocation.fromNamespaceAndPath(block.getMaterial(MaterialTexture.base).getTextureLocation(block.getFlag()).getNamespace(),block.getMaterial(MaterialTexture.base).getTextureLocation(block.getFlag()).getPath().toLowerCase() + "_top"));
+                baseModel.texture("top", sedimentaryTopTexture(block.getMaterial(MaterialTexture.base), block.getFlag()));
             }
             else
             {
