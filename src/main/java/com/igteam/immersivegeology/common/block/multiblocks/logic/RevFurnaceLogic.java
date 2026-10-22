@@ -285,11 +285,10 @@ public class RevFurnaceLogic implements IMultiblockLogic<RevFurnaceLogic.State>,
         private final IItemHandler outputHandlerLeft;
         private final IItemHandler outputHandlerRight;
         private boolean mirrored = false;
-        // Qualified with this: the wrapped handlers are only assigned in the constructor
-        private final IItemHandler slot1InputCap = new MirrorAwareItemHandler(() -> mirrored ? this.invCapRight : this.invCapLeft);
-        private final IItemHandler slot2InputCap = new MirrorAwareItemHandler(() -> mirrored ? this.invCapLeft : this.invCapRight);
-        private final IItemHandler slot1OutputCap = new MirrorAwareItemHandler(() -> mirrored ? this.outputHandlerRight : this.outputHandlerLeft);
-        private final IItemHandler slot2OutputCap = new MirrorAwareItemHandler(() -> mirrored ? this.outputHandlerLeft : this.outputHandlerRight);
+        private final IItemHandler slot1InputCap;
+        private final IItemHandler slot2InputCap;
+        private final IItemHandler slot1OutputCap;
+        private final IItemHandler slot2OutputCap;
 
         private final Supplier<IItemHandler> outputLeft;
         private final Supplier<IItemHandler> outputRight;
@@ -353,6 +352,10 @@ public class RevFurnaceLogic implements IMultiblockLogic<RevFurnaceLogic.State>,
             this.invCapRight = new WrappingItemHandler(
                     inventory, true, true, new IntRange(3,5)
             );
+            this.slot1InputCap = new MirrorAwareItemHandler(() -> mirrored ? invCapRight : invCapLeft);
+            this.slot2InputCap = new MirrorAwareItemHandler(() -> mirrored ? invCapLeft : invCapRight);
+            this.slot1OutputCap = new MirrorAwareItemHandler(() -> mirrored ? outputHandlerRight : outputHandlerLeft);
+            this.slot2OutputCap = new MirrorAwareItemHandler(() -> mirrored ? outputHandlerLeft : outputHandlerRight);
             this.fluidCap =
                     new ArrayFluidHandler(new IFluidTank[]{tank}, true, false, ctx.getMarkDirtyRunnable())
             ;
