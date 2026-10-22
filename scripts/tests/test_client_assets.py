@@ -102,7 +102,9 @@ class ClientAssetTest(unittest.TestCase):
     def test_obj_materials_reference_existing_textures(self):
         problems = []
         for obj in _used_obj_files():
-            for line in obj.read_text(encoding="utf-8", errors="replace").splitlines():
+            lines = obj.read_text(encoding="utf-8", errors="replace").splitlines()
+            defined = set()
+            for line in lines:
                 if not line.startswith("mtllib "):
                     continue
                 material = obj.parent / line[len("mtllib "):].strip()
@@ -110,6 +112,8 @@ class ClientAssetTest(unittest.TestCase):
                     problems.append(f"{obj.relative_to(ROOT)}: missing material library {material.name}")
                     continue
                 for entry in material.read_text(encoding="utf-8", errors="replace").splitlines():
+                    if entry.startswith("newmtl "):
+                        defined.add(entry[len("newmtl "):].strip())
                     if not entry.startswith("map_Kd "):
                         continue
                     texture = entry[len("map_Kd "):].strip()
@@ -119,6 +123,9 @@ class ClientAssetTest(unittest.TestCase):
                         problems.append(f"{material.relative_to(ROOT)}: invalid texture location {texture}")
                     elif texture.startswith(NAMESPACE + ":") and _asset(texture, "textures", ".png") is None:
                         problems.append(f"{material.relative_to(ROOT)}: missing texture {texture}")
+            for line in lines:
+                if line.startswith("usemtl ") and line[len("usemtl "):].strip() not in defined:
+                    problems.append(f"{obj.relative_to(ROOT)}: undefined material {line[len('usemtl '):].strip()}")
         self.assertEqual([], sorted(set(problems)))
 
     def test_obj_files_used_by_models_are_not_empty(self):
